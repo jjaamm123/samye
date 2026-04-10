@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; 
 
 function TourCard({ tour }) {
   let imageUrl = tour.featuredImage;
@@ -22,36 +23,36 @@ function TourCard({ tour }) {
 
   return (
     <div className="tour-card">
+      <Link to={`/tour/${tour._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+        
+        <div className="card-image-wrapper">
+          <img src={imageUrl} alt={tour.title} className="tour-image" />
 
-      <div className="card-image-wrapper">
-        <img src={imageUrl} alt={tour.title} className="tour-image" />
+          <div className="card-base-info">
+            <span className="card-destination-tag">{tour.destination}</span>
+            <span className="card-duration-tag">{tour.duration} Days</span>
+          </div>
 
-        <div className="card-base-info">
-          <span className="card-destination-tag">{tour.destination}</span>
-          <span className="card-duration-tag">{tour.duration} Days</span>
-        </div>
+          <div className="card-hover-overlay">
+            <div className="card-hover-content">
+              <h3 className="card-title">{tour.title}</h3>
+              <p className="card-description">{tour.description}</p>
 
-        <div className="card-hover-overlay">
-          <div className="card-hover-content">
-            <h3 className="card-title">{tour.title}</h3>
-            <p className="card-description">{tour.description}</p>
-
-            <div className="card-meta-row">
-
-              <span
-                className="card-difficulty-badge"
-                style={{ backgroundColor: difficultyColor }}
-              >
-                {tour.difficulty}
-              </span>
-              <span className="card-price">${tour.price}</span>
+              <div className="card-meta-row">
+                <span
+                  className="card-difficulty-badge"
+                  style={{ backgroundColor: difficultyColor }}
+                >
+                  {tour.difficulty}
+                </span>
+                <span className="card-price">${tour.price}</span>
+              </div>
+              <span className="card-cta-btn" style={{ display: 'inline-block' }}>View Tour →</span>
             </div>
-
-            <button className="card-cta-btn">View Tour →</button>
           </div>
         </div>
-      </div>
 
+      </Link>
     </div>
   );
 }
