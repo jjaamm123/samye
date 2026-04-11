@@ -28,9 +28,9 @@ function TourDetails() {
 
   let imageUrl = tour.featuredImage;
   if (imageUrl.startsWith('/images/')) {
-    if (tour.destination === 'Nepal')       imageUrl = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80";
-    else if (tour.destination === 'Tibet')  imageUrl = "https://images.unsplash.com/photo-1551114671-fa2b87f4c7d0?auto=format&fit=crop&w=1920&q=80";
-    else                                    imageUrl = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1920&q=80";
+    if (tour.destination === 'Nepal')       imageUrl = "public/images/cards/heritage.jpg";
+    else if (tour.destination === 'Tibet')  imageUrl = "public/images/cards/tibet.jpg";
+    else                                    imageUrl = "public/images/cards/sunrise.jpg";
   }
 
   const difficultyColor = {

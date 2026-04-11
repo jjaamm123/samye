@@ -45,6 +45,19 @@ app.get('/api/tours/:id', async (req, res) => {
     }
 });
 
+app.put('/api/tours/:id', async (req, res) => {
+    try {
+        const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedTour) {
+            return res.status(404).json({ message: "Tour not found." });
+        }
+        res.status(200).json(updatedTour);
+    } catch (error) {
+        console.error("Error updating tour:", error);
+        res.status(500).json({ message: "Failed to update tour." });
+    }
+});
+
 app.post('/api/tours', async (req, res) => {
     try {
         const newTour = await Tour.create(req.body);

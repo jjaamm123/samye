@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import TourCard from '../components/TourCard';
 import '../App.css';
@@ -36,15 +37,26 @@ function Home() {
     <div className="app-wrapper">
 
       <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-brand">Samye Travels</div>
-        <div className="navbar-links">
-          <a href="#home">Home</a>
-          <a href="#about">About Us</a>
-          <a href="#tours">Tour Packages</a>
-          <a href="#gallery">Gallery</a>
-          <a href="#contact">Contact</a>
+        
+        {/* Made the brand name clickable to go home */}
+        <div className="navbar-brand">
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
         </div>
-        <a href="#contact" className="navbar-enquire-btn">Enquire Now</a>
+        
+        <div className="navbar-links">
+          <Link to="/">Home</Link>
+          <Link to="/about">About Us</Link>
+          
+          {/* Kept this as an anchor tag so it scrolls down the homepage */}
+          <a href="#tours">Tour Packages</a> 
+          
+          <Link to="/gallery">Gallery</Link>
+          <Link to="/contact">Contact</Link>
+        </div>
+        
+        {/* Routed the Enquire button to the Contact page */}
+        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
+      
       </nav>
 
       <section className="hero-section" id="home">

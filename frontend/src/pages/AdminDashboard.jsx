@@ -6,6 +6,10 @@ import '../App.css';
 function AdminDashboard() {
   const [tours, setTours] = useState([]);
   const [submitStatus, setSubmitStatus] = useState(null); 
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
   const [formData, setFormData] = useState({
     title: '',
     destination: 'Nepal',
@@ -13,7 +17,7 @@ function AdminDashboard() {
     price: '',
     difficulty: 'Moderate',
     description: '',
-    featuredImage: '/images/safari.jpg'
+    featuredImage: '/images/cards/heritage.jpg' 
   });
 
   useEffect(() => { fetchTours(); }, []);
@@ -28,22 +32,58 @@ function AdminDashboard() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleEditClick = (tour) => {
+    setIsEditing(true);
+    setEditingId(tour._id);
+    setFormData({
+      title: tour.title,
+      destination: tour.destination,
+      duration: tour.duration,
+      price: tour.price,
+      difficulty: tour.difficulty,
+      description: tour.description,
+      featuredImage: tour.featuredImage || ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingId(null);
+    setFormData({
+      title: '', destination: 'Nepal', duration: '', price: '',
+      difficulty: 'Moderate', description: '', featuredImage: '/images/cards/heritage.jpg'
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:5000/api/tours', formData)
-      .then(() => {
-        setSubmitStatus('success');
-        fetchTours();
-        setFormData({
-          title: '', destination: 'Nepal', duration: '', price: '',
-          difficulty: 'Moderate', description: '', featuredImage: '/images/safari.jpg'
+    
+    if (isEditing) {
+      axios.put(`http://localhost:5000/api/tours/${editingId}`, formData)
+        .then(() => {
+          setSubmitStatus('success');
+          fetchTours();
+          handleCancelEdit();
+          setTimeout(() => setSubmitStatus(null), 4000); 
+        })
+        .catch(err => {
+          console.error(err);
+          setSubmitStatus('error');
         });
-        setTimeout(() => setSubmitStatus(null), 4000); 
-      })
-      .catch(err => {
-        console.error(err);
-        setSubmitStatus('error');
-      });
+    } else {
+      axios.post('http://localhost:5000/api/tours', formData)
+        .then(() => {
+          setSubmitStatus('success');
+          fetchTours();
+          handleCancelEdit(); 
+          setTimeout(() => setSubmitStatus(null), 4000); 
+        })
+        .catch(err => {
+          console.error(err);
+          setSubmitStatus('error');
+        });
+    }
   };
 
   const handleDelete = (id) => {
@@ -55,20 +95,16 @@ function AdminDashboard() {
   };
 
   return (
-
     <div className="admin-layout">
-
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <span className="admin-sidebar-logo">Samye</span>
           <span className="admin-sidebar-sub">Admin Panel</span>
         </div>
-
         <nav className="admin-sidebar-nav">
           <span className="admin-nav-item active">📦 Tour Packages</span>
           <Link to="/" className="admin-nav-item">🌐 View Live Site</Link>
         </nav>
-
         <div className="admin-sidebar-stats">
           <div className="admin-stat">
             <span className="admin-stat-number">{tours.length}</span>
@@ -84,49 +120,34 @@ function AdminDashboard() {
       </aside>
 
       <main className="admin-main">
-
         <div className="admin-page-header">
           <div>
             <h1 className="admin-page-title">Tour Management</h1>
-            <p className="admin-page-subtitle">Add, review, and remove tour packages</p>
+            <p className="admin-page-subtitle">Add, review, and modify tour packages</p>
           </div>
         </div>
 
         <div className="admin-card">
           <div className="admin-card-header">
-            <h2 className="admin-card-title">Add New Package</h2>
+            <h2 className="admin-card-title">{isEditing ? "Edit Package" : "Add New Package"}</h2>
           </div>
 
           {submitStatus === 'success' && (
-            <div className="admin-alert success">✓ Tour published successfully!</div>
+            <div className="admin-alert success">✓ Tour {isEditing ? 'updated' : 'published'} successfully!</div>
           )}
           {submitStatus === 'error' && (
-            <div className="admin-alert error">✗ Failed to publish. Check the console.</div>
+            <div className="admin-alert error">✗ Failed to save. Check the console.</div>
           )}
 
           <form onSubmit={handleSubmit} className="admin-form">
-
             <div className="admin-form-group">
               <label className="admin-label">Tour Title</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                required
-                placeholder="e.g. Everest Base Camp Trek"
-                className="admin-input"
-              />
+              <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="e.g. Everest Base Camp Trek" className="admin-input" />
             </div>
 
             <div className="admin-form-group">
               <label className="admin-label">Destination</label>
-              <select
-                name="destination"
-                value={formData.destination}
-                onChange={handleChange}
-                className="admin-input"
-              >
+              <select name="destination" value={formData.destination} onChange={handleChange} className="admin-input">
                 <option value="Nepal">Nepal</option>
                 <option value="Tibet">Tibet</option>
                 <option value="India">India</option>
@@ -135,38 +156,17 @@ function AdminDashboard() {
 
             <div className="admin-form-group">
               <label className="admin-label">Duration (Days)</label>
-              <input
-                type="number"
-                name="duration"
-                value={formData.duration}
-                onChange={handleChange}
-                required
-                placeholder="e.g. 14"
-                className="admin-input"
-              />
+              <input type="number" name="duration" value={formData.duration} onChange={handleChange} required placeholder="e.g. 14" className="admin-input" />
             </div>
 
             <div className="admin-form-group">
               <label className="admin-label">Price (USD)</label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                placeholder="e.g. 1800"
-                className="admin-input"
-              />
+              <input type="number" name="price" value={formData.price} onChange={handleChange} required placeholder="e.g. 1800" className="admin-input" />
             </div>
 
             <div className="admin-form-group">
               <label className="admin-label">Difficulty</label>
-              <select
-                name="difficulty"
-                value={formData.difficulty}
-                onChange={handleChange}
-                className="admin-input"
-              >
+              <select name="difficulty" value={formData.difficulty} onChange={handleChange} className="admin-input">
                 <option value="Easy">Easy</option>
                 <option value="Moderate">Moderate</option>
                 <option value="Hard">Hard</option>
@@ -174,25 +174,27 @@ function AdminDashboard() {
               </select>
             </div>
 
+            <div className="admin-form-group">
+              <label className="admin-label">Featured Image Path</label>
+              <input type="text" name="featuredImage" value={formData.featuredImage} onChange={handleChange} required placeholder="/images/adventure/hero.jpg" className="admin-input" />
+            </div>
+
             <div className="admin-form-group admin-form-full">
               <label className="admin-label">Short Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                required
-                rows="3"
-                placeholder="Describe the tour experience..."
-                className="admin-input admin-textarea"
-              ></textarea>
+              <textarea name="description" value={formData.description} onChange={handleChange} required rows="3" placeholder="Describe the tour experience..." className="admin-input admin-textarea"></textarea>
             </div>
 
-            <div className="admin-form-full">
+            <div className="admin-form-full" style={{ display: 'flex', gap: '15px' }}>
               <button type="submit" className="admin-submit-btn">
-                + Publish Tour
+                {isEditing ? "Update Tour" : "+ Publish Tour"}
               </button>
+              
+              {isEditing && (
+                <button type="button" onClick={handleCancelEdit} className="admin-submit-btn" style={{ backgroundColor: '#ccc', color: '#333' }}>
+                  Cancel
+                </button>
+              )}
             </div>
-
           </form>
         </div>
 
@@ -220,21 +222,17 @@ function AdminDashboard() {
                   {tours.map(tour => (
                     <tr key={tour._id}>
                       <td className="admin-td-title">{tour.title}</td>
-                      <td>
-                        <span className="admin-destination-badge">{tour.destination}</span>
-                      </td>
+                      <td><span className="admin-destination-badge">{tour.destination}</span></td>
                       <td>{tour.duration} days</td>
                       <td className="admin-td-price">${tour.price}</td>
                       <td style={{ textAlign: 'right' }}>
-                        <Link to={`/tour/${tour._id}`} className="admin-action-view">
-                          View Live ↗
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(tour._id)}
-                          className="admin-action-delete"
-                        >
-                          Delete
+                        <Link to={`/tour/${tour._id}`} className="admin-action-view" style={{ marginRight: '15px' }}>View ↗</Link>
+                        
+                        <button onClick={() => handleEditClick(tour)} className="admin-action-view" style={{ marginRight: '15px', cursor: 'pointer', backgroundColor: 'transparent', border: 'none', color: '#1a5c9e' }}>
+                          Edit ✎
                         </button>
+                        
+                        <button onClick={() => handleDelete(tour._id)} className="admin-action-delete">Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -243,7 +241,6 @@ function AdminDashboard() {
             </div>
           )}
         </div>
-
       </main>
     </div>
   );
