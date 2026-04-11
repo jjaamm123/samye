@@ -9,6 +9,8 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -29,34 +31,41 @@ function Home() {
       });
   }, []);
 
-  const nepalTours = tours.filter(tour => tour.destination === 'Nepal');
-  const tibetTours = tours.filter(tour => tour.destination === 'Tibet');
-  const indiaTours = tours.filter(tour => tour.destination === 'India');
+  const filteredTours = tours.filter(tour => {
+    if (!searchQuery) return true; 
+    
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    return tour.destination.toLowerCase().includes(lowerCaseQuery) || 
+          tour.title.toLowerCase().includes(lowerCaseQuery);
+  });
+
+  // 3. Updated to use filteredTours instead of the raw tours array
+  const nepalTours = filteredTours.filter(tour => tour.destination === 'Nepal');
+  const tibetTours = filteredTours.filter(tour => tour.destination === 'Tibet');
+  const indiaTours = filteredTours.filter(tour => tour.destination === 'India');
+
+  const scrollToTours = () => {
+    const toursSection = document.getElementById('tours');
+    if (toursSection) {
+      toursSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="app-wrapper">
 
       <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        
-        {/* Made the brand name clickable to go home */}
         <div className="navbar-brand">
           <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
         </div>
-        
         <div className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/about">About Us</Link>
-          
-          {/* Kept this as an anchor tag so it scrolls down the homepage */}
           <a href="#tours">Tour Packages</a> 
-          
           <Link to="/gallery">Gallery</Link>
           <Link to="/contact">Contact</Link>
         </div>
-        
-        {/* Routed the Enquire button to the Contact page */}
         <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-      
       </nav>
 
       <section className="hero-section" id="home">
@@ -74,10 +83,17 @@ function Home() {
 
       <div className="search-bar-wrapper">
         <div className="floating-search">
+          
           <div className="search-field">
-            <label>DESTINATION</label>
-            <input type="text" placeholder="Nepal, Tibet, India..." />
+            <label>DESTINATION OR TOUR</label>
+            <input 
+              type="text" 
+              placeholder="e.g. Everest, Tibet..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
+
           <div className="search-divider"></div>
           <div className="search-field">
             <label>TRAVEL DATES</label>
@@ -88,7 +104,8 @@ function Home() {
             <label>GROUP SIZE</label>
             <input type="text" placeholder="How many travellers?" />
           </div>
-          <button className="search-btn">Search Tours →</button>
+          
+          <button className="search-btn" onClick={scrollToTours}>Search Tours →</button>
         </div>
       </div>
 
@@ -117,8 +134,10 @@ function Home() {
       <div className="content-container" id="tours">
         {loading && <p className="status-msg">Loading your Himalayan adventures...</p>}
         {error && <p className="status-msg error">⚠️ {error}</p>}
-        {!loading && !error && tours.length === 0 && (
-          <p className="status-msg">No tours found.</p>
+        
+        {/* Updated empty state to reflect search results */}
+        {!loading && !error && filteredTours.length === 0 && (
+          <p className="status-msg" style={{padding: '50px 0'}}>No tours match your search. Try a different keyword!</p>
         )}
 
         {nepalTours.length > 0 && (
@@ -179,7 +198,7 @@ function Home() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2025 Samye Travels. All rights reserved.</p>
+          <p>© 2026 Samye Travels. All rights reserved.</p>
         </div>
       </footer>
 

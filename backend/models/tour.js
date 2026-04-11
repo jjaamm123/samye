@@ -35,7 +35,9 @@ const tourSchema = new mongoose.Schema({
     featuredImage: { 
         type: String,
         default: 'default-tour-image.jpg'
-    } 
+    }, 
+    gallery: [String], 
+    description: { type: String, required: true },
 }, { 
     timestamps: true 
 });

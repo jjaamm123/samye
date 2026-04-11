@@ -17,7 +17,9 @@ function AdminDashboard() {
     price: '',
     difficulty: 'Moderate',
     description: '',
-    featuredImage: '/images/cards/heritage.jpg' 
+    featuredImage: '/images/cards/heritage.jpg',
+    itinerary: [],
+    gallery: [] 
   });
 
   useEffect(() => { fetchTours(); }, []);
@@ -32,6 +34,26 @@ function AdminDashboard() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+    const handleItineraryChange = (index, value) => {
+    const newItinerary = [...formData.itinerary];
+    newItinerary[index].activity = value;
+    setFormData({ ...formData, itinerary: newItinerary });
+  };
+
+  const addItineraryDay = () => {
+    setFormData({
+      ...formData,
+      itinerary: [...formData.itinerary, { day: formData.itinerary.length + 1, activity: '' }]
+    });
+  };
+
+  // 3. Remove a day and re-number the remaining days so they stay sequential
+  const removeItineraryDay = (indexToRemove) => {
+    const filteredItinerary = formData.itinerary.filter((_, index) => index !== indexToRemove);
+    const renumberedItinerary = filteredItinerary.map((item, index) => ({ ...item, day: index + 1 }));
+    setFormData({ ...formData, itinerary: renumberedItinerary });
+  };
+
   const handleEditClick = (tour) => {
     setIsEditing(true);
     setEditingId(tour._id);
@@ -42,7 +64,9 @@ function AdminDashboard() {
       price: tour.price,
       difficulty: tour.difficulty,
       description: tour.description,
-      featuredImage: tour.featuredImage || ''
+      featuredImage: tour.featuredImage || '',
+      itinerary: tour.itinerary || [],
+      gallery: tour.gallery || []
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -52,7 +76,8 @@ function AdminDashboard() {
     setEditingId(null);
     setFormData({
       title: '', destination: 'Nepal', duration: '', price: '',
-      difficulty: 'Moderate', description: '', featuredImage: '/images/cards/heritage.jpg'
+      difficulty: 'Moderate', description: '', featuredImage: '/images/cards/heritage.jpg',
+      itinerary: [] // Reset
     });
   };
 
@@ -184,7 +209,88 @@ function AdminDashboard() {
               <textarea name="description" value={formData.description} onChange={handleChange} required rows="3" placeholder="Describe the tour experience..." className="admin-input admin-textarea"></textarea>
             </div>
 
-            <div className="admin-form-full" style={{ display: 'flex', gap: '15px' }}>
+            {/* --- DETAILED ITINERARY BUILDER --- */}
+            <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
+              <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Day-by-Day Itinerary</label>
+              
+              {formData.itinerary.map((dayItem, index) => (
+                <div key={index} style={{ display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'flex-start' }}>
+                  <div style={{ backgroundColor: '#f7f2e8', padding: '12px 15px', borderRadius: '4px', fontWeight: 'bold', color: '#1a5c9e', whiteSpace: 'nowrap', border: '1px solid #d4c4a4' }}>
+                    Day {dayItem.day}
+                  </div>
+                  <input
+                    type="text"
+                    value={dayItem.activity}
+                    onChange={(e) => handleItineraryChange(index, e.target.value)}
+                    placeholder="e.g. Arrive in Kathmandu, transfer to hotel and rest."
+                    className="admin-input"
+                    style={{ flex: 1 }}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => removeItineraryDay(index)} 
+                    style={{ backgroundColor: '#e63946', color: 'white', border: 'none', padding: '12px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                    title="Remove Day"
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+              
+              <button 
+                type="button" 
+                onClick={addItineraryDay} 
+                style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}
+              >
+                + Add Day
+              </button>
+            </div>
+
+            {/* --- NEW: GALLERY BUILDER --- */}
+            <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
+              <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Gallery Photos</label>
+              
+              {formData.gallery.map((imgUrl, index) => (
+                <div key={index} style={{ display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'center' }}>
+                  <img src={imgUrl} alt="preview" style={{width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px'}} onError={(e) => e.target.style.display = 'none'} />
+                  <input
+                    type="text"
+                    value={imgUrl}
+                    onChange={(e) => {
+                      const newGallery = [...formData.gallery];
+                      newGallery[index] = e.target.value;
+                      setFormData({ ...formData, gallery: newGallery });
+                    }}
+                    placeholder="/images/cards/photo1.jpg"
+                    className="admin-input"
+                    style={{ flex: 1 }}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const newGallery = formData.gallery.filter((_, idx) => idx !== index);
+                      setFormData({ ...formData, gallery: newGallery });
+                    }} 
+                    style={{ backgroundColor: '#e63946', color: 'white', border: 'none', padding: '12px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+              
+              <button 
+                type="button" 
+                onClick={() => setFormData({ ...formData, gallery: [...formData.gallery, ''] })} 
+                style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}
+              >
+                + Add Photo
+              </button>
+            </div>
+
+            {/* --- SUBMIT BUTTONS --- */}
+            <div className="admin-form-full" style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
               <button type="submit" className="admin-submit-btn">
                 {isEditing ? "Update Tour" : "+ Publish Tour"}
               </button>
@@ -196,8 +302,7 @@ function AdminDashboard() {
               )}
             </div>
           </form>
-        </div>
-
+        </div>  
         <div className="admin-card" style={{ marginTop: '28px' }}>
           <div className="admin-card-header">
             <h2 className="admin-card-title">Active Tours</h2>

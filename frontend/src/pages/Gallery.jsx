@@ -5,7 +5,6 @@ import '../App.css';
 function Gallery() {
   const [scrolled, setScrolled] = useState(false);
 
-  // Filter state — 'All' shows every photo
   const [activeFilter, setActiveFilter] = useState('All');
 
   useEffect(() => {
@@ -14,11 +13,6 @@ function Gallery() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  /*
-    CHANGE: Photos now have metadata (label + category) instead of just a URL.
-    This powers the filter buttons and the hover overlay labels.
-    Replace URLs with your own photos later — just keep the same object shape.
-  */
   const photos = [
     {
       url: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
@@ -54,7 +48,6 @@ function Gallery() {
 
   const categories = ['All', 'Nepal', 'Tibet', 'India'];
 
-  // Filter photos based on active category
   const visiblePhotos = activeFilter === 'All'
     ? photos
     : photos.filter(p => p.category === activeFilter);
@@ -74,7 +67,6 @@ function Gallery() {
         <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
       </nav>
 
-      {/* Page hero */}
       <div
         className="page-hero"
         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518002054494-3a6f94352e9d?auto=format&fit=crop&w=1920&q=80')" }}
@@ -88,10 +80,7 @@ function Gallery() {
 
       <div className="content-container">
 
-        {/*
-          NEW: Category filter pills.
-          Clicking a button updates activeFilter state, which filters visiblePhotos.
-        */}
+
         <div className="gallery-filters">
           {categories.map(cat => (
             <button
@@ -104,12 +93,6 @@ function Gallery() {
           ))}
         </div>
 
-        {/*
-          CHANGE: Grid is now CSS masonry-style (3 columns, first + fourth item span 2 rows).
-          Before: plain auto-fit grid, all photos same height — looked like a plain photo dump.
-          Now: varied heights create visual rhythm like a professional gallery.
-          Hover overlay reveals the photo label.
-        */}
         <div className="gallery-grid">
           {visiblePhotos.map((photo, index) => (
             <div className="gallery-item" key={index}>
