@@ -1,16 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import TourCard from '../components/TourCard';
 import '../App.css';
 
 function Home() {
-  const [tours, setTours] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [scrolled, setScrolled] = useState(false);
-  
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -18,38 +11,6 @@ function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    axios.get('http://localhost:5000/api/tours')
-      .then((response) => {
-        setTours(response.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fetch Error:", err);
-        setError("Could not connect to the backend server.");
-        setLoading(false);
-      });
-  }, []);
-
-  const filteredTours = tours.filter(tour => {
-    if (!searchQuery) return true; 
-    
-    const lowerCaseQuery = searchQuery.toLowerCase();
-    return tour.destination.toLowerCase().includes(lowerCaseQuery) || 
-          tour.title.toLowerCase().includes(lowerCaseQuery);
-  });
-
-  // 3. Updated to use filteredTours instead of the raw tours array
-  const nepalTours = filteredTours.filter(tour => tour.destination === 'Nepal');
-  const tibetTours = filteredTours.filter(tour => tour.destination === 'Tibet');
-  const indiaTours = filteredTours.filter(tour => tour.destination === 'India');
-
-  const scrollToTours = () => {
-    const toursSection = document.getElementById('tours');
-    if (toursSection) {
-      toursSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <div className="app-wrapper">
@@ -59,9 +20,10 @@ function Home() {
           <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
         </div>
         <div className="navbar-links">
-          <Link to="/">Home</Link>
+          <Link to="/" className="active-link">Home</Link>
           <Link to="/about">About Us</Link>
-          <a href="#tours">Tour Packages</a> 
+          <Link to="/tours">Tour Packages</Link>
+          <Link to="/adventures">Adventure Sports</Link>
           <Link to="/gallery">Gallery</Link>
           <Link to="/contact">Contact</Link>
         </div>
@@ -75,39 +37,12 @@ function Home() {
           <h1>Samye Travels</h1>
           <p>Your Portal to Spiritual Journeys and High-Altitude Adventures</p>
           <div className="hero-cta-group">
-            <a href="#tours" className="hero-btn-primary">Explore Tours</a>
-            <a href="#contact" className="hero-btn-secondary">Plan My Journey</a>
+            {/* CTAs now go to the dedicated pages instead of scrolling down */}
+            <Link to="/tours" className="hero-btn-primary">Explore Tours</Link>
+            <Link to="/adventures" className="hero-btn-secondary">Adventure Sports</Link>
           </div>
         </div>
       </section>
-
-      <div className="search-bar-wrapper">
-        <div className="floating-search">
-          
-          <div className="search-field">
-            <label>DESTINATION OR TOUR</label>
-            <input 
-              type="text" 
-              placeholder="e.g. Everest, Tibet..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="search-divider"></div>
-          <div className="search-field">
-            <label>TRAVEL DATES</label>
-            <input type="text" placeholder="When do you want to go?" />
-          </div>
-          <div className="search-divider"></div>
-          <div className="search-field">
-            <label>GROUP SIZE</label>
-            <input type="text" placeholder="How many travellers?" />
-          </div>
-          
-          <button className="search-btn" onClick={scrollToTours}>Search Tours →</button>
-        </div>
-      </div>
 
       <div className="stats-strip">
         <div className="stat-item">
@@ -131,50 +66,94 @@ function Home() {
         </div>
       </div>
 
-      <div className="content-container" id="tours">
-        {loading && <p className="status-msg">Loading your Himalayan adventures...</p>}
-        {error && <p className="status-msg error">⚠️ {error}</p>}
-        
-        {/* Updated empty state to reflect search results */}
-        {!loading && !error && filteredTours.length === 0 && (
-          <p className="status-msg" style={{padding: '50px 0'}}>No tours match your search. Try a different keyword!</p>
-        )}
+      <div className="journey-selector-section">
+        <div className="section-header" style={{ marginBottom: '48px' }}>
+          <h2 className="section-title">Choose Your Journey</h2>
+          <p className="section-subtitle">Two ways to experience the Himalayas — pick what calls to you</p>
+        </div>
 
-        {nepalTours.length > 0 && (
-          <div className="destination-section">
-            <div className="section-header">
-              <h2 className="section-title">Nepal Tours</h2>
-              <p className="section-subtitle">Trekking, temples, and the roof of the world</p>
+        <div className="journey-cards-grid">
+
+          <Link to="/tours" className="journey-card">
+            <div
+              className="journey-card-bg"
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80')" }}
+            ></div>
+            <div className="journey-card-overlay"></div>
+            <div className="journey-card-content">
+              <span className="journey-card-eyebrow">Cultural & Spiritual</span>
+              <h3 className="journey-card-title">Tour Packages</h3>
+              <p className="journey-card-desc">
+                Guided treks to Everest Base Camp, sacred monastery stays in Tibet,
+                and temple circuits across India. Crafted for the curious soul.
+              </p>
+              <div className="journey-card-cta">
+                Explore All Tours <span className="journey-card-arrow">→</span>
+              </div>
+              <div className="journey-card-meta">
+                <span>🏔️ Nepal · Tibet · India</span>
+                <span>📅 5 – 21 Days</span>
+              </div>
             </div>
-            <div className="tours-grid">
-              {nepalTours.map((tour) => <TourCard key={tour._id} tour={tour} />)}
+          </Link>
+
+          <Link to="/adventures" className="journey-card">
+            <div
+              className="journey-card-bg"
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1605540840428-583c4b572240?auto=format&fit=crop&w=1200&q=80')" }}
+            ></div>
+            <div className="journey-card-overlay"></div>
+            <div className="journey-card-content">
+              <span className="journey-card-eyebrow">Adrenaline & Thrill</span>
+              <h3 className="journey-card-title">Adventure Sports</h3>
+              <p className="journey-card-desc">
+                White-water rafting the Trishuli, paragliding over Pokhara,
+                bungee jumps, zip-lines, and more. For those who seek the rush.
+              </p>
+              <div className="journey-card-cta">
+                Explore All Adventures <span className="journey-card-arrow">→</span>
+              </div>
+              <div className="journey-card-meta">
+                <span>🏄 Nepal · India</span>
+                <span>⏱ Half-day – 3 Days</span>
+              </div>
+            </div>
+          </Link>
+
+        </div>
+      </div>
+
+      <div className="why-us-strip">
+        <div className="why-us-inner">
+          <div className="why-us-item">
+            <span className="why-us-icon">🧭</span>
+            <div>
+              <strong>Expert Local Guides</strong>
+              <p>Every guide is a mountain native with 10+ years on the trail</p>
             </div>
           </div>
-        )}
-
-        {tibetTours.length > 0 && (
-          <div className="destination-section">
-            <div className="section-header">
-              <h2 className="section-title">Tibet Tours</h2>
-              <p className="section-subtitle">Sacred monasteries and high plateau adventures</p>
-            </div>
-            <div className="tours-grid">
-              {tibetTours.map((tour) => <TourCard key={tour._id} tour={tour} />)}
+          <div className="why-us-item">
+            <span className="why-us-icon">🛡️</span>
+            <div>
+              <strong>Safety First</strong>
+              <p>Certified safety equipment and evacuation protocols on every trip</p>
             </div>
           </div>
-        )}
-
-        {indiaTours.length > 0 && (
-          <div className="destination-section">
-            <div className="section-header">
-              <h2 className="section-title">India Tours</h2>
-              <p className="section-subtitle">Ancient temples, vibrant culture, spiritual heartlands</p>
-            </div>
-            <div className="tours-grid">
-              {indiaTours.map((tour) => <TourCard key={tour._id} tour={tour} />)}
+          <div className="why-us-item">
+            <span className="why-us-icon">✈️</span>
+            <div>
+              <strong>End-to-End Planning</strong>
+              <p>Permits, transport, accommodation — all handled for you</p>
             </div>
           </div>
-        )}
+          <div className="why-us-item">
+            <span className="why-us-icon">🌿</span>
+            <div>
+              <strong>Responsible Travel</strong>
+              <p>Leave-no-trace ethic, supporting local communities</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <footer className="site-footer">
@@ -185,16 +164,17 @@ function Home() {
           </div>
           <div className="footer-links">
             <h4>Quick Links</h4>
-            <a href="#home">Home</a>
-            <a href="#tours">Tours</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
+            <Link to="/">Home</Link>
+            <Link to="/tours">Tours</Link>
+            <Link to="/adventures">Adventures</Link>
+            <Link to="/about">About</Link>
+            <Link to="/contact">Contact</Link>
           </div>
           <div className="footer-contact">
             <h4>Get In Touch</h4>
-            <p>info@samyetravels.com</p>
-            <p>+977 1 234 5678</p>
-            <p>Kathmandu, Nepal</p>
+            <p>namaste@samyetravels.com</p>
+            <p>+977 1-4412345</p>
+            <p>Thamel, Kathmandu, Nepal</p>
           </div>
         </div>
         <div className="footer-bottom">
