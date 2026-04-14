@@ -37,7 +37,6 @@ function Home() {
           <h1>Samye Travels</h1>
           <p>Your Portal to Spiritual Journeys and High-Altitude Adventures</p>
           <div className="hero-cta-group">
-            {/* CTAs now go to the dedicated pages instead of scrolling down */}
             <Link to="/tours" className="hero-btn-primary">Explore Tours</Link>
             <Link to="/adventures" className="hero-btn-secondary">Adventure Sports</Link>
           </div>
@@ -100,7 +99,7 @@ function Home() {
           <Link to="/adventures" className="journey-card">
             <div
               className="journey-card-bg"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1605540840428-583c4b572240?auto=format&fit=crop&w=1200&q=80')" }}
+              style={{ backgroundImage: "url('public/images/top/bungee-jump.jpg')" }}
             ></div>
             <div className="journey-card-overlay"></div>
             <div className="journey-card-content">
@@ -129,14 +128,14 @@ function Home() {
             <span className="why-us-icon">🧭</span>
             <div>
               <strong>Expert Local Guides</strong>
-              <p>Every guide is a mountain native with 10+ years on the trail</p>
+              <p>Every guide is a native with 10+ years on the trail</p>
             </div>
           </div>
           <div className="why-us-item">
             <span className="why-us-icon">🛡️</span>
             <div>
               <strong>Safety First</strong>
-              <p>Certified safety equipment and evacuation protocols on every trip</p>
+              <p>Certified safety and protocols on every trip</p>
             </div>
           </div>
           <div className="why-us-item">

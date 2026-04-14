@@ -47,10 +47,7 @@ function AdventureDetails() {
   const goNext = () => setActiveSlide(s => (s + 1) % gallery.length);
   const goPrev = () => setActiveSlide(s => (s - 1 + gallery.length) % gallery.length);
 
-  let heroImage = adventure.featuredImage || '';
-  if (!heroImage || heroImage.startsWith('/images/')) {
-    heroImage = 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=1920&q=80';
-  }
+  const heroImage = adventure.featuredImage || 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=1920&q=80';
 
   return (
     <div className="app-wrapper">

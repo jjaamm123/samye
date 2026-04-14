@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
-
 const Tour = require('./models/tour'); 
 const Booking = require('./models/booking'); 
 const Adventure = require('./models/adventure'); 
@@ -92,6 +91,39 @@ app.get('/api/adventures/:id', async (req, res) => {
     } catch (error) {
         console.error("Error fetching single adventure:", error);
         res.status(500).json({ message: "Server Error: Could not fetch the adventure." });
+    }
+});
+
+
+app.put('/api/adventures/:id', async (req, res) => {
+    try {
+        const updatedAdv = await Adventure.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedAdv) return res.status(404).json({ message: "Adventure not found." });
+        res.status(200).json(updatedAdv);
+    } catch (error) {
+        console.error("Error updating adventure:", error);
+        res.status(500).json({ message: "Failed to update adventure." });
+    }
+});
+
+app.delete('/api/adventures/:id', async (req, res) => {
+    try {
+        const deletedAdv = await Adventure.findByIdAndDelete(req.params.id);
+        if (!deletedAdv) return res.status(404).json({ message: "Adventure not found." });
+        res.status(200).json({ message: "Adventure deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting adventure:", error);
+        res.status(500).json({ message: "Failed to delete adventure." });
+    }
+});
+
+app.post('/api/adventures', async (req, res) => {
+    try {
+        const newAdv = await Adventure.create(req.body);
+        res.status(201).json(newAdv); 
+    } catch (error) {
+        console.error("Error creating adventure:", error);
+        res.status(400).json({ message: "Failed to create adventure." });
     }
 });
 

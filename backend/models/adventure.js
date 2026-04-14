@@ -1,15 +1,20 @@
+
+const mongoose = require('mongoose');
+
 const adventureSchema = new mongoose.Schema({
-    title: String,
-    sportType: String,     
-    location: String,       
-    duration: String,       
-    intensity: String,      
-    price: Number,
-    minAge: String,         
-    description: String,
-    featuredImage: String,
+    title: { type: String, required: true },
+    sportType: { type: String, required: true },
+    location: { type: String, required: true },
+    duration: { type: String, required: true },
+    price: { type: Number, required: true },
+    intensity: { type: String, required: true },
+    description: { type: String, required: true },
+    featuredImage: { type: String, required: true },
     gallery: [String],
-    included: [String],     
-    safetyNotes: String,
-    itinerary: [{ day: Number, time: String, activity: String }]
+    minAge: { type: String, default: "16+" },
+    included: [String], 
+    safetyNotes: { type: String },
+    itinerary: [mongoose.Schema.Types.Mixed] 
 });
+
+module.exports = mongoose.model('Adventure', adventureSchema);
