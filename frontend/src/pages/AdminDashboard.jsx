@@ -121,7 +121,6 @@ function AdminDashboard() {
 
   return (
     <div className="admin-layout">
-      {/* --- SIDEBAR --- */}
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <span className="admin-sidebar-logo">Samye</span>

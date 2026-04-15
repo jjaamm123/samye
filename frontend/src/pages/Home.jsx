@@ -11,7 +11,6 @@ function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-
   return (
     <div className="app-wrapper">
 
@@ -24,6 +23,7 @@ function Home() {
           <Link to="/about">About Us</Link>
           <Link to="/tours">Tour Packages</Link>
           <Link to="/adventures">Adventure Sports</Link>
+          <Link to="/custom-tour">Build My Trip</Link> 
           <Link to="/gallery">Gallery</Link>
           <Link to="/contact">Contact</Link>
         </div>
@@ -38,84 +38,62 @@ function Home() {
           <p>Your Portal to Spiritual Journeys and High-Altitude Adventures</p>
           <div className="hero-cta-group">
             <Link to="/tours" className="hero-btn-primary">Explore Tours</Link>
-            <Link to="/adventures" className="hero-btn-secondary">Adventure Sports</Link>
+            <Link to="/custom-tour" className="hero-btn-secondary">Build My Trip</Link>
           </div>
         </div>
       </section>
 
       <div className="stats-strip">
-        <div className="stat-item">
-          <span className="stat-number">500+</span>
-          <span className="stat-label">Journeys Completed</span>
-        </div>
+        <div className="stat-item"><span className="stat-number">500+</span><span className="stat-label">Journeys Completed</span></div>
         <div className="stat-divider"></div>
-        <div className="stat-item">
-          <span className="stat-number">15+</span>
-          <span className="stat-label">Years of Experience</span>
-        </div>
+        <div className="stat-item"><span className="stat-number">15+</span><span className="stat-label">Years of Experience</span></div>
         <div className="stat-divider"></div>
-        <div className="stat-item">
-          <span className="stat-number">98%</span>
-          <span className="stat-label">Happy Travellers</span>
-        </div>
+        <div className="stat-item"><span className="stat-number">98%</span><span className="stat-label">Happy Travellers</span></div>
         <div className="stat-divider"></div>
-        <div className="stat-item">
-          <span className="stat-number">3</span>
-          <span className="stat-label">Sacred Destinations</span>
-        </div>
+        <div className="stat-item"><span className="stat-number">3</span><span className="stat-label">Sacred Destinations</span></div>
       </div>
 
       <div className="journey-selector-section">
         <div className="section-header" style={{ marginBottom: '48px' }}>
           <h2 className="section-title">Choose Your Journey</h2>
-          <p className="section-subtitle">Two ways to experience the Himalayas — pick what calls to you</p>
+          <p className="section-subtitle">Three ways to experience the Himalayas — pick what calls to you</p>
         </div>
 
-        <div className="journey-cards-grid">
+        <div className="journey-cards-grid three-col">
 
           <Link to="/tours" className="journey-card">
-            <div
-              className="journey-card-bg"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80')" }}
-            ></div>
+            <div className="journey-card-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80')" }}></div>
             <div className="journey-card-overlay"></div>
             <div className="journey-card-content">
               <span className="journey-card-eyebrow">Cultural & Spiritual</span>
               <h3 className="journey-card-title">Tour Packages</h3>
-              <p className="journey-card-desc">
-                Guided treks to Everest Base Camp, sacred monastery stays in Tibet,
-                and temple circuits across India. Crafted for the curious soul.
-              </p>
-              <div className="journey-card-cta">
-                Explore All Tours <span className="journey-card-arrow">→</span>
-              </div>
-              <div className="journey-card-meta">
-                <span>🏔️ Nepal · Tibet · India</span>
-                <span>📅 5 – 21 Days</span>
-              </div>
+              <p className="journey-card-desc">Guided treks to Everest Base Camp, sacred monastery stays in Tibet, and temple circuits across India.</p>
+              <div className="journey-card-cta">Explore All Tours <span className="journey-card-arrow">→</span></div>
+              <div className="journey-card-meta"><span>🏔️ Nepal · Tibet · India</span><span>📅 5–21 Days</span></div>
             </div>
           </Link>
 
           <Link to="/adventures" className="journey-card">
-            <div
-              className="journey-card-bg"
-              style={{ backgroundImage: "url('public/images/top/bungee-jump.jpg')" }}
-            ></div>
+            <div className="journey-card-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=1200&q=80')" }}></div>
             <div className="journey-card-overlay"></div>
             <div className="journey-card-content">
               <span className="journey-card-eyebrow">Adrenaline & Thrill</span>
               <h3 className="journey-card-title">Adventure Sports</h3>
-              <p className="journey-card-desc">
-                White-water rafting the Trishuli, paragliding over Pokhara,
-                bungee jumps, zip-lines, and more. For those who seek the rush.
-              </p>
-              <div className="journey-card-cta">
-                Explore All Adventures <span className="journey-card-arrow">→</span>
-              </div>
-              <div className="journey-card-meta">
-                <span>🏄 Nepal · India</span>
-                <span>⏱ Half-day – 3 Days</span>
-              </div>
+              <p className="journey-card-desc">White-water rafting, paragliding over Pokhara, bungee jumps, zip-lines, and more.</p>
+              <div className="journey-card-cta">Explore Adventures <span className="journey-card-arrow">→</span></div>
+              <div className="journey-card-meta"><span>🏄 Nepal · India</span><span>⏱ Half-day – 3 Days</span></div>
+            </div>
+          </Link>
+
+          <Link to="/custom-tour" className="journey-card journey-card-custom">
+            <div className="journey-card-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80')" }}></div>
+            <div className="journey-card-overlay"></div>
+            <div className="journey-card-content">
+              <span className="journey-card-eyebrow">Your Way</span>
+              <h3 className="journey-card-title">Build My Trip</h3>
+              <p className="journey-card-desc">Mix tours and adventures into your perfect itinerary. Get instant cost estimates, discounts, and a feasibility report.</p>
+              <div className="journey-card-cta">Start Building <span className="journey-card-arrow">→</span></div>
+              <div className="journey-card-meta"><span>🗺️ Fully Customisable</span><span>🏷️ Auto Discounts</span></div>
             </div>
           </Link>
 
@@ -124,34 +102,10 @@ function Home() {
 
       <div className="why-us-strip">
         <div className="why-us-inner">
-          <div className="why-us-item">
-            <span className="why-us-icon">🧭</span>
-            <div>
-              <strong>Expert Local Guides</strong>
-              <p>Every guide is a native with 10+ years on the trail</p>
-            </div>
-          </div>
-          <div className="why-us-item">
-            <span className="why-us-icon">🛡️</span>
-            <div>
-              <strong>Safety First</strong>
-              <p>Certified safety and protocols on every trip</p>
-            </div>
-          </div>
-          <div className="why-us-item">
-            <span className="why-us-icon">✈️</span>
-            <div>
-              <strong>End-to-End Planning</strong>
-              <p>Permits, transport, accommodation — all handled for you</p>
-            </div>
-          </div>
-          <div className="why-us-item">
-            <span className="why-us-icon">🌿</span>
-            <div>
-              <strong>Responsible Travel</strong>
-              <p>Leave-no-trace ethic, supporting local communities</p>
-            </div>
-          </div>
+          <div className="why-us-item"><span className="why-us-icon">🧭</span><div><strong>Expert Local Guides</strong><p>Every guide is a native with 10+ years on the trail</p></div></div>
+          <div className="why-us-item"><span className="why-us-icon">🛡️</span><div><strong>Safety First</strong><p>Certified safety and protocols on every trip</p></div></div>
+          <div className="why-us-item"><span className="why-us-icon">✈️</span><div><strong>End-to-End Planning</strong><p>Permits, transport, accommodation — all handled for you</p></div></div>
+          <div className="why-us-item"><span className="why-us-icon">🌿</span><div><strong>Responsible Travel</strong><p>Leave-no-trace ethic, supporting local communities</p></div></div>
         </div>
       </div>
 
@@ -166,6 +120,7 @@ function Home() {
             <Link to="/">Home</Link>
             <Link to="/tours">Tours</Link>
             <Link to="/adventures">Adventures</Link>
+            <Link to="/custom-tour">Build My Trip</Link> {/* <-- ADDED TO FOOTER */}
             <Link to="/about">About</Link>
             <Link to="/contact">Contact</Link>
           </div>
@@ -176,9 +131,7 @@ function Home() {
             <p>Thamel, Kathmandu, Nepal</p>
           </div>
         </div>
-        <div className="footer-bottom">
-          <p>© 2026 Samye Travels. All rights reserved.</p>
-        </div>
+        <div className="footer-bottom"><p>© 2026 Samye Travels. All rights reserved.</p></div>
       </footer>
 
     </div>

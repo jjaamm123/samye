@@ -5,10 +5,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import About from './pages/About';     
 import Gallery from './pages/Gallery'; 
 import Contact from './pages/Contact';
-import './App.css';
 import Tours from './pages/Tours';
 import Adventures from './pages/Adventures';
 import AdventureDetails from './pages/AdventureDetails';
+import CustomTour from './pages/CustomTour'; 
+import './App.css';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       <Route path="/tours" element={<Tours />} />
       <Route path="/adventures" element={<Adventures />} />
       <Route path="/adventure/:id" element={<AdventureDetails />} />
+      <Route path="/custom-tour" element={<CustomTour />} /> 
     </Routes>
   );
 }
