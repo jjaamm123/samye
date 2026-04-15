@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import '../App.css';
 
 function Contact() {
   const [scrolled, setScrolled] = useState(false);
-
-  // Form submit state — replaces window.alert
-  const [submitStatus, setSubmitStatus] = useState(null); // 'success' | null
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
-    name: '', email: '', subject: '', message: ''
+    name: '',
+    email: '',
+    phone: '',
+    message: ''
   });
 
   useEffect(() => {
@@ -18,154 +19,139 @@ function Contact() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (location.state) {
+      const { tripItems, groupSize, travelDate, grandTotal } = location.state;
+      
+      const itemsList = tripItems.map(item => `- ${item.title}`).join('\n');
+      const dateStr = travelDate ? travelDate : 'Not specified';
+
+      const autoMessage = `Hi Samye Travels team! I would like to enquire about a custom trip.\n\nGroup Size: ${groupSize}\nExpected Start Date: ${dateStr}\n\nSelected Packages:\n${itemsList}\n\nEstimated Grand Total: $${grandTotal.toLocaleString()}.\n\nPlease let me know the next steps!`;
+
+      setFormData(prev => ({ ...prev, message: autoMessage }));
+    }
+  }, [location.state]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  /*
-    This currently just shows a success message.
-    To wire it up to a real backend: replace the setTimeout with an
-    axios.post('http://localhost:5000/api/contact', formData) call.
-  */
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitStatus('success');
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    setTimeout(() => setSubmitStatus(null), 5000);
+    alert("Message sent successfully! Our team will contact you shortly.");
+    setFormData({ name: '', email: '', phone: '', message: '' });
   };
 
   return (
     <div className="app-wrapper">
-
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        <Link to="/" className="navbar-brand">Samye Travels</Link>
+      <nav className={`top-navbar ${scrolled ? 'scrolled' : 'static'}`}>
+        <div className="navbar-brand">
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
+        </div>
         <div className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/about">About Us</Link>
-          <Link to="/#tours">Tour Packages</Link>
+          <Link to="/tours">Tour Packages</Link>
+          <Link to="/adventures">Adventure Sports</Link>
+          <Link to="/custom-tour">Build My Trip</Link>
           <Link to="/gallery">Gallery</Link>
           <Link to="/contact" className="active-link">Contact</Link>
         </div>
         <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
       </nav>
 
-      {/* Page hero */}
-      <div
-        className="page-hero"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1920&q=80')" }}
-      >
+      <div className="page-hero" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80')" }}>
         <div className="page-hero-overlay"></div>
         <div className="page-hero-content">
-          <span className="page-hero-eyebrow">We'd love to hear from you</span>
-          <h1 className="page-hero-title">Get in Touch</h1>
+          <span className="page-hero-eyebrow">Get In Touch</span>
+          <h1 className="page-hero-title">Contact Us</h1>
         </div>
       </div>
 
       <div className="content-container">
-
-        {/*
-          CHANGE: Layout is now a 1:2 grid (info panel | form).
-          Before: both sides were inline-styled divs with hardcoded padding/colors.
-          Now: .contact-layout grid with dedicated CSS classes.
-        */}
         <div className="contact-layout">
-
-          {/* LEFT: Dark info panel */}
+          
           <div className="contact-info-panel">
-            <p className="contact-info-heading">Samye Travels</p>
+            <h3 className="contact-info-heading">Samye Travels</h3>
             <p className="contact-info-subheading">Headquarters</p>
-
-            <div className="contact-info-block">
-              <span className="contact-info-label">Address</span>
-              <p className="contact-info-value">
-                Thamel Marg<br />
-                Kathmandu 44600<br />
-                Nepal
-              </p>
-            </div>
-
             <div className="contact-info-divider"></div>
-
-            <div className="contact-info-block">
-              <span className="contact-info-label">Email</span>
-              <p className="contact-info-value">namaste@samyetravels.com</p>
-            </div>
-
-            <div className="contact-info-block">
-              <span className="contact-info-label">Phone</span>
-              <p className="contact-info-value">+977 1-4412345</p>
-            </div>
-
-            <div className="contact-info-divider"></div>
-
-            <div className="contact-info-block">
-              <span className="contact-info-label">Office Hours</span>
-              <p className="contact-info-value">
-                Sunday – Friday<br />
-                9:00 AM – 6:00 PM NST
-              </p>
-            </div>
+            
+            <span className="contact-info-label">Address</span>
+            <p className="contact-info-value">Thamel, Kathmandu<br />Bagmati Province, Nepal</p>
+            
+            <span className="contact-info-label">Phone</span>
+            <p className="contact-info-value">+977 1-4412345<br />+977 9841234567</p>
+            
+            <span className="contact-info-label">Email</span>
+            <p className="contact-info-value">namaste@samyetravels.com</p>
           </div>
 
-          {/* RIGHT: Form card */}
           <div className="contact-form-card">
-            <h2 className="contact-form-title">Start Planning Your Journey</h2>
+            <h2 className="contact-form-title">Send a Message</h2>
 
-            {/* Inline success message — replaces window.alert */}
-            {submitStatus === 'success' && (
-              <div className="admin-alert success" style={{ marginBottom: '20px', marginLeft: 0, marginRight: 0 }}>
-                ✓ Message sent! We'll get back to you within 24 hours.
+            {location.state && (
+              <div style={{
+                backgroundColor: '#e8f5e9',
+                border: '1px solid #2ecc71',
+                borderRadius: '6px',
+                padding: '14px 18px',
+                marginBottom: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <span style={{ fontSize: '1.4rem' }}>📋</span>
+                <div>
+                  <strong style={{ color: '#27ae60', display: 'block', fontSize: '0.95rem', marginBottom: '2px' }}>
+                    Custom Trip Attached ✓
+                  </strong>
+                  <span style={{ color: '#2c3e50', fontSize: '0.85rem' }}>
+                    We've auto-filled your trip details in the message below!
+                  </span>
+                </div>
               </div>
             )}
 
             <form className="contact-form" onSubmit={handleSubmit}>
-
-              {/* Two-column row: Name + Email */}
               <div className="contact-form-row">
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Your Name"
-                  required
-                  className="contact-input"
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleChange} 
+                  placeholder="Your Name" 
+                  className="contact-input" 
+                  required 
                 />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Your Email"
-                  required
-                  className="contact-input"
+                <input 
+                  type="email" 
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleChange} 
+                  placeholder="Email Address" 
+                  className="contact-input" 
+                  required 
                 />
               </div>
-
-              <input
-                type="text"
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                placeholder="Subject — e.g. Enquiry about Nepal Trek"
-                required
-                className="contact-input"
+              <input 
+                type="tel" 
+                name="phone" 
+                value={formData.phone} 
+                onChange={handleChange} 
+                placeholder="Phone Number (Optional)" 
+                className="contact-input" 
               />
-
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                placeholder="Tell us about your dream journey — destinations, group size, dates, anything you have in mind..."
-                rows="5"
+              
+              <textarea 
+                name="message" 
+                value={formData.message} 
+                onChange={handleChange} 
+                placeholder="How can we help you?" 
+                className="contact-input contact-textarea" 
                 required
-                className="contact-input contact-textarea"
               ></textarea>
-
-              <button type="submit" className="contact-submit-btn">
-                Send Message →
-              </button>
-
+              
+              <button type="submit" className="contact-submit-btn">Send Message</button>
             </form>
           </div>
 
@@ -181,7 +167,9 @@ function Contact() {
           <div className="footer-links">
             <h4>Quick Links</h4>
             <Link to="/">Home</Link>
-            <Link to="/#tours">Tours</Link>
+            <Link to="/tours">Tours</Link>
+            <Link to="/adventures">Adventures</Link>
+            <Link to="/custom-tour">Build My Trip</Link>
             <Link to="/about">About</Link>
             <Link to="/contact">Contact</Link>
           </div>
@@ -193,10 +181,9 @@ function Contact() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2025 Samye Travels. All rights reserved.</p>
+          <p>© 2026 Samye Travels. All rights reserved.</p>
         </div>
       </footer>
-
     </div>
   );
 }

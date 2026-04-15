@@ -236,7 +236,6 @@ export default function CustomTour() {
   return (
     <div className="app-wrapper">
 
-      {/* Navbar */}
       <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="navbar-brand">
           <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
@@ -336,7 +335,6 @@ export default function CustomTour() {
             <p className="builder-panel-sub">{tripItems.length} package{tripItems.length !== 1 ? 's' : ''} selected</p>
           </div>
 
-          {/* Trip name */}
           <input
             type="text"
             className="builder-trip-name-input"
@@ -617,7 +615,16 @@ export default function CustomTour() {
                 )}
               </div>
 
-              <Link to="/contact" className="builder-enquire-cta">
+              <Link 
+                to="/contact" 
+                state={{ 
+                  tripItems: tripItems, 
+                  groupSize: groupSize, 
+                  travelDate: travelDate, 
+                  grandTotal: calc.grandTotal 
+                }} 
+                className="builder-enquire-cta"
+              >
                 Send This Trip to Our Team →
               </Link>
               <p className="builder-cta-note">We'll review your custom itinerary and get back within 24 hours with a confirmed quote.</p>

@@ -12,28 +12,67 @@ function AdventureDetails() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
+  const [showModal, setShowModal] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [bookingForm, setBookingForm] = useState({
+    customerName: '',
+    customerEmail: '',
+    travelDates: '',
+    groupSize: 1
+  });
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const galleryLength = adventure?.gallery?.length || 1;
+
   useEffect(() => {
     const handleKey = (e) => {
       if (lightboxIndex === null) return;
       if (e.key === 'Escape') setLightboxIndex(null);
-      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % (adventure?.gallery?.length || 1));
-      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + (adventure?.gallery?.length || 1)) % (adventure?.gallery?.length || 1));
+      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % galleryLength);
+      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + galleryLength) % galleryLength);
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [lightboxIndex, adventure]);
+  }, [lightboxIndex, galleryLength]);
 
   useEffect(() => {
     axios.get(`http://localhost:5000/api/adventures/${id}`)
       .then(res => { setAdventure(res.data); setLoading(false); })
       .catch(err => { console.error(err); setError("Could not load adventure details."); setLoading(false); });
   }, [id]);
+
+  const handleInputChange = (e) => {
+    setBookingForm({ ...bookingForm, [e.target.name]: e.target.value });
+  };
+
+  const handleBookingSubmit = (e) => {
+    e.preventDefault();
+    
+    const finalBookingData = {
+      ...bookingForm,
+      tourId: adventure?._id,
+      tourTitle: adventure?.title 
+    };
+
+    axios.post('http://localhost:5000/api/bookings', finalBookingData)
+      .then(() => {
+        setSubmitStatus('success');
+        setTimeout(() => {
+          setShowModal(false);
+          setSubmitStatus(null);
+          setBookingForm({ customerName: '', customerEmail: '', travelDates: '', groupSize: 1 });
+        }, 2500);
+      })
+      .catch((err) => {
+        console.error(err);
+        setSubmitStatus('error');
+      });
+  };
 
   if (loading) return <p className="status-msg">Loading adventure details...</p>;
   if (error)   return <p className="status-msg error">{error}</p>;
@@ -43,16 +82,62 @@ function AdventureDetails() {
     Easy: '#2ecc71', Moderate: '#f39c12', Intense: '#e67e22', Extreme: '#e63946'
   }[adventure.intensity] || '#1a5c9e';
 
-  const gallery = adventure.gallery || [];
-  const goNext = () => setActiveSlide(s => (s + 1) % gallery.length);
-  const goPrev = () => setActiveSlide(s => (s - 1 + gallery.length) % gallery.length);
+  const safeGallery = adventure.gallery || [];
+  const goNext = () => setActiveSlide(s => (s + 1) % safeGallery.length);
+  const goPrev = () => setActiveSlide(s => (s - 1 + safeGallery.length) % safeGallery.length);
 
   const heroImage = adventure.featuredImage || 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=1920&q=80';
 
   return (
     <div className="app-wrapper">
 
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`} style={{ position: 'fixed' }}>
+      {showModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 2000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            backgroundColor: '#f7f2e8', padding: '40px', borderRadius: '8px',
+            width: '90%', maxWidth: '500px', position: 'relative',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+          }}>
+            <button 
+              onClick={() => setShowModal(false)}
+              style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#666' }}
+            >
+              ✕
+            </button>
+
+            <h2 style={{ color: '#1a5c9e', marginTop: 0 }}>Book Your Adventure</h2>
+            <p style={{ color: '#555', marginBottom: '25px' }}>Requesting: <strong>{adventure.title}</strong></p>
+
+            {submitStatus === 'success' ? (
+              <div style={{ backgroundColor: '#2ecc71', color: 'white', padding: '20px', borderRadius: '4px', textAlign: 'center' }}>
+                <h3>Request Sent!</h3>
+                <p>Our adrenaline experts will contact you shortly to finalize details.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleBookingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <input type="text" name="customerName" value={bookingForm.customerName} onChange={handleInputChange} placeholder="Full Name" required style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <input type="email" name="customerEmail" value={bookingForm.customerEmail} onChange={handleInputChange} placeholder="Email Address" required style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <input type="text" name="travelDates" value={bookingForm.travelDates} onChange={handleInputChange} placeholder="Preferred Dates (e.g. Mid-October)" required style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <label style={{ color: '#555' }}>Number of Participants:</label>
+                  <input type="number" name="groupSize" value={bookingForm.groupSize} onChange={handleInputChange} min="1" required style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', width: '80px' }} />
+                </div>
+
+                {submitStatus === 'error' && <p style={{ color: '#e63946', margin: 0 }}>Failed to send request. Please try again.</p>}
+                
+                <button type="submit" className="booking-cta-btn" style={{ marginTop: '10px', fontSize: '1.1rem' }}>Submit Booking Request</button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`} style={{ position: 'fixed', zIndex: 1000 }}>
         <Link to="/adventures" className="details-back-link">← Back to Adventures</Link>
         <span className="navbar-brand" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           Samye Travels
@@ -124,33 +209,33 @@ function AdventureDetails() {
             </div>
           )}
 
-          {gallery.length > 0 && (
+          {safeGallery.length > 0 && (
             <div className="details-card" style={{ marginTop: '28px', overflow: 'hidden' }}>
               <h2 className="details-section-heading">Gallery</h2>
               <div className="carousel-wrapper">
                 <div className="carousel-slide" onClick={() => setLightboxIndex(activeSlide)}>
-                  <img src={gallery[activeSlide]} alt={`Gallery ${activeSlide + 1}`} className="carousel-image" />
+                  <img src={safeGallery[activeSlide]} alt={`Gallery ${activeSlide + 1}`} className="carousel-image" />
                   <div className="carousel-expand-hint">⛶ Click to enlarge</div>
                 </div>
-                {gallery.length > 1 && (
+                {safeGallery.length > 1 && (
                   <>
                     <button className="carousel-btn carousel-btn-prev" onClick={goPrev}>‹</button>
                     <button className="carousel-btn carousel-btn-next" onClick={goNext}>›</button>
                   </>
                 )}
-                {gallery.length > 1 && (
+                {safeGallery.length > 1 && (
                   <div className="carousel-footer">
                     <div className="carousel-dots">
-                      {gallery.map((_, idx) => (
+                      {safeGallery.map((_, idx) => (
                         <button key={idx} className={`carousel-dot ${idx === activeSlide ? 'active' : ''}`} onClick={() => setActiveSlide(idx)} />
                       ))}
                     </div>
-                    <span className="carousel-counter">{activeSlide + 1} / {gallery.length}</span>
+                    <span className="carousel-counter">{activeSlide + 1} / {safeGallery.length}</span>
                   </div>
                 )}
-                {gallery.length > 1 && (
+                {safeGallery.length > 1 && (
                   <div className="carousel-thumbnails">
-                    {gallery.map((img, idx) => (
+                    {safeGallery.map((img, idx) => (
                       <div key={idx} className={`carousel-thumb ${idx === activeSlide ? 'active' : ''}`} onClick={() => setActiveSlide(idx)}>
                         <img src={img} alt={`Thumb ${idx + 1}`} />
                       </div>
@@ -195,7 +280,9 @@ function AdventureDetails() {
               </div>
             </div>
             <div className="booking-divider"></div>
-            <button className="booking-cta-btn">Book This Adventure</button>
+            
+            <button className="booking-cta-btn" onClick={() => setShowModal(true)}>Book This Adventure</button>
+            
             <p className="booking-note">Free cancellation up to 48 hours before the activity</p>
           </div>
         </div>
@@ -203,15 +290,15 @@ function AdventureDetails() {
       </div>
 
       {lightboxIndex !== null && (
-        <div className="lightbox-overlay" onClick={() => setLightboxIndex(null)}>
+        <div className="lightbox-overlay" onClick={() => setLightboxIndex(null)} style={{ zIndex: 3000 }}>
           <div className="lightbox-content" onClick={e => e.stopPropagation()}>
             <button className="lightbox-close" onClick={() => setLightboxIndex(null)}>✕</button>
-            <img src={gallery[lightboxIndex]} alt={`Full view ${lightboxIndex + 1}`} className="lightbox-image" />
-            {gallery.length > 1 && (
+            <img src={safeGallery[lightboxIndex]} alt={`Full view ${lightboxIndex + 1}`} className="lightbox-image" />
+            {safeGallery.length > 1 && (
               <>
-                <button className="lightbox-nav lightbox-nav-prev" onClick={() => setLightboxIndex(i => (i - 1 + gallery.length) % gallery.length)}>‹</button>
-                <button className="lightbox-nav lightbox-nav-next" onClick={() => setLightboxIndex(i => (i + 1) % gallery.length)}>›</button>
-                <span className="lightbox-counter">{lightboxIndex + 1} / {gallery.length}</span>
+                <button className="lightbox-nav lightbox-nav-prev" onClick={() => setLightboxIndex(i => (i - 1 + safeGallery.length) % safeGallery.length)}>‹</button>
+                <button className="lightbox-nav lightbox-nav-next" onClick={() => setLightboxIndex(i => (i + 1) % safeGallery.length)}>›</button>
+                <span className="lightbox-counter">{lightboxIndex + 1} / {safeGallery.length}</span>
               </>
             )}
           </div>
