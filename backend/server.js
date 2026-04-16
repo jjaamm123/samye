@@ -5,6 +5,7 @@ require('dotenv').config();
 const Tour = require('./models/tour'); 
 const Booking = require('./models/booking'); 
 const Adventure = require('./models/adventure'); 
+const Inquiry = require('./models/inquiry');
 
 const app = express();
 
@@ -94,6 +95,15 @@ app.get('/api/adventures/:id', async (req, res) => {
     }
 });
 
+app.get('/api/inquiries', async (req, res) => {
+    try {
+        const inquiries = await Inquiry.find().sort({ createdAt: -1 });
+        res.status(200).json(inquiries);
+    } catch (error) {
+        console.error("Error fetching inquiries:", error);
+        res.status(500).json({ message: "Failed to fetch inquiries." });
+    }
+});
 
 app.put('/api/adventures/:id', async (req, res) => {
     try {
@@ -134,6 +144,16 @@ app.post('/api/bookings', async (req, res) => {
     } catch (error) {
         console.error("Error saving booking:", error);
         res.status(500).json({ message: "Failed to process booking request." });
+    }
+});
+
+app.post('/api/inquiries', async (req, res) => {
+    try {
+        const newInquiry = await Inquiry.create(req.body);
+        res.status(201).json({ message: "Inquiry received successfully!", inquiry: newInquiry });
+    } catch (error) {
+        console.error("Error saving inquiry:", error);
+        res.status(500).json({ message: "Failed to process inquiry." });
     }
 });
 

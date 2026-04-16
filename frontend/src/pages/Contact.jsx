@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import axios from 'axios'; 
 import '../App.css';
 
 function Contact() {
@@ -13,6 +14,8 @@ function Contact() {
     message: ''
   });
 
+  const [submitStatus, setSubmitStatus] = useState(null); 
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', handleScroll);
@@ -22,10 +25,8 @@ function Contact() {
   useEffect(() => {
     if (location.state) {
       const { tripItems, groupSize, travelDate, grandTotal } = location.state;
-      
       const itemsList = tripItems.map(item => `- ${item.title}`).join('\n');
       const dateStr = travelDate ? travelDate : 'Not specified';
-
       const autoMessage = `Hi Samye Travels team! I would like to enquire about a custom trip.\n\nGroup Size: ${groupSize}\nExpected Start Date: ${dateStr}\n\nSelected Packages:\n${itemsList}\n\nEstimated Grand Total: $${grandTotal.toLocaleString()}.\n\nPlease let me know the next steps!`;
 
       setFormData(prev => ({ ...prev, message: autoMessage }));
@@ -38,8 +39,20 @@ function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Message sent successfully! Our team will contact you shortly.");
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    setSubmitStatus('submitting');
+
+    axios.post('http://localhost:5000/api/inquiries', formData)
+      .then((response) => {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', phone: '', message: '' }); 
+        
+        setTimeout(() => setSubmitStatus(null), 5000); 
+      })
+      .catch((err) => {
+        console.error(err);
+        setSubmitStatus('error');
+        setTimeout(() => setSubmitStatus(null), 5000);
+      });
   };
 
   return (
@@ -89,69 +102,40 @@ function Contact() {
           <div className="contact-form-card">
             <h2 className="contact-form-title">Send a Message</h2>
 
-            {location.state && (
-              <div style={{
-                backgroundColor: '#e8f5e9',
-                border: '1px solid #2ecc71',
-                borderRadius: '6px',
-                padding: '14px 18px',
-                marginBottom: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}>
+            {location.state && submitStatus !== 'success' && (
+              <div style={{ backgroundColor: '#e8f5e9', border: '1px solid #2ecc71', borderRadius: '6px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '1.4rem' }}>📋</span>
                 <div>
-                  <strong style={{ color: '#27ae60', display: 'block', fontSize: '0.95rem', marginBottom: '2px' }}>
-                    Custom Trip Attached ✓
-                  </strong>
-                  <span style={{ color: '#2c3e50', fontSize: '0.85rem' }}>
-                    We've auto-filled your trip details in the message below!
-                  </span>
+                  <strong style={{ color: '#27ae60', display: 'block', fontSize: '0.95rem', marginBottom: '2px' }}>Custom Trip Attached ✓</strong>
+                  <span style={{ color: '#2c3e50', fontSize: '0.85rem' }}>We've auto-filled your trip details in the message below!</span>
                 </div>
+              </div>
+            )}
+
+            {submitStatus === 'success' && (
+              <div style={{ backgroundColor: '#e8f5e9', border: '1px solid #2ecc71', color: '#27ae60', borderRadius: '6px', padding: '16px', marginBottom: '24px', textAlign: 'center', fontWeight: 'bold' }}>
+                Message sent successfully! Our team will contact you shortly.
+              </div>
+            )}
+
+            {submitStatus === 'error' && (
+              <div style={{ backgroundColor: '#fde8e8', border: '1px solid #e63946', color: '#c0392b', borderRadius: '6px', padding: '16px', marginBottom: '24px', textAlign: 'center', fontWeight: 'bold' }}>
+                Failed to send message. Please try again or email us directly.
               </div>
             )}
 
             <form className="contact-form" onSubmit={handleSubmit}>
               <div className="contact-form-row">
-                <input 
-                  type="text" 
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange} 
-                  placeholder="Your Name" 
-                  className="contact-input" 
-                  required 
-                />
-                <input 
-                  type="email" 
-                  name="email" 
-                  value={formData.email} 
-                  onChange={handleChange} 
-                  placeholder="Email Address" 
-                  className="contact-input" 
-                  required 
-                />
+                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Your Name" className="contact-input" required disabled={submitStatus === 'submitting'} />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="contact-input" required disabled={submitStatus === 'submitting'} />
               </div>
-              <input 
-                type="tel" 
-                name="phone" 
-                value={formData.phone} 
-                onChange={handleChange} 
-                placeholder="Phone Number (Optional)" 
-                className="contact-input" 
-              />
+              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number (Optional)" className="contact-input" disabled={submitStatus === 'submitting'} />
               
-              <textarea 
-                name="message" 
-                value={formData.message} 
-                onChange={handleChange} 
-                placeholder="How can we help you?" 
-                className="contact-input contact-textarea" 
-                required
-              ></textarea>
+              <textarea name="message" value={formData.message} onChange={handleChange} placeholder="How can we help you?" className="contact-input contact-textarea" required disabled={submitStatus === 'submitting'}></textarea>
               
-              <button type="submit" className="contact-submit-btn">Send Message</button>
+              <button type="submit" className="contact-submit-btn" disabled={submitStatus === 'submitting'}>
+                {submitStatus === 'submitting' ? 'Sending...' : 'Send Message'}
+              </button>
             </form>
           </div>
 

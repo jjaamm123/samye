@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
@@ -6,7 +6,7 @@ import '../App.css';
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('tours'); 
   const [submitStatus, setSubmitStatus] = useState(null); 
-
+  const [inquiries, setInquiries] = useState([]);
   const [tours, setTours] = useState([]);
   const [isEditingTour, setIsEditingTour] = useState(false);
   const [editingTourId, setEditingTourId] = useState(null);
@@ -14,7 +14,7 @@ function AdminDashboard() {
     title: '', destination: 'Nepal', duration: '', price: '', difficulty: 'Moderate',
     description: '', featuredImage: '/images/cards/heritage.jpg', itinerary: [], gallery: [] 
   });
-
+  const [expandedInquiryId, setExpandedInquiryId] = useState(null);
   const [adventures, setAdventures] = useState([]);
   const [isEditingAdv, setIsEditingAdv] = useState(false);
   const [editingAdvId, setEditingAdvId] = useState(null);
@@ -26,11 +26,11 @@ function AdminDashboard() {
   useEffect(() => { 
     fetchTours(); 
     fetchAdventures();
+    axios.get('http://localhost:5000/api/inquiries').then(res => setInquiries(res.data)).catch(console.error);
   }, []);
 
   const fetchTours = () => axios.get('http://localhost:5000/api/tours').then(res => setTours(res.data)).catch(console.error);
   const fetchAdventures = () => axios.get('http://localhost:5000/api/adventures').then(res => setAdventures(res.data)).catch(console.error);
-
 
   const handleTourChange = (e) => setTourFormData({ ...tourFormData, [e.target.name]: e.target.value });
   
@@ -74,7 +74,6 @@ function AdminDashboard() {
       axios.delete(`http://localhost:5000/api/tours/${id}`).then(() => fetchTours()).catch(console.error);
     }
   };
-
 
   const handleAdvChange = (e) => setAdvFormData({ ...advFormData, [e.target.name]: e.target.value });
 
@@ -142,12 +141,19 @@ function AdminDashboard() {
             🏄 Adventure Sports
           </span>
           <div style={{ margin: '20px 0', borderBottom: '1px solid #334' }}></div>
+          <a 
+            className={`admin-nav-item ${activeTab === 'inquiries' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('inquiries')}
+            style={{ cursor: 'pointer' }}
+          >
+            📥 Inquiries ({inquiries.length})
+          </a>
           <Link to="/" className="admin-nav-item">🌐 View Live Site</Link>
         </nav>
         <div className="admin-sidebar-stats">
           <div className="admin-stat">
-            <span className="admin-stat-number">{activeTab === 'tours' ? tours.length : adventures.length}</span>
-            <span className="admin-stat-label">Active {activeTab === 'tours' ? 'Tours' : 'Adventures'}</span>
+            <span className="admin-stat-number">{activeTab === 'tours' ? tours.length : activeTab === 'adventures' ? adventures.length : inquiries.length}</span>
+            <span className="admin-stat-label">Total Records</span>
           </div>
         </div>
       </aside>
@@ -155,8 +161,12 @@ function AdminDashboard() {
       <main className="admin-main">
         <div className="admin-page-header">
           <div>
-            <h1 className="admin-page-title">{activeTab === 'tours' ? 'Tour Management' : 'Adventure Management'}</h1>
-            <p className="admin-page-subtitle">Add, review, and modify {activeTab === 'tours' ? 'tour packages' : 'adventure sports'}</p>
+            <h1 className="admin-page-title">
+              {activeTab === 'tours' ? 'Tour Management' : activeTab === 'adventures' ? 'Adventure Management' : 'Customer Inquiries'}
+            </h1>
+            <p className="admin-page-subtitle">
+              {activeTab === 'tours' ? 'Add, review, and modify tour packages' : activeTab === 'adventures' ? 'Add, review, and modify adventure sports' : 'Review and manage custom trip requests'}
+            </p>
           </div>
         </div>
 
@@ -235,6 +245,72 @@ function AdminDashboard() {
           </>
         )}
 
+        {activeTab === 'inquiries' && (
+          <div className="admin-card">
+            <div className="admin-card-header">
+              <h3 className="admin-card-title">Customer Inquiries</h3>
+              <span className="admin-card-count">{inquiries.length} Total</span>
+            </div>
+            
+            <div className="admin-table-wrapper">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Message Snippet</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inquiries.length === 0 ? (
+                    <tr><td colSpan="5" className="admin-empty-state">No inquiries yet.</td></tr>
+                  ) : (
+                    inquiries.map(inq => (
+                      <Fragment key={inq._id}>
+                        <tr>
+                          <td>{new Date(inq.createdAt).toLocaleDateString()}</td>
+                          <td className="admin-td-title">{inq.name}</td>
+                          <td>{inq.email}</td>
+                          <td style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {inq.message}
+                          </td>
+                          <td>
+                            <button 
+                              className="admin-action-view" 
+                              onClick={() => setExpandedInquiryId(expandedInquiryId === inq._id ? null : inq._id)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                            >
+                              {expandedInquiryId === inq._id ? 'Close ✕' : 'View Full ↓'}
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {expandedInquiryId === inq._id && (
+                          <tr style={{ backgroundColor: '#faf8f4' }}>
+                            <td colSpan="5" style={{ padding: '20px 40px', borderTop: 'none' }}>
+                              <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '6px', border: '1px solid #e8dfc8', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+                                <div style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f0e8d8', display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#666' }}>
+                                  <span><strong>Phone:</strong> {inq.phone || 'N/A'}</span>
+                                  <span><strong>Received:</strong> {new Date(inq.createdAt).toLocaleString()}</span>
+                                </div>
+                                <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.7', color: '#050b16', fontSize: '0.95rem' }}>
+                                  {inq.message}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'adventures' && (
           <>
             <div className="admin-card">
@@ -274,7 +350,6 @@ function AdminDashboard() {
                 <div className="admin-form-group admin-form-full"><label className="admin-label">Short Description</label><textarea name="description" value={advFormData.description} onChange={handleAdvChange} required rows="3" className="admin-input admin-textarea"></textarea></div>
                 <div className="admin-form-group admin-form-full"><label className="admin-label">Safety Notes</label><textarea name="safetyNotes" value={advFormData.safetyNotes} onChange={handleAdvChange} rows="2" placeholder="e.g. Lifejackets provided, guide CPR certified..." className="admin-input admin-textarea"></textarea></div>
 
-                {/* Adventure Included List */}
                 <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
                   <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>What's Included</label>
                   {advFormData.included.map((item, index) => (
@@ -287,7 +362,6 @@ function AdminDashboard() {
                   <button type="button" onClick={() => setAdvFormData({ ...advFormData, included: [...advFormData.included, ''] })} style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}>+ Add Included Item</button>
                 </div>
 
-                {/* Adventure Itinerary (Phases/Steps) */}
                 <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
                   <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Schedule / Phases</label>
                   {advFormData.itinerary.map((dayItem, index) => (
@@ -300,7 +374,6 @@ function AdminDashboard() {
                   <button type="button" onClick={addAdvItineraryDay} style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}>+ Add Step</button>
                 </div>
 
-                {/* Adventure Gallery */}
                 <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
                   <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Gallery Photos</label>
                   {advFormData.gallery.map((imgUrl, index) => (
