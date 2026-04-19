@@ -2,10 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const Tour = require('./models/tour'); 
+
+// Ensure your files in the models folder are named exactly this:
+const Tour = require('./models/backend_tour'); 
 const Booking = require('./models/booking'); 
-const Adventure = require('./models/adventure'); 
-const Inquiry = require('./models/inquiry');
+const Adventure = require('./models/backend_adventure'); 
+const Inquiry = require('./models/backend_inquiry');
 
 const app = express();
 
@@ -16,11 +18,11 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Successfully connected to MongoDB"))
     .catch((error) => console.error("MongoDB connection failed:", error.message));
 
-
 app.get('/api/test', (req, res) => {
     res.json({ message: "running" });
 });
 
+// ─── TOURS ─────────────────────────────────────────────────────────────
 app.get('/api/tours', async (req, res) => {
     try {
         const allTours = await Tour.find(); 
@@ -74,6 +76,7 @@ app.delete('/api/tours/:id', async (req, res) => {
     }
 });
 
+// ─── ADVENTURES ────────────────────────────────────────────────────────
 app.get('/api/adventures', async (req, res) => {
     try {
         const adventures = await Adventure.find();
@@ -92,16 +95,6 @@ app.get('/api/adventures/:id', async (req, res) => {
     } catch (error) {
         console.error("Error fetching single adventure:", error);
         res.status(500).json({ message: "Server Error: Could not fetch the adventure." });
-    }
-});
-
-app.get('/api/inquiries', async (req, res) => {
-    try {
-        const inquiries = await Inquiry.find().sort({ createdAt: -1 });
-        res.status(200).json(inquiries);
-    } catch (error) {
-        console.error("Error fetching inquiries:", error);
-        res.status(500).json({ message: "Failed to fetch inquiries." });
     }
 });
 
@@ -137,26 +130,44 @@ app.post('/api/adventures', async (req, res) => {
     }
 });
 
-app.post('/api/bookings', async (req, res) => {
+
+// ─── INQUIRIES ─────────────────────────────────────────────────────────
+// GET all inquiries
+app.get('/api/inquiries', async (req, res) => {
     try {
-        const newBooking = await Booking.create(req.body);
-        res.status(201).json({ message: "Booking request received successfully!", booking: newBooking });
+        const inquiries = await Inquiry.find().sort({ createdAt: -1 });
+        res.status(200).json(inquiries);
     } catch (error) {
-        console.error("Error saving booking:", error);
-        res.status(500).json({ message: "Failed to process booking request." });
+        console.error("Error fetching inquiries:", error);
+        res.status(500).json({ message: "Failed to fetch inquiries." });
     }
 });
 
+// POST new inquiry (from Contact form + detail page forms)
 app.post('/api/inquiries', async (req, res) => {
     try {
-        const newInquiry = await Inquiry.create(req.body);
-        res.status(201).json({ message: "Inquiry received successfully!", inquiry: newInquiry });
+        const inq = new Inquiry(req.body);
+        await inq.save();
+        res.status(201).json(inq);
     } catch (error) {
         console.error("Error saving inquiry:", error);
         res.status(500).json({ message: "Failed to process inquiry." });
     }
 });
 
+// PATCH status update (admin dashboard)
+app.patch('/api/inquiries/:id', async (req, res) => {
+    try {
+        const inq = await Inquiry.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!inq) return res.status(404).json({ message: "Inquiry not found." });
+        res.json(inq);
+    } catch (error) {
+        console.error("Error updating inquiry:", error);
+        res.status(500).json({ message: "Failed to update inquiry status." });
+    }
+});
+
+// ─── SERVER INIT ───────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);

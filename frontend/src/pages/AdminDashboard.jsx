@@ -1,239 +1,354 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
+const MONTHS = ['January','February','March','April','May','June',
+  'July','August','September','October','November','December','Flexible'];
+
+const EMPTY_TOUR = {
+  title: '', destination: 'Nepal', duration: '', price: '',
+  difficulty: 'Moderate', description: '', featuredImage: '/images/safari.jpg',
+
+  includedRaw: '',
+  excludedRaw: '',
+  itinerary: []
+};
+
+const EMPTY_DAY = { day: '', title: '', description: '' };
+
 function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('tours'); 
-  const [submitStatus, setSubmitStatus] = useState(null); 
-  const [inquiries, setInquiries] = useState([]);
+  const [tab, setTab] = useState('tours');
+
   const [tours, setTours] = useState([]);
-  const [isEditingTour, setIsEditingTour] = useState(false);
-  const [editingTourId, setEditingTourId] = useState(null);
-  const [tourFormData, setTourFormData] = useState({
-    title: '', destination: 'Nepal', duration: '', price: '', difficulty: 'Moderate',
-    description: '', featuredImage: '/images/cards/heritage.jpg', itinerary: [], gallery: [] 
-  });
-  const [expandedInquiryId, setExpandedInquiryId] = useState(null);
-  const [adventures, setAdventures] = useState([]);
-  const [isEditingAdv, setIsEditingAdv] = useState(false);
-  const [editingAdvId, setEditingAdvId] = useState(null);
-  const [advFormData, setAdvFormData] = useState({
-    title: '', sportType: 'Rafting', location: '', duration: '', price: '', intensity: 'Moderate', minAge: '16+',
-    description: '', featuredImage: '', safetyNotes: '', included: [], gallery: [], itinerary: [] 
-  });
+  const [formData, setFormData] = useState(EMPTY_TOUR);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
-  useEffect(() => { 
-    fetchTours(); 
-    fetchAdventures();
-    axios.get('http://localhost:5000/api/inquiries').then(res => setInquiries(res.data)).catch(console.error);
-  }, []);
+  const [inquiries, setInquiries] = useState([]);
+  const [loadingInquiries, setLoadingInquiries] = useState(false);
+  const [expandedInquiry, setExpandedInquiry] = useState(null);
 
-  const fetchTours = () => axios.get('http://localhost:5000/api/tours').then(res => setTours(res.data)).catch(console.error);
-  const fetchAdventures = () => axios.get('http://localhost:5000/api/adventures').then(res => setAdventures(res.data)).catch(console.error);
+  useEffect(() => { fetchTours(); }, []);
 
-  const handleTourChange = (e) => setTourFormData({ ...tourFormData, [e.target.name]: e.target.value });
-  
-  const handleTourItineraryChange = (index, value) => {
-    const newItinerary = [...tourFormData.itinerary];
-    newItinerary[index].activity = value;
-    setTourFormData({ ...tourFormData, itinerary: newItinerary });
-  };
-  const addTourItineraryDay = () => setTourFormData({ ...tourFormData, itinerary: [...tourFormData.itinerary, { day: tourFormData.itinerary.length + 1, activity: '' }] });
-  const removeTourItineraryDay = (indexToRemove) => {
-    const filtered = tourFormData.itinerary.filter((_, index) => index !== indexToRemove);
-    const renumbered = filtered.map((item, index) => ({ ...item, day: index + 1 }));
-    setTourFormData({ ...tourFormData, itinerary: renumbered });
+  useEffect(() => {
+    if (tab === 'inquiries' && inquiries.length === 0) fetchInquiries();
+  }, [tab]);
+
+  const fetchTours = () =>
+    axios.get('http://localhost:5000/api/tours')
+      .then(r => setTours(r.data))
+      .catch(console.error);
+
+  const fetchInquiries = () => {
+    setLoadingInquiries(true);
+    axios.get('http://localhost:5000/api/inquiries')
+      .then(r => setInquiries(r.data))
+      .catch(console.error)
+      .finally(() => setLoadingInquiries(false));
   };
 
-  const handleEditTourClick = (tour) => {
-    setIsEditingTour(true);
-    setEditingTourId(tour._id);
-    setTourFormData({
-      title: tour.title, destination: tour.destination, duration: tour.duration, price: tour.price, difficulty: tour.difficulty,
-      description: tour.description, featuredImage: tour.featuredImage || '', itinerary: tour.itinerary || [], gallery: tour.gallery || []
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const handleChange = e =>
+    setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleCancelTourEdit = () => {
-    setIsEditingTour(false); setEditingTourId(null);
-    setTourFormData({ title: '', destination: 'Nepal', duration: '', price: '', difficulty: 'Moderate', description: '', featuredImage: '/images/cards/heritage.jpg', itinerary: [], gallery: [] });
-  };
+  const addDay = () =>
+    setFormData(f => ({
+      ...f,
+      itinerary: [...f.itinerary, { ...EMPTY_DAY, day: f.itinerary.length + 1 }]
+    }));
 
-  const handleTourSubmit = (e) => {
+  const updateDay = (index, field, value) =>
+    setFormData(f => ({
+      ...f,
+      itinerary: f.itinerary.map((d, i) => i === index ? { ...d, [field]: value } : d)
+    }));
+
+  const removeDay = (index) =>
+    setFormData(f => ({
+      ...f,
+      itinerary: f.itinerary
+        .filter((_, i) => i !== index)
+        .map((d, i) => ({ ...d, day: i + 1 })) 
+    }));
+
+  const handleSubmit = e => {
     e.preventDefault();
-    const request = isEditingTour ? axios.put(`http://localhost:5000/api/tours/${editingTourId}`, tourFormData) : axios.post('http://localhost:5000/api/tours', tourFormData);
-    request.then(() => {
-      setSubmitStatus('success'); fetchTours(); handleCancelTourEdit(); setTimeout(() => setSubmitStatus(null), 4000); 
-    }).catch(() => setSubmitStatus('error'));
+
+    const payload = {
+      ...formData,
+      included: formData.includedRaw
+        .split(',').map(s => s.trim()).filter(Boolean),
+      excluded: formData.excludedRaw
+        .split(',').map(s => s.trim()).filter(Boolean),
+    };
+    delete payload.includedRaw;
+    delete payload.excludedRaw;
+
+    axios.post('http://localhost:5000/api/tours', payload)
+      .then(() => {
+        setSubmitStatus('success');
+        fetchTours();
+        setFormData(EMPTY_TOUR);
+        setTimeout(() => setSubmitStatus(null), 4000);
+      })
+      .catch(err => { console.error(err); setSubmitStatus('error'); });
   };
 
-  const handleTourDelete = (id) => {
-    if (window.confirm("Delete this tour? This cannot be undone.")) {
-      axios.delete(`http://localhost:5000/api/tours/${id}`).then(() => fetchTours()).catch(console.error);
-    }
+  const handleDelete = id => {
+    if (!window.confirm('Delete this tour? Cannot be undone.')) return;
+    axios.delete(`http://localhost:5000/api/tours/${id}`)
+      .then(fetchTours).catch(console.error);
   };
 
-  const handleAdvChange = (e) => setAdvFormData({ ...advFormData, [e.target.name]: e.target.value });
-
-  const handleAdvItineraryChange = (index, value) => {
-    const newItinerary = [...advFormData.itinerary];
-    newItinerary[index].activity = value;
-    setAdvFormData({ ...advFormData, itinerary: newItinerary });
-  };
-  const addAdvItineraryDay = () => setAdvFormData({ ...advFormData, itinerary: [...advFormData.itinerary, { day: advFormData.itinerary.length + 1, activity: '' }] });
-  const removeAdvItineraryDay = (indexToRemove) => {
-    const filtered = advFormData.itinerary.filter((_, index) => index !== indexToRemove);
-    const renumbered = filtered.map((item, index) => ({ ...item, day: index + 1 }));
-    setAdvFormData({ ...advFormData, itinerary: renumbered });
-  };
-
-  const handleEditAdvClick = (adv) => {
-    setIsEditingAdv(true);
-    setEditingAdvId(adv._id);
-    setAdvFormData({
-      title: adv.title, sportType: adv.sportType, location: adv.location, duration: adv.duration, price: adv.price, intensity: adv.intensity, minAge: adv.minAge || '16+',
-      description: adv.description, featuredImage: adv.featuredImage || '', safetyNotes: adv.safetyNotes || '', included: adv.included || [], gallery: adv.gallery || [], itinerary: adv.itinerary || []
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleCancelAdvEdit = () => {
-    setIsEditingAdv(false); setEditingAdvId(null);
-    setAdvFormData({ title: '', sportType: 'Rafting', location: '', duration: '', price: '', intensity: 'Moderate', minAge: '16+', description: '', featuredImage: '', safetyNotes: '', included: [], gallery: [], itinerary: [] });
-  };
-
-  const handleAdvSubmit = (e) => {
-    e.preventDefault();
-    const request = isEditingAdv ? axios.put(`http://localhost:5000/api/adventures/${editingAdvId}`, advFormData) : axios.post('http://localhost:5000/api/adventures', advFormData);
-    request.then(() => {
-      setSubmitStatus('success'); fetchAdventures(); handleCancelAdvEdit(); setTimeout(() => setSubmitStatus(null), 4000); 
-    }).catch(() => setSubmitStatus('error'));
-  };
-
-  const handleAdvDelete = (id) => {
-    if (window.confirm("Delete this adventure? This cannot be undone.")) {
-      axios.delete(`http://localhost:5000/api/adventures/${id}`).then(() => fetchAdventures()).catch(console.error);
-    }
-  };
+  const updateInquiryStatus = (id, status) =>
+    axios.patch(`http://localhost:5000/api/inquiries/${id}`, { status })
+      .then(() => fetchInquiries()).catch(console.error);
 
   return (
     <div className="admin-layout">
+
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <span className="admin-sidebar-logo">Samye</span>
           <span className="admin-sidebar-sub">Admin Panel</span>
         </div>
+
         <nav className="admin-sidebar-nav">
-          <span 
-            className={`admin-nav-item ${activeTab === 'tours' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('tours')} 
-            style={{ cursor: 'pointer' }}
-          >
-            📦 Tour Packages
+          <span
+            className={`admin-nav-item ${tab === 'tours' ? 'active' : ''}`}
+            onClick={() => setTab('tours')}
+          >📦 Tour Packages</span>
+          <span
+            className={`admin-nav-item ${tab === 'inquiries' ? 'active' : ''}`}
+            onClick={() => setTab('inquiries')}
+          >📬 Inquiries
+            {inquiries.filter(i => i.status === 'new').length > 0 && (
+              <span className="admin-badge">
+                {inquiries.filter(i => i.status === 'new').length}
+              </span>
+            )}
           </span>
-          <span 
-            className={`admin-nav-item ${activeTab === 'adventures' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('adventures')} 
-            style={{ cursor: 'pointer' }}
-          >
-            🏄 Adventure Sports
-          </span>
-          <div style={{ margin: '20px 0', borderBottom: '1px solid #334' }}></div>
-          <a 
-            className={`admin-nav-item ${activeTab === 'inquiries' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('inquiries')}
-            style={{ cursor: 'pointer' }}
-          >
-            📥 Inquiries ({inquiries.length})
-          </a>
           <Link to="/" className="admin-nav-item">🌐 View Live Site</Link>
         </nav>
+
         <div className="admin-sidebar-stats">
           <div className="admin-stat">
-            <span className="admin-stat-number">{activeTab === 'tours' ? tours.length : activeTab === 'adventures' ? adventures.length : inquiries.length}</span>
-            <span className="admin-stat-label">Total Records</span>
+            <span className="admin-stat-number">{tours.length}</span>
+            <span className="admin-stat-label">Active Tours</span>
+          </div>
+          <div className="admin-stat">
+            <span className="admin-stat-number">
+              {inquiries.filter(i => i.status === 'new').length}
+            </span>
+            <span className="admin-stat-label">New Inquiries</span>
           </div>
         </div>
       </aside>
 
       <main className="admin-main">
-        <div className="admin-page-header">
-          <div>
-            <h1 className="admin-page-title">
-              {activeTab === 'tours' ? 'Tour Management' : activeTab === 'adventures' ? 'Adventure Management' : 'Customer Inquiries'}
-            </h1>
-            <p className="admin-page-subtitle">
-              {activeTab === 'tours' ? 'Add, review, and modify tour packages' : activeTab === 'adventures' ? 'Add, review, and modify adventure sports' : 'Review and manage custom trip requests'}
-            </p>
-          </div>
-        </div>
 
-        {activeTab === 'tours' && (
+        {tab === 'tours' && (
           <>
+            <div className="admin-page-header">
+              <div>
+                <h1 className="admin-page-title">Tour Management</h1>
+                <p className="admin-page-subtitle">Add, review, and remove tour packages</p>
+              </div>
+            </div>
+
             <div className="admin-card">
               <div className="admin-card-header">
-                <h2 className="admin-card-title">{isEditingTour ? "Edit Tour Package" : "Add New Tour Package"}</h2>
+                <h2 className="admin-card-title">Add New Package</h2>
               </div>
 
-              {submitStatus === 'success' && <div className="admin-alert success">✓ Tour {isEditingTour ? 'updated' : 'published'} successfully!</div>}
-              {submitStatus === 'error' && <div className="admin-alert error">✗ Failed to save. Check the console.</div>}
+              {submitStatus === 'success' && (
+                <div className="admin-alert success">✓ Tour published successfully!</div>
+              )}
+              {submitStatus === 'error' && (
+                <div className="admin-alert error">✗ Failed to publish. Check the console.</div>
+              )}
 
-              <form onSubmit={handleTourSubmit} className="admin-form">
-                <div className="admin-form-group"><label className="admin-label">Tour Title</label><input type="text" name="title" value={tourFormData.title} onChange={handleTourChange} required className="admin-input" /></div>
-                <div className="admin-form-group"><label className="admin-label">Destination</label><select name="destination" value={tourFormData.destination} onChange={handleTourChange} className="admin-input"><option value="Nepal">Nepal</option><option value="Tibet">Tibet</option><option value="India">India</option></select></div>
-                <div className="admin-form-group"><label className="admin-label">Duration (Days)</label><input type="number" name="duration" value={tourFormData.duration} onChange={handleTourChange} required className="admin-input" /></div>
-                <div className="admin-form-group"><label className="admin-label">Price (USD)</label><input type="number" name="price" value={tourFormData.price} onChange={handleTourChange} required className="admin-input" /></div>
-                <div className="admin-form-group"><label className="admin-label">Difficulty</label><select name="difficulty" value={tourFormData.difficulty} onChange={handleTourChange} className="admin-input"><option value="Easy">Easy</option><option value="Moderate">Moderate</option><option value="Hard">Hard</option><option value="Challenging">Challenging</option></select></div>
-                <div className="admin-form-group"><label className="admin-label">Featured Image Path</label><input type="text" name="featuredImage" value={tourFormData.featuredImage} onChange={handleTourChange} required className="admin-input" /></div>
-                <div className="admin-form-group admin-form-full"><label className="admin-label">Short Description</label><textarea name="description" value={tourFormData.description} onChange={handleTourChange} required rows="3" className="admin-input admin-textarea"></textarea></div>
+              <form onSubmit={handleSubmit} className="admin-form">
 
-                <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
-                  <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Day-by-Day Itinerary</label>
-                  {tourFormData.itinerary.map((dayItem, index) => (
-                    <div key={index} style={{ display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'flex-start' }}>
-                      <div style={{ backgroundColor: '#f7f2e8', padding: '12px 15px', borderRadius: '4px', fontWeight: 'bold', color: '#1a5c9e', whiteSpace: 'nowrap', border: '1px solid #d4c4a4' }}>Day {dayItem.day}</div>
-                      <input type="text" value={dayItem.activity} onChange={(e) => handleTourItineraryChange(index, e.target.value)} required className="admin-input" style={{ flex: 1 }} />
-                      <button type="button" onClick={() => removeTourItineraryDay(index)} style={{ backgroundColor: '#e63946', color: 'white', border: 'none', padding: '12px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
+                <div className="admin-form-group">
+                  <label className="admin-label">Tour Title</label>
+                  <input name="title" value={formData.title} onChange={handleChange}
+                    required placeholder="e.g. Everest Base Camp Trek" className="admin-input" />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Destination</label>
+                  <select name="destination" value={formData.destination}
+                    onChange={handleChange} className="admin-input">
+                    <option>Nepal</option>
+                    <option>Tibet</option>
+                    <option>India</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Duration (Days)</label>
+                  <input type="number" name="duration" value={formData.duration}
+                    onChange={handleChange} required placeholder="e.g. 14" className="admin-input" />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Price (USD)</label>
+                  <input type="number" name="price" value={formData.price}
+                    onChange={handleChange} required placeholder="e.g. 1800" className="admin-input" />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Difficulty</label>
+                  <select name="difficulty" value={formData.difficulty}
+                    onChange={handleChange} className="admin-input">
+                    <option>Easy</option>
+                    <option>Moderate</option>
+                    <option>Hard</option>
+                    <option>Challenging</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">Short Description</label>
+                  <textarea name="description" value={formData.description}
+                    onChange={handleChange} required rows="3"
+                    placeholder="Describe the tour experience…"
+                    className="admin-input admin-textarea"></textarea>
+                </div>
+
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">
+                    ✅ What's Included
+                    <span className="admin-label-hint">— comma-separated</span>
+                  </label>
+                  <input
+                    name="includedRaw"
+                    value={formData.includedRaw}
+                    onChange={handleChange}
+                    placeholder="Airport transfers, All meals, Licensed guide, Permits, Accommodation"
+                    className="admin-input"
+                  />
+                  {formData.includedRaw && (
+                    <div className="admin-tag-preview">
+                      {formData.includedRaw.split(',').map(s => s.trim()).filter(Boolean).map((t, i) => (
+                        <span key={i} className="admin-tag included">{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">
+                    ❌ What's Excluded
+                    <span className="admin-label-hint">— comma-separated</span>
+                  </label>
+                  <input
+                    name="excludedRaw"
+                    value={formData.excludedRaw}
+                    onChange={handleChange}
+                    placeholder="International flights, Travel insurance, Personal expenses, Tips"
+                    className="admin-input"
+                  />
+                  {formData.excludedRaw && (
+                    <div className="admin-tag-preview">
+                      {formData.excludedRaw.split(',').map(s => s.trim()).filter(Boolean).map((t, i) => (
+                        <span key={i} className="admin-tag excluded">{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">
+                    🗓️ Itinerary
+                    <span className="admin-label-hint">— add one row per day</span>
+                  </label>
+
+                  {formData.itinerary.length === 0 && (
+                    <p className="admin-itinerary-empty">
+                      No days added yet. Click "Add Day" to start building the itinerary.
+                    </p>
+                  )}
+
+                  {formData.itinerary.map((day, index) => (
+                    <div key={index} className="admin-itinerary-row">
+                      <div className="admin-itinerary-day-badge">Day {day.day}</div>
+
+                      <input
+                        className="admin-input admin-itinerary-title"
+                        placeholder="Day title, e.g. 'Fly to Kathmandu, hotel check-in'"
+                        value={day.title}
+                        onChange={e => updateDay(index, 'title', e.target.value)}
+                        required
+                      />
+
+                      <textarea
+                        className="admin-input admin-textarea admin-itinerary-desc"
+                        placeholder="Optional detail — what happens this day, highlights, accommodation…"
+                        value={day.description}
+                        onChange={e => updateDay(index, 'description', e.target.value)}
+                        rows="2"
+                      />
+
+                      <button
+                        type="button"
+                        className="admin-itinerary-remove"
+                        onClick={() => removeDay(index)}
+                        title="Remove this day"
+                      >✕</button>
                     </div>
                   ))}
-                  <button type="button" onClick={addTourItineraryDay} style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}>+ Add Day</button>
+
+                  <button
+                    type="button"
+                    className="admin-add-day-btn"
+                    onClick={addDay}
+                  >
+                    + Add Day {formData.itinerary.length + 1}
+                  </button>
                 </div>
 
-                <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
-                  <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Gallery Photos</label>
-                  {tourFormData.gallery.map((imgUrl, index) => (
-                    <div key={index} style={{ display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'center' }}>
-                      <img src={imgUrl} alt="preview" style={{width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px'}} onError={(e) => e.target.style.display = 'none'} />
-                      <input type="text" value={imgUrl} onChange={(e) => { const newGallery = [...tourFormData.gallery]; newGallery[index] = e.target.value; setTourFormData({ ...tourFormData, gallery: newGallery }); }} className="admin-input" style={{ flex: 1 }} required />
-                      <button type="button" onClick={() => { const newGallery = tourFormData.gallery.filter((_, idx) => idx !== index); setTourFormData({ ...tourFormData, gallery: newGallery }); }} style={{ backgroundColor: '#e63946', color: 'white', border: 'none', padding: '12px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={() => setTourFormData({ ...tourFormData, gallery: [...tourFormData.gallery, ''] })} style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}>+ Add Photo</button>
+                <div className="admin-form-full">
+                  <button type="submit" className="admin-submit-btn">+ Publish Tour</button>
                 </div>
 
-                <div className="admin-form-full" style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-                  <button type="submit" className="admin-submit-btn">{isEditingTour ? "Update Tour" : "+ Publish Tour"}</button>
-                  {isEditingTour && <button type="button" onClick={handleCancelTourEdit} className="admin-submit-btn" style={{ backgroundColor: '#ccc', color: '#333' }}>Cancel</button>}
-                </div>
               </form>
-            </div>  
+            </div>
 
             <div className="admin-card" style={{ marginTop: '28px' }}>
-              <div className="admin-card-header"><h2 className="admin-card-title">Active Tours</h2></div>
-              {tours.length === 0 ? <p className="admin-empty-state">No tours yet.</p> : (
+              <div className="admin-card-header">
+                <h2 className="admin-card-title">Active Tours</h2>
+                <span className="admin-card-count">{tours.length} total</span>
+              </div>
+
+              {tours.length === 0 ? (
+                <p className="admin-empty-state">No tours yet. Add one above.</p>
+              ) : (
                 <div className="admin-table-wrapper">
                   <table className="admin-table">
-                    <thead><tr><th>Title</th><th>Destination</th><th>Duration</th><th>Price</th><th style={{ textAlign: 'right' }}>Actions</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Destination</th>
+                        <th>Duration</th>
+                        <th>Price</th>
+                        <th>Days</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {tours.map(tour => (
                         <tr key={tour._id}>
-                          <td className="admin-td-title">{tour.title}</td><td><span className="admin-destination-badge">{tour.destination}</span></td><td>{tour.duration} days</td><td className="admin-td-price">${tour.price}</td>
+                          <td className="admin-td-title">{tour.title}</td>
+                          <td>
+                            <span className="admin-destination-badge">{tour.destination}</span>
+                          </td>
+                          <td>{tour.duration} days</td>
+                          <td className="admin-td-price">${tour.price}</td>
+                          <td>{tour.itinerary?.length || 0} days</td>
                           <td style={{ textAlign: 'right' }}>
-                            <Link to={`/tour/${tour._id}`} className="admin-action-view" style={{ marginRight: '15px' }}>View ↗</Link>
-                            <button onClick={() => handleEditTourClick(tour)} className="admin-action-view" style={{ marginRight: '15px', cursor: 'pointer', backgroundColor: 'transparent', border: 'none', color: '#1a5c9e' }}>Edit ✎</button>
-                            <button onClick={() => handleTourDelete(tour._id)} className="admin-action-delete">Delete</button>
+                            <Link to={`/tour/${tour._id}`} className="admin-action-view">View ↗</Link>
+                            <button onClick={() => handleDelete(tour._id)} className="admin-action-delete">Delete</button>
                           </td>
                         </tr>
                       ))}
@@ -245,176 +360,98 @@ function AdminDashboard() {
           </>
         )}
 
-        {activeTab === 'inquiries' && (
-          <div className="admin-card">
-            <div className="admin-card-header">
-              <h3 className="admin-card-title">Customer Inquiries</h3>
-              <span className="admin-card-count">{inquiries.length} Total</span>
-            </div>
-            
-            <div className="admin-table-wrapper">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Message Snippet</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inquiries.length === 0 ? (
-                    <tr><td colSpan="5" className="admin-empty-state">No inquiries yet.</td></tr>
-                  ) : (
-                    inquiries.map(inq => (
-                      <Fragment key={inq._id}>
-                        <tr>
-                          <td>{new Date(inq.createdAt).toLocaleDateString()}</td>
-                          <td className="admin-td-title">{inq.name}</td>
-                          <td>{inq.email}</td>
-                          <td style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {inq.message}
-                          </td>
-                          <td>
-                            <button 
-                              className="admin-action-view" 
-                              onClick={() => setExpandedInquiryId(expandedInquiryId === inq._id ? null : inq._id)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                            >
-                              {expandedInquiryId === inq._id ? 'Close ✕' : 'View Full ↓'}
-                            </button>
-                          </td>
-                        </tr>
-                        
-                        {expandedInquiryId === inq._id && (
-                          <tr style={{ backgroundColor: '#faf8f4' }}>
-                            <td colSpan="5" style={{ padding: '20px 40px', borderTop: 'none' }}>
-                              <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '6px', border: '1px solid #e8dfc8', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-                                <div style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f0e8d8', display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#666' }}>
-                                  <span><strong>Phone:</strong> {inq.phone || 'N/A'}</span>
-                                  <span><strong>Received:</strong> {new Date(inq.createdAt).toLocaleString()}</span>
-                                </div>
-                                <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.7', color: '#050b16', fontSize: '0.95rem' }}>
-                                  {inq.message}
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </Fragment>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'adventures' && (
+        {tab === 'inquiries' && (
           <>
-            <div className="admin-card">
-              <div className="admin-card-header">
-                <h2 className="admin-card-title">{isEditingAdv ? "Edit Adventure Sport" : "Add New Adventure Sport"}</h2>
+            <div className="admin-page-header">
+              <div>
+                <h1 className="admin-page-title">Inquiries</h1>
+                <p className="admin-page-subtitle">Customer enquiries from the contact and tour pages</p>
               </div>
-
-              {submitStatus === 'success' && <div className="admin-alert success">✓ Adventure {isEditingAdv ? 'updated' : 'published'} successfully!</div>}
-              {submitStatus === 'error' && <div className="admin-alert error">✗ Failed to save. Check the console.</div>}
-
-              <form onSubmit={handleAdvSubmit} className="admin-form">
-                <div className="admin-form-group"><label className="admin-label">Adventure Title</label><input type="text" name="title" value={advFormData.title} onChange={handleAdvChange} required placeholder="e.g. Trishuli River Rafting" className="admin-input" /></div>
-                
-                <div className="admin-form-group"><label className="admin-label">Sport Type</label>
-                  <select name="sportType" value={advFormData.sportType} onChange={handleAdvChange} className="admin-input">
-                    <option value="Rafting">Rafting</option><option value="Paragliding">Paragliding</option><option value="Bungee">Bungee</option>
-                    <option value="Climbing">Climbing</option><option value="Biking">Biking</option><option value="Zipline">Zipline</option>
-                    <option value="Kayaking">Kayaking</option>
-                    <option value="Ultralight">Ultralight</option>
-                    <option value="Helicopter">Helicopter</option>
-                  </select>
-                </div>
-
-                <div className="admin-form-group"><label className="admin-label">Location</label><input type="text" name="location" value={advFormData.location} onChange={handleAdvChange} required placeholder="e.g. Pokhara, Nepal" className="admin-input" /></div>
-                <div className="admin-form-group"><label className="admin-label">Duration</label><input type="text" name="duration" value={advFormData.duration} onChange={handleAdvChange} required placeholder="e.g. Half Day, 3 Hours" className="admin-input" /></div>
-                <div className="admin-form-group"><label className="admin-label">Price (USD)</label><input type="number" name="price" value={advFormData.price} onChange={handleAdvChange} required className="admin-input" /></div>
-                
-                <div className="admin-form-group"><label className="admin-label">Intensity</label>
-                  <select name="intensity" value={advFormData.intensity} onChange={handleAdvChange} className="admin-input">
-                    <option value="Easy">Easy</option><option value="Moderate">Moderate</option><option value="Intense">Intense</option><option value="Extreme">Extreme</option>
-                  </select>
-                </div>
-
-                <div className="admin-form-group"><label className="admin-label">Minimum Age</label><input type="text" name="minAge" value={advFormData.minAge} onChange={handleAdvChange} required placeholder="e.g. 16+" className="admin-input" /></div>
-                <div className="admin-form-group"><label className="admin-label">Featured Image Path</label><input type="text" name="featuredImage" value={advFormData.featuredImage} onChange={handleAdvChange} required className="admin-input" /></div>
-                
-                <div className="admin-form-group admin-form-full"><label className="admin-label">Short Description</label><textarea name="description" value={advFormData.description} onChange={handleAdvChange} required rows="3" className="admin-input admin-textarea"></textarea></div>
-                <div className="admin-form-group admin-form-full"><label className="admin-label">Safety Notes</label><textarea name="safetyNotes" value={advFormData.safetyNotes} onChange={handleAdvChange} rows="2" placeholder="e.g. Lifejackets provided, guide CPR certified..." className="admin-input admin-textarea"></textarea></div>
-
-                <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
-                  <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>What's Included</label>
-                  {advFormData.included.map((item, index) => (
-                    <div key={index} style={{ display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'center' }}>
-                      <span style={{color: '#2ecc71', fontWeight: 'bold'}}>✓</span>
-                      <input type="text" value={item} onChange={(e) => { const newInc = [...advFormData.included]; newInc[index] = e.target.value; setAdvFormData({ ...advFormData, included: newInc }); }} className="admin-input" style={{ flex: 1 }} required />
-                      <button type="button" onClick={() => { const newInc = advFormData.included.filter((_, idx) => idx !== index); setAdvFormData({ ...advFormData, included: newInc }); }} style={{ backgroundColor: '#e63946', color: 'white', border: 'none', padding: '12px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={() => setAdvFormData({ ...advFormData, included: [...advFormData.included, ''] })} style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}>+ Add Included Item</button>
-                </div>
-
-                <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
-                  <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Schedule / Phases</label>
-                  {advFormData.itinerary.map((dayItem, index) => (
-                    <div key={index} style={{ display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'flex-start' }}>
-                      <div style={{ backgroundColor: '#f7f2e8', padding: '12px 15px', borderRadius: '4px', fontWeight: 'bold', color: '#1a5c9e', whiteSpace: 'nowrap', border: '1px solid #d4c4a4' }}>Step {dayItem.day}</div>
-                      <input type="text" value={dayItem.activity} onChange={(e) => handleAdvItineraryChange(index, e.target.value)} required placeholder="e.g. Safety Briefing and Gear Fitting" className="admin-input" style={{ flex: 1 }} />
-                      <button type="button" onClick={() => removeAdvItineraryDay(index)} style={{ backgroundColor: '#e63946', color: 'white', border: 'none', padding: '12px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={addAdvItineraryDay} style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}>+ Add Step</button>
-                </div>
-
-                <div className="admin-form-group admin-form-full" style={{ borderTop: '1px solid #eee', paddingTop: '20px', marginTop: '10px' }}>
-                  <label className="admin-label" style={{ fontSize: '1.1rem', color: '#1a5c9e', marginBottom: '15px' }}>Gallery Photos</label>
-                  {advFormData.gallery.map((imgUrl, index) => (
-                    <div key={index} style={{ display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'center' }}>
-                      <img src={imgUrl} alt="preview" style={{width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px'}} onError={(e) => e.target.style.display = 'none'} />
-                      <input type="text" value={imgUrl} onChange={(e) => { const newGallery = [...advFormData.gallery]; newGallery[index] = e.target.value; setAdvFormData({ ...advFormData, gallery: newGallery }); }} className="admin-input" style={{ flex: 1 }} required />
-                      <button type="button" onClick={() => { const newGallery = advFormData.gallery.filter((_, idx) => idx !== index); setAdvFormData({ ...advFormData, gallery: newGallery }); }} style={{ backgroundColor: '#e63946', color: 'white', border: 'none', padding: '12px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={() => setAdvFormData({ ...advFormData, gallery: [...advFormData.gallery, ''] })} style={{ backgroundColor: '#eeddaa', color: '#050b16', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', marginTop: '10px' }}>+ Add Photo</button>
-                </div>
-
-                <div className="admin-form-full" style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-                  <button type="submit" className="admin-submit-btn">{isEditingAdv ? "Update Adventure" : "+ Publish Adventure"}</button>
-                  {isEditingAdv && <button type="button" onClick={handleCancelAdvEdit} className="admin-submit-btn" style={{ backgroundColor: '#ccc', color: '#333' }}>Cancel</button>}
-                </div>
-              </form>
-            </div>  
-
-            <div className="admin-card" style={{ marginTop: '28px' }}>
-              <div className="admin-card-header"><h2 className="admin-card-title">Active Adventures</h2></div>
-              {adventures.length === 0 ? <p className="admin-empty-state">No adventures yet.</p> : (
-                <div className="admin-table-wrapper">
-                  <table className="admin-table">
-                    <thead><tr><th>Title</th><th>Sport</th><th>Location</th><th>Price</th><th style={{ textAlign: 'right' }}>Actions</th></tr></thead>
-                    <tbody>
-                      {adventures.map(adv => (
-                        <tr key={adv._id}>
-                          <td className="admin-td-title">{adv.title}</td><td><span className="admin-destination-badge" style={{backgroundColor: '#e63946'}}>{adv.sportType}</span></td><td>{adv.location}</td><td className="admin-td-price">${adv.price}</td>
-                          <td style={{ textAlign: 'right' }}>
-                            <Link to={`/adventure/${adv._id}`} className="admin-action-view" style={{ marginRight: '15px' }}>View ↗</Link>
-                            <button onClick={() => handleEditAdvClick(adv)} className="admin-action-view" style={{ marginRight: '15px', cursor: 'pointer', backgroundColor: 'transparent', border: 'none', color: '#1a5c9e' }}>Edit ✎</button>
-                            <button onClick={() => handleAdvDelete(adv._id)} className="admin-action-delete">Delete</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <button className="admin-refresh-btn" onClick={fetchInquiries}>↺ Refresh</button>
             </div>
+
+            {loadingInquiries && <p className="admin-empty-state">Loading inquiries…</p>}
+
+            {!loadingInquiries && inquiries.length === 0 && (
+              <p className="admin-empty-state">No inquiries yet.</p>
+            )}
+
+            {!loadingInquiries && inquiries.length > 0 && (
+              <div className="admin-inquiry-list">
+                {inquiries.map(inq => (
+                  <div
+                    key={inq._id}
+                    className={`admin-inquiry-card status-${inq.status}`}
+                  >
+                    <div
+                      className="admin-inquiry-header"
+                      onClick={() => setExpandedInquiry(expandedInquiry === inq._id ? null : inq._id)}
+                    >
+                      <div className="admin-inquiry-header-left">
+                        <span className={`admin-inquiry-status-dot status-${inq.status}`}></span>
+                        <div>
+                          <strong className="admin-inquiry-name">{inq.name}</strong>
+                          <span className="admin-inquiry-email">{inq.email}</span>
+                        </div>
+                      </div>
+
+                      <div className="admin-inquiry-header-right">
+                        <span className="admin-inquiry-pill">{inq.travelMonth}</span>
+                        <span className="admin-inquiry-pill">{inq.groupSize} pax</span>
+                        <span className="admin-inquiry-pill budget">{inq.budgetRange}</span>
+                        <span className="admin-inquiry-date">
+                          {new Date(inq.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <span className="admin-inquiry-chevron">
+                          {expandedInquiry === inq._id ? '▲' : '▼'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {expandedInquiry === inq._id && (
+                      <div className="admin-inquiry-body">
+                        <div className="admin-inquiry-detail-grid">
+                          <div>
+                            <span className="admin-inquiry-field-label">Subject</span>
+                            <p className="admin-inquiry-field-value">{inq.subject}</p>
+                          </div>
+                          <div>
+                            <span className="admin-inquiry-field-label">Travel Month</span>
+                            <p className="admin-inquiry-field-value">{inq.travelMonth}</p>
+                          </div>
+                          <div>
+                            <span className="admin-inquiry-field-label">Group Size</span>
+                            <p className="admin-inquiry-field-value">{inq.groupSize} people</p>
+                          </div>
+                          <div>
+                            <span className="admin-inquiry-field-label">Budget Range</span>
+                            <p className="admin-inquiry-field-value">{inq.budgetRange}</p>
+                          </div>
+                        </div>
+
+                        <div style={{ marginTop: '12px' }}>
+                          <span className="admin-inquiry-field-label">Message</span>
+                          <p className="admin-inquiry-message">{inq.message}</p>
+                        </div>
+
+                        <div className="admin-inquiry-actions">
+                          <span className="admin-inquiry-field-label">Update Status:</span>
+                          {['new', 'contacted', 'converted', 'closed'].map(s => (
+                            <button
+                              key={s}
+                              onClick={() => updateInquiryStatus(inq._id, s)}
+                              className={`admin-status-btn ${inq.status === s ? 'active' : ''} status-btn-${s}`}
+                            >
+                              {s.charAt(0).toUpperCase() + s.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
 

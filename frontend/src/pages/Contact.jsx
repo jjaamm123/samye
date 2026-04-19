@@ -1,71 +1,64 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import axios from 'axios'; 
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 import '../App.css';
+
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December','Flexible'
+];
 
 function Contact() {
   const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
-
   const [submitStatus, setSubmitStatus] = useState(null); 
 
+  const [formData, setFormData] = useState({
+    name:        '',
+    email:       '',
+    subject:     '',
+    message:     '',
+    travelMonth: 'Flexible',
+    groupSize:   '2',
+    budgetRange: 'Standard',
+  });
+
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    if (location.state) {
-      const { tripItems, groupSize, travelDate, grandTotal } = location.state;
-      const itemsList = tripItems.map(item => `- ${item.title}`).join('\n');
-      const dateStr = travelDate ? travelDate : 'Not specified';
-      const autoMessage = `Hi Samye Travels team! I would like to enquire about a custom trip.\n\nGroup Size: ${groupSize}\nExpected Start Date: ${dateStr}\n\nSelected Packages:\n${itemsList}\n\nEstimated Grand Total: $${grandTotal.toLocaleString()}.\n\nPlease let me know the next steps!`;
+  const handleChange = e =>
+    setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
 
-      setFormData(prev => ({ ...prev, message: autoMessage }));
-    }
-  }, [location.state]);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    setSubmitStatus('submitting');
-
     axios.post('http://localhost:5000/api/inquiries', formData)
-      .then((response) => {
+      .then(() => {
         setSubmitStatus('success');
-        setFormData({ name: '', email: '', phone: '', message: '' }); 
-        
-        setTimeout(() => setSubmitStatus(null), 5000); 
+        setFormData({
+          name: '', email: '', subject: '', message: '',
+          travelMonth: 'Flexible', groupSize: '2', budgetRange: 'Standard'
+        });
+        setTimeout(() => setSubmitStatus(null), 5000);
       })
-      .catch((err) => {
+      .catch(err => {
         console.error(err);
         setSubmitStatus('error');
-        setTimeout(() => setSubmitStatus(null), 5000);
       });
   };
 
   return (
     <div className="app-wrapper">
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : 'static'}`}>
+
+      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="navbar-brand">
           <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
         </div>
         <div className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/about">About Us</Link>
-          <Link to="/tours">Tour Packages</Link>
-          <Link to="/adventures">Adventure Sports</Link>
+          <Link to="/packages">Packages</Link>
           <Link to="/custom-tour">Build My Trip</Link>
           <Link to="/gallery">Gallery</Link>
           <Link to="/contact" className="active-link">Contact</Link>
@@ -73,69 +66,129 @@ function Contact() {
         <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
       </nav>
 
-      <div className="page-hero" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80')" }}>
+      <div
+        className="page-hero"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1920&q=80')" }}
+      >
         <div className="page-hero-overlay"></div>
         <div className="page-hero-content">
-          <span className="page-hero-eyebrow">Get In Touch</span>
-          <h1 className="page-hero-title">Contact Us</h1>
+          <span className="page-hero-eyebrow">We'd love to hear from you</span>
+          <h1 className="page-hero-title">Get in Touch</h1>
         </div>
       </div>
 
       <div className="content-container">
         <div className="contact-layout">
-          
+
           <div className="contact-info-panel">
-            <h3 className="contact-info-heading">Samye Travels</h3>
+            <p className="contact-info-heading">Samye Travels</p>
             <p className="contact-info-subheading">Headquarters</p>
+
+            <div className="contact-info-block">
+              <span className="contact-info-label">Address</span>
+              <p className="contact-info-value">Thamel Marg<br />Kathmandu 44600<br />Nepal</p>
+            </div>
             <div className="contact-info-divider"></div>
-            
-            <span className="contact-info-label">Address</span>
-            <p className="contact-info-value">Thamel, Kathmandu<br />Bagmati Province, Nepal</p>
-            
-            <span className="contact-info-label">Phone</span>
-            <p className="contact-info-value">+977 1-4412345<br />+977 9841234567</p>
-            
-            <span className="contact-info-label">Email</span>
-            <p className="contact-info-value">namaste@samyetravels.com</p>
+            <div className="contact-info-block">
+              <span className="contact-info-label">Email</span>
+              <p className="contact-info-value">namaste@samyetravels.com</p>
+            </div>
+            <div className="contact-info-block">
+              <span className="contact-info-label">Phone</span>
+              <p className="contact-info-value">+977 1-4412345</p>
+            </div>
+            <div className="contact-info-divider"></div>
+            <div className="contact-info-block">
+              <span className="contact-info-label">Office Hours</span>
+              <p className="contact-info-value">Sunday – Friday<br />9:00 AM – 6:00 PM NST</p>
+            </div>
           </div>
 
           <div className="contact-form-card">
-            <h2 className="contact-form-title">Send a Message</h2>
-
-            {location.state && submitStatus !== 'success' && (
-              <div style={{ backgroundColor: '#e8f5e9', border: '1px solid #2ecc71', borderRadius: '6px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '1.4rem' }}>📋</span>
-                <div>
-                  <strong style={{ color: '#27ae60', display: 'block', fontSize: '0.95rem', marginBottom: '2px' }}>Custom Trip Attached ✓</strong>
-                  <span style={{ color: '#2c3e50', fontSize: '0.85rem' }}>We've auto-filled your trip details in the message below!</span>
-                </div>
-              </div>
-            )}
+            <h2 className="contact-form-title">Start Planning Your Journey</h2>
 
             {submitStatus === 'success' && (
-              <div style={{ backgroundColor: '#e8f5e9', border: '1px solid #2ecc71', color: '#27ae60', borderRadius: '6px', padding: '16px', marginBottom: '24px', textAlign: 'center', fontWeight: 'bold' }}>
-                Message sent successfully! Our team will contact you shortly.
+              <div className="admin-alert success" style={{ marginBottom: '20px' }}>
+                ✓ Message sent! We'll get back to you within 24 hours.
               </div>
             )}
-
             {submitStatus === 'error' && (
-              <div style={{ backgroundColor: '#fde8e8', border: '1px solid #e63946', color: '#c0392b', borderRadius: '6px', padding: '16px', marginBottom: '24px', textAlign: 'center', fontWeight: 'bold' }}>
-                Failed to send message. Please try again or email us directly.
+              <div className="admin-alert error" style={{ marginBottom: '20px' }}>
+                ✗ Something went wrong. Please try again or email us directly.
               </div>
             )}
 
             <form className="contact-form" onSubmit={handleSubmit}>
+
               <div className="contact-form-row">
-                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Your Name" className="contact-input" required disabled={submitStatus === 'submitting'} />
-                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="contact-input" required disabled={submitStatus === 'submitting'} />
+                <input name="name" value={formData.name} onChange={handleChange}
+                  placeholder="Your Name" required className="contact-input" />
+                <input type="email" name="email" value={formData.email} onChange={handleChange}
+                  placeholder="Your Email" required className="contact-input" />
               </div>
-              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number (Optional)" className="contact-input" disabled={submitStatus === 'submitting'} />
-              
-              <textarea name="message" value={formData.message} onChange={handleChange} placeholder="How can we help you?" className="contact-input contact-textarea" required disabled={submitStatus === 'submitting'}></textarea>
-              
-              <button type="submit" className="contact-submit-btn" disabled={submitStatus === 'submitting'}>
-                {submitStatus === 'submitting' ? 'Sending...' : 'Send Message'}
+
+              <input name="subject" value={formData.subject} onChange={handleChange}
+                placeholder="Subject — e.g. Enquiry about Nepal Trek" required className="contact-input" />
+
+              <div className="contact-form-row contact-form-row-3">
+
+                <div className="contact-select-group">
+                  <label className="contact-select-label">When do you want to travel?</label>
+                  <select
+                    name="travelMonth"
+                    value={formData.travelMonth}
+                    onChange={handleChange}
+                    className="contact-input contact-select"
+                  >
+                    {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+
+                <div className="contact-select-group">
+                  <label className="contact-select-label">Group size</label>
+                  <select
+                    name="groupSize"
+                    value={formData.groupSize}
+                    onChange={handleChange}
+                    className="contact-input contact-select"
+                  >
+                    <option value="1">Solo (1)</option>
+                    <option value="2">Couple (2)</option>
+                    <option value="3-5">Small Group (3–5)</option>
+                    <option value="6+">Large Group (6+)</option>
+                  </select>
+                </div>
+
+                <div className="contact-select-group">
+                  <label className="contact-select-label">Budget range</label>
+                  <select
+                    name="budgetRange"
+                    value={formData.budgetRange}
+                    onChange={handleChange}
+                    className="contact-input contact-select"
+                  >
+                    <option value="Standard">Standard</option>
+                    <option value="Premium">Premium</option>
+                    <option value="Luxury">Luxury</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <textarea
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                placeholder="Tell us about your dream journey — destinations, specific treks, anything you have in mind…"
+                rows="5"
+                required
+                className="contact-input contact-textarea"
+              ></textarea>
+
+              <button type="submit" className="contact-submit-btn">
+                Send Message →
               </button>
+
             </form>
           </div>
 
@@ -151,8 +204,7 @@ function Contact() {
           <div className="footer-links">
             <h4>Quick Links</h4>
             <Link to="/">Home</Link>
-            <Link to="/tours">Tours</Link>
-            <Link to="/adventures">Adventures</Link>
+            <Link to="/packages">Packages</Link>
             <Link to="/custom-tour">Build My Trip</Link>
             <Link to="/about">About</Link>
             <Link to="/contact">Contact</Link>
@@ -168,6 +220,7 @@ function Contact() {
           <p>© 2026 Samye Travels. All rights reserved.</p>
         </div>
       </footer>
+
     </div>
   );
 }
