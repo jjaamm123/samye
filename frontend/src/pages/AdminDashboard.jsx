@@ -28,6 +28,8 @@ function AdminDashboard() {
   const [loadingInquiries, setLoadingInquiries] = useState(false);
   const [expandedInquiry, setExpandedInquiry] = useState(null);
 
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   useEffect(() => { fetchTours(); }, []);
 
   useEffect(() => {
@@ -69,6 +71,28 @@ function AdminDashboard() {
         .filter((_, i) => i !== index)
         .map((d, i) => ({ ...d, day: i + 1 })) 
     }));
+  
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append('image', file);
+
+    setUploadingImage(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/upload', uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      // Update the form state with the new real image URL
+      setFormData(f => ({ ...f, featuredImage: response.data.imageUrl }));
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      alert('Failed to upload image. Check server console.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };  
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -207,6 +231,31 @@ function AdminDashboard() {
                     <option>Challenging</option>
                   </select>
                 </div>
+
+                {/* ─── NEW FEATURED IMAGE UPLOAD FIELD ─── */}
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">Featured Image</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    className="admin-input" 
+                    style={{ padding: '8px' }}
+                  />
+                  
+                  {uploadingImage && <p className="admin-label-hint">Uploading image to server...</p>}
+                  
+                  {formData.featuredImage && formData.featuredImage !== '/images/safari.jpg' && (
+                    <div className="admin-image-preview" style={{ marginTop: '12px' }}>
+                      <img 
+                        src={formData.featuredImage} 
+                        alt="Preview" 
+                        style={{ width: '200px', borderRadius: '8px', border: '1px solid #ddd' }} 
+                      />
+                    </div>
+                  )}
+                </div>
+                {/* ─────────────────────────────────────── */}
 
                 <div className="admin-form-group admin-form-full">
                   <label className="admin-label">Short Description</label>

@@ -3,16 +3,34 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// Ensure your files in the models folder are named exactly this:
 const Tour = require('./models/backend_tour'); 
 const Booking = require('./models/booking'); 
 const Adventure = require('./models/backend_adventure'); 
 const Inquiry = require('./models/backend_inquiry');
-
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs')
 const app = express();
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function(req, file, cb) {
+        
+        cb(null, Date.now() + path.extname(file.originalname)); 
+    }
+});
+const upload = multer({ storage: storage });
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Successfully connected to MongoDB"))
@@ -22,7 +40,6 @@ app.get('/api/test', (req, res) => {
     res.json({ message: "running" });
 });
 
-// ─── TOURS ─────────────────────────────────────────────────────────────
 app.get('/api/tours', async (req, res) => {
     try {
         const allTours = await Tour.find(); 
@@ -164,6 +181,20 @@ app.patch('/api/inquiries/:id', async (req, res) => {
     } catch (error) {
         console.error("Error updating inquiry:", error);
         res.status(500).json({ message: "Failed to update inquiry status." });
+    }
+});
+
+app.post('/api/upload', upload.single('image'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+        
+        const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+        res.status(200).json({ imageUrl });
+    } catch (error) {
+        console.error("Upload error:", error);
+        res.status(500).json({ message: "Image upload failed." });
     }
 });
 
