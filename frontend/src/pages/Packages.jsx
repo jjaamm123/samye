@@ -1,12 +1,16 @@
 // src/pages/Packages.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import TourCard from '../components/TourCard';
 import AdventureCard from '../components/AdventureCard';
+import { CurrencyContext } from '../context/CurrencyContext'; // <-- Added Context Import
 import '../App.css';
 
 function Packages() {
+  // <-- Added Context Hook
+  const { currency, toggleCurrency } = useContext(CurrencyContext);
+
   const [tours, setTours] = useState([]);
   const [adventures, setAdventures] = useState([]);
   const [loadingTours, setLoadingTours] = useState(true);
@@ -15,12 +19,9 @@ function Packages() {
   const [errorAdv, setErrorAdv] = useState(null);
 
   const [scrolled, setScrolled] = useState(false);
-
   const [activeCategory, setActiveCategory] = useState('tours');
-
   const [tourFilter, setTourFilter] = useState('All');
   const [adventureFilter, setAdventureFilter] = useState('All');
-
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -94,14 +95,9 @@ function Packages() {
         <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
       </nav>
 
-      <div
-        className="packages-hero"
-        style={{ backgroundImage: `url('${heroImage}')` }}
-      >
+      <div className="packages-hero" style={{ backgroundImage: `url('${heroImage}')` }}>
         <div className="packages-hero-overlay"></div>
-
         <div className="packages-hero-content">
-          {/* Eyebrow label updates with active category */}
           <span className="packages-hero-eyebrow">
             {isTours ? 'Cultural & Spiritual' : 'Adrenaline & Thrill'}
           </span>
@@ -123,20 +119,47 @@ function Packages() {
               className={`packages-toggle-btn ${isTours ? 'active' : ''}`}
               onClick={() => handleCategorySwitch('tours')}
             >
-              🏔️ Sacred Tours
+              Tours & Treks
             </button>
             <button
               className={`packages-toggle-btn ${!isTours ? 'active' : ''}`}
               onClick={() => handleCategorySwitch('adventures')}
             >
-              🏄 Adrenaline Adventures
+              Adventure Sports
             </button>
           </div>
         </div>
       </div>
 
-      <div className="packages-controls">
+      {/* ── THE SLEEK CURRENCY TOGGLE ── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '24px', paddingRight: '5%', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ 
+          background: '#f1f5f9', borderRadius: '30px', padding: '4px', 
+          display: 'flex', gap: '4px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' 
+        }}>
+          <button 
+            onClick={() => currency !== 'USD' && toggleCurrency()} 
+            style={{ 
+              padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold', 
+              background: currency === 'USD' ? '#1a5c9e' : 'transparent', color: currency === 'USD' ? 'white' : '#64748b', transition: 'all 0.3s ease' 
+            }}
+          >
+            🇺🇸 USD
+          </button>
+          <button 
+            onClick={() => currency !== 'NPR' && toggleCurrency()} 
+            style={{ 
+              padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold', 
+              background: currency === 'NPR' ? '#1a5c9e' : 'transparent', color: currency === 'NPR' ? 'white' : '#64748b', transition: 'all 0.3s ease' 
+            }}
+          >
+            🇳🇵 NPR
+          </button>
+        </div>
+      </div>
+      {/* ─────────────────────────────────── */}
 
+      <div className="packages-controls">
         <input
           type="text"
           className="packages-search"
@@ -144,30 +167,20 @@ function Packages() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-
         <div className="packages-filters">
           {isTours
             ? tourFilterOptions.map(opt => (
-                <button
-                  key={opt}
-                  className={`packages-filter-pill ${tourFilter === opt ? 'active' : ''}`}
-                  onClick={() => setTourFilter(opt)}
-                >
+                <button key={opt} className={`packages-filter-pill ${tourFilter === opt ? 'active' : ''}`} onClick={() => setTourFilter(opt)}>
                   {opt}
                 </button>
               ))
             : adventureFilterOptions.map(opt => (
-                <button
-                  key={opt}
-                  className={`packages-filter-pill ${adventureFilter === opt ? 'active' : ''}`}
-                  onClick={() => setAdventureFilter(opt)}
-                >
+                <button key={opt} className={`packages-filter-pill ${adventureFilter === opt ? 'active' : ''}`} onClick={() => setAdventureFilter(opt)}>
                   {opt}
                 </button>
               ))
           }
         </div>
-
         {!loading && (
           <span className="packages-result-count">
             {count} {isTours ? 'tour' : 'adventure'}{count !== 1 ? 's' : ''} found
@@ -176,34 +189,19 @@ function Packages() {
       </div>
 
       <div className="packages-grid-wrapper">
-
-        {loading && (
-          <p className="status-msg">Loading {isTours ? 'tours' : 'adventures'}…</p>
-        )}
-
-        {error && (
-          <p className="status-msg error">⚠️ {error}</p>
-        )}
-
+        {loading && <p className="status-msg">Loading {isTours ? 'tours' : 'adventures'}…</p>}
+        {error && <p className="status-msg error">⚠️ {error}</p>}
         {!loading && !error && count === 0 && (
           <div className="packages-empty-state">
             <span>🔍</span>
             <p>No {isTours ? 'tours' : 'adventures'} match your filters. Try clearing the search or selecting "All".</p>
-            <button
-              className="packages-reset-btn"
-              onClick={() => {
-                setSearch('');
-                isTours ? setTourFilter('All') : setAdventureFilter('All');
-              }}
-            >
+            <button className="packages-reset-btn" onClick={() => { setSearch(''); isTours ? setTourFilter('All') : setAdventureFilter('All'); }}>
               Reset Filters
             </button>
           </div>
         )}
-
         {!loading && !error && count > 0 && (
           <>
-
             {isTours && tourFilter === 'All' ? (
               ['Nepal', 'Tibet', 'India'].map(dest => {
                 const group = filteredTours.filter(t => t.destination === dest);
@@ -262,7 +260,6 @@ function Packages() {
           <p>© 2026 Samye Travels. All rights reserved.</p>
         </div>
       </footer>
-
     </div>
   );
 }

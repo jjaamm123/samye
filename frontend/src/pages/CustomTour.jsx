@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
-
+import { CurrencyContext } from '../context/CurrencyContext';
 
 function calcGroupDiscount(size) {
   if (size >= 12) return { label: 'Large Group (12+)', rate: 0.18, desc: '18% off for groups of 12 or more' };
@@ -141,6 +141,9 @@ function getFeasibilityReport(selectedItems, travelDate, groupSize) {
 }
 
 export default function CustomTour() {
+  // ── THE CONTEXT HOOK ──
+  const { currency, toggleCurrency, formatPrice } = useContext(CurrencyContext);
+
   const [scrolled, setScrolled] = useState(false);
   const [tours, setTours] = useState([]);
   const [adventures, setAdventures] = useState([]);
@@ -243,8 +246,8 @@ export default function CustomTour() {
         <div className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/about">About Us</Link>
-          <Link to="/tours">Tour Packages</Link>
-          <Link to="/adventures">Adventure Sports</Link>
+          <Link to="/packages">Packages</Link>
+          <Link to="/gallery">Gallery</Link>
           <Link to="/custom-tour" className="active-link">Build My Trip</Link>
           <Link to="/contact">Contact</Link>
         </div>
@@ -261,6 +264,19 @@ export default function CustomTour() {
           <h1 className="page-hero-title">Build My Custom Trip</h1>
         </div>
       </div>
+
+      {/* ── THE SLEEK CURRENCY TOGGLE ── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '24px', paddingRight: '5%', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ background: '#f1f5f9', borderRadius: '30px', padding: '4px', display: 'flex', gap: '4px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
+          <button onClick={() => currency !== 'USD' && toggleCurrency()} style={{ padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold', background: currency === 'USD' ? '#1a5c9e' : 'transparent', color: currency === 'USD' ? 'white' : '#64748b', transition: 'all 0.3s ease' }}>
+            🇺🇸 USD
+          </button>
+          <button onClick={() => currency !== 'NPR' && toggleCurrency()} style={{ padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold', background: currency === 'NPR' ? '#1a5c9e' : 'transparent', color: currency === 'NPR' ? 'white' : '#64748b', transition: 'all 0.3s ease' }}>
+            🇳🇵 NPR
+          </button>
+        </div>
+      </div>
+      {/* ─────────────────────────────────── */}
 
       <div className="builder-layout">
 
@@ -404,7 +420,8 @@ export default function CustomTour() {
                         <div className="builder-timeline-meta">
                           <span>📍 {item.destination || item.location}</span>
                           <span>⏱ {item.duration} {item.type === 'tour' ? 'days' : ''}</span>
-                          <span>💰 ${item.price}/person</span>
+                          {/* ── UPDATED PRICING ── */}
+                          <span>💰 {formatPrice(item.price)}/person</span>
                         </div>
                       </div>
                       <button className="builder-remove-btn" onClick={() => removeItem(item.uid)} title="Remove">✕</button>
@@ -429,11 +446,13 @@ export default function CustomTour() {
               </div>
               <div className="builder-total-chip">
                 <span>👥 {groupSize} Traveller{groupSize > 1 ? 's' : ''}</span>
-                <strong>${calc.finalPerPerson.toLocaleString()}/person</strong>
+                {/* ── UPDATED PRICING ── */}
+                <strong>{formatPrice(calc.finalPerPerson)}/person</strong>
               </div>
               <div className="builder-total-chip highlight">
                 <span>Grand Total (est.)</span>
-                <strong>${calc.grandTotal.toLocaleString()}</strong>
+                {/* ── UPDATED PRICING ── */}
+                <strong>{formatPrice(calc.grandTotal)}</strong>
               </div>
             </div>
           )}
@@ -452,13 +471,15 @@ export default function CustomTour() {
 
                 <div className="builder-cost-row">
                   <span>Base cost ({tripItems.length} pkg × {groupSize} people)</span>
-                  <span>${calc.baseTotal.toLocaleString()}</span>
+                  {/* ── UPDATED PRICING ── */}
+                  <span>{formatPrice(calc.baseTotal)}</span>
                 </div>
 
                 {tripItems.map(item => (
                   <div className="builder-cost-row sub" key={item.uid}>
                     <span className="builder-cost-pkg-name">{item.title}</span>
-                    <span>${(item.price * groupSize).toLocaleString()}</span>
+                    {/* ── UPDATED PRICING ── */}
+                    <span>{formatPrice(item.price * groupSize)}</span>
                   </div>
                 ))}
 
@@ -480,7 +501,8 @@ export default function CustomTour() {
                     ))}
                     <div className="builder-cost-row total-discount">
                       <span>Total discount</span>
-                      <span className="builder-savings">−${Math.round(calc.discountAmount).toLocaleString()}</span>
+                      {/* ── UPDATED PRICING ── */}
+                      <span className="builder-savings">−{formatPrice(Math.round(calc.discountAmount))}</span>
                     </div>
                   </>
                 )}
@@ -489,7 +511,8 @@ export default function CustomTour() {
 
                 <div className="builder-cost-row final">
                   <span>Package Total</span>
-                  <span>${calc.finalTotal.toLocaleString()}</span>
+                  {/* ── UPDATED PRICING ── */}
+                  <span>{formatPrice(calc.finalTotal)}</span>
                 </div>
 
                 {calc.feasibility.permits.length > 0 && (
@@ -498,12 +521,14 @@ export default function CustomTour() {
                     {calc.feasibility.permits.map((p, i) => (
                       <div className="builder-cost-row sub" key={i}>
                         <span>{p.name}</span>
-                        <span>${(p.cost * groupSize).toLocaleString()}</span>
+                        {/* ── UPDATED PRICING ── */}
+                        <span>{formatPrice(p.cost * groupSize)}</span>
                       </div>
                     ))}
                     <div className="builder-cost-row">
                       <span>Permits subtotal</span>
-                      <span>${calc.permitTotal.toLocaleString()}</span>
+                      {/* ── UPDATED PRICING ── */}
+                      <span>{formatPrice(calc.permitTotal)}</span>
                     </div>
                   </>
                 )}
@@ -512,10 +537,12 @@ export default function CustomTour() {
 
                 <div className="builder-cost-row grand-total">
                   <span>Estimated Grand Total</span>
-                  <span>${calc.grandTotal.toLocaleString()}</span>
+                  {/* ── UPDATED PRICING ── */}
+                  <span>{formatPrice(calc.grandTotal)}</span>
                 </div>
                 <div className="builder-cost-per-person">
-                  ≈ ${calc.finalPerPerson.toLocaleString()} / person (excl. permits)
+                  {/* ── UPDATED PRICING ── */}
+                  ≈ {formatPrice(calc.finalPerPerson)} / person (excl. permits)
                 </div>
               </div>
 
@@ -559,7 +586,8 @@ export default function CustomTour() {
                       <div className="builder-permit-item" key={i}>
                         <div className="builder-permit-header">
                           <span className="builder-permit-name">{p.name}</span>
-                          <span className="builder-permit-cost">${p.cost}/person</span>
+                          {/* ── UPDATED PRICING ── */}
+                          <span className="builder-permit-cost">{formatPrice(p.cost)}/person</span>
                         </div>
                         <p className="builder-permit-note">{p.note}</p>
                         {p.processDays > 0 && (
@@ -665,6 +693,9 @@ export default function CustomTour() {
 }
 
 function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
+  // ── SECOND CONTEXT HOOK FOR THE LEFT SIDEBAR ──
+  const { formatPrice } = useContext(CurrencyContext);
+
   const intensityColors = { Easy: '#2ecc71', Moderate: '#f39c12', Hard: '#e63946', Intense: '#e67e22', Extreme: '#e63946', Challenging: '#c0392b' };
   const diffColor = intensityColors[difficulty] || '#888';
 
@@ -682,7 +713,8 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
         <h4 className="picker-item-title">{item.title}</h4>
         <div className="picker-item-meta">
           <span>⏱ {meta}</span>
-          <span className="picker-item-price">${item.price}<small>/person</small></span>
+          {/* ── UPDATED PRICING ── */}
+          <span className="picker-item-price">{formatPrice(item.price)}<small>/person</small></span>
         </div>
       </div>
       <button

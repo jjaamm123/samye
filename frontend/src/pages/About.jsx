@@ -19,7 +19,8 @@ function About() {
         <div className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/about" className="active-link">About Us</Link>
-          <Link to="/#tours">Tour Packages</Link>
+          <Link to="/packages">Packages</Link>
+          <Link to="/custom-tour">Build My Trip</Link>
           <Link to="/gallery">Gallery</Link>
           <Link to="/contact">Contact</Link>
         </div>
@@ -117,7 +118,7 @@ function About() {
             <img
               className="about-team-img"
               src="https://images.unsplash.com/photo-1551114671-fa2b87f4c7d0?auto=format&fit=crop&w=400&q=80"
-              alt="Tenzin Dorje"
+              alt="A"
             />
             <div className="about-team-info">
               <p className="about-team-name">Mr X</p>
@@ -128,18 +129,18 @@ function About() {
             <img
               className="about-team-img"
               src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=400&q=80"
-              alt="Priya Sharma"
+              alt="B"
             />
             <div className="about-team-info">
               <p className="about-team-name">Mr Y</p>
-              <p className="about-team-role">India Operations Lead</p>
+              <p className="about-team-role">Operations Lead</p>
             </div>
           </div>
           <div className="about-team-card">
             <img
               className="about-team-img"
               src="https://images.unsplash.com/photo-1605640840428-583c4b572240?auto=format&fit=crop&w=400&q=80"
-              alt="Mingma Sherpa"
+              alt="C"
             />
             <div className="about-team-info">
               <p className="about-team-name">Mr Z</p>

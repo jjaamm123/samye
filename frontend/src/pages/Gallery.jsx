@@ -60,7 +60,8 @@ function Gallery() {
         <div className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/about">About Us</Link>
-          <Link to="/#tours">Tour Packages</Link>
+          <Link to="/packages">Packages</Link>
+          <Link to="/custom-tour">Build My Trip</Link>
           <Link to="/gallery" className="active-link">Gallery</Link>
           <Link to="/contact">Contact</Link>
         </div>

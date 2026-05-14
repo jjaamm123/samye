@@ -1,7 +1,8 @@
 // src/pages/TourDetails.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { CurrencyContext } from '../context/CurrencyContext';
 import '../App.css';
 
 const MONTHS = [
@@ -10,6 +11,8 @@ const MONTHS = [
 ];
 
 function TourDetails() {
+  const { currency, toggleCurrency, formatPrice } = useContext(CurrencyContext);
+
   const { id } = useParams();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,14 +99,27 @@ function TourDetails() {
         <span className="navbar-brand" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           Samye Travels
         </span>
-        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
+        
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <button 
+            onClick={toggleCurrency} 
+            style={{
+              background: 'rgba(255,255,255,0.2)', border: '1px solid white', 
+              color: 'white', padding: '6px 12px', borderRadius: '20px', 
+              cursor: 'pointer', fontWeight: 'bold'
+            }}
+          >
+            {currency === 'USD' ? '🇺🇸 USD' : '🇳🇵 NPR'}
+          </button>
+          <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
+        </div>
       </nav>
 
       {/* Hero */}
       <div className="details-hero" style={{ backgroundImage: `url('${tour.featuredImage}')` }}>
         <div className="details-hero-overlay"></div>
         <div className="details-hero-content">
-          <span className="details-hero-tag">{tour.destination}</span>
+          <span className="details-hero-tag">{tour.package}</span>
           <h1 className="details-hero-title">{tour.title}</h1>
           <div className="details-hero-pills">
             <span className="details-pill">⏱ {tour.duration} Days</span>
@@ -123,10 +139,6 @@ function TourDetails() {
             <p className="details-description">{tour.description}</p>
           </div>
 
-          {/* ── PHASE 1: Included / Excluded ─────────────────────────────────
-              Renders two columns side by side.
-              Maps over the arrays with ✅ / ❌ icons.
-          */}
           {(tour.included?.length > 0 || tour.excluded?.length > 0) && (
             <div className="details-card" style={{ marginTop: '28px' }}>
               <h2 className="details-section-heading">What's Included</h2>
@@ -164,10 +176,6 @@ function TourDetails() {
             </div>
           )}
 
-          {/* ── PHASE 1: Accordion Itinerary ─────────────────────────────────
-              Each day is a clickable row. Clicking toggles the description.
-              openDay tracks which index is expanded (only one open at a time).
-          */}
           {tour.itinerary?.length > 0 && (
             <div className="details-card" style={{ marginTop: '28px' }}>
               <h2 className="details-section-heading">
@@ -183,24 +191,20 @@ function TourDetails() {
                       key={index}
                       className={`accordion-item ${isOpen ? 'open' : ''}`}
                     >
-                      {/* ── Header row — always visible, click to toggle ── */}
                       <button
                         className="accordion-header"
                         onClick={() => setOpenDay(isOpen ? null : index)}
                         aria-expanded={isOpen}
                       >
                         <div className="accordion-header-left">
-                          {/* Day number circle */}
                           <span className="accordion-day-badge">
                             {day.day}
                           </span>
                           <span className="accordion-day-title">{day.title}</span>
                         </div>
-                        {/* Chevron rotates when open */}
                         <span className={`accordion-chevron ${isOpen ? 'open' : ''}`}>›</span>
                       </button>
 
-                      {/* ── Expandable body ── */}
                       <div className={`accordion-body ${isOpen ? 'open' : ''}`}>
                         {day.description
                           ? <p className="accordion-description">{day.description}</p>
@@ -248,11 +252,6 @@ function TourDetails() {
             </div>
           )}
 
-          {/* ── PHASE 1: Quick Inquiry Form on the detail page ───────────────
-              Same dropdown fields as Contact.jsx.
-              Pre-fills subject with the tour name.
-              Sends relatedTour ID with the payload.
-          */}
           <div className="details-card" style={{ marginTop: '28px' }}>
             <h2 className="details-section-heading">Enquire About This Tour</h2>
 
@@ -275,7 +274,6 @@ function TourDetails() {
                   placeholder="Your Email" required className="contact-input" />
               </div>
 
-              {/* Phase 1 dropdowns */}
               <div className="inquiry-form-row inquiry-form-row-3">
                 <div className="contact-select-group">
                   <label className="contact-select-label">Travel Month</label>
@@ -320,7 +318,7 @@ function TourDetails() {
           <div className="booking-card">
             <div className="booking-price-block">
               <span className="booking-price-label">From</span>
-              <div className="booking-price">${tour.price} <span>/ person</span></div>
+              <div className="booking-price">{formatPrice(tour.price)} <span>/ person</span></div>
             </div>
             <div className="booking-divider"></div>
             <div className="booking-facts">

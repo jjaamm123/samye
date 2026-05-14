@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
+import { useContext } from 'react';
+import { CurrencyContext } from '../context/CurrencyContext';
+  
 function AdventureCard({ adventure }) {
+
+  // 1. We need formatPrice from the context!
+  const { formatPrice } = useContext(CurrencyContext);
 
   const intensityColor = {
     Easy:    '#2ecc71',
@@ -18,7 +23,7 @@ function AdventureCard({ adventure }) {
         <img src={imageUrl} alt={adventure.title} className="tour-image" />
 
         <div className="card-base-info">
-          <span className="card-destination-tag">{adventure.location}</span>
+          <span className="card-destination-tag">{adventure.title}</span>
           <span className="card-duration-tag">{adventure.duration}</span>
         </div>
 
@@ -33,9 +38,10 @@ function AdventureCard({ adventure }) {
               >
                 {adventure.intensity}
               </span>
-              <span className="card-price">${adventure.price}</span>
+      
+              <span className="card-price">{formatPrice(adventure.price)}</span>
             </div>
-            {/* Link goes to /adventure/:id — different from /tour/:id */}
+          
             <Link to={`/adventure/${adventure._id}`} className="card-cta-btn" style={{ textAlign: 'center', display: 'block', textDecoration: 'none' }}>
               View Details →
             </Link>

@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
+import { useContext } from 'react';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 const MONTHS = [
   'January','February','March','April','May','June',
@@ -11,6 +13,7 @@ const MONTHS = [
 
 function AdventureDetails() {
   const { id } = useParams();
+  const { currency, toggleCurrency, formatPrice } = useContext(CurrencyContext);
   const [adventure, setAdventure] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -93,8 +96,21 @@ function AdventureDetails() {
         <span className="navbar-brand" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           Samye Travels
         </span>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+        <button 
+          onClick={toggleCurrency} 
+          style={{
+            background: 'rgba(255,255,255,0.2)', border: '1px solid white', 
+            color: 'white', padding: '6px 12px', borderRadius: '20px', 
+            cursor: 'pointer', fontWeight: 'bold'
+          }}
+        >
+          {currency === 'USD' ? '🇺🇸 USD' : '🇳🇵 NPR'}
+        </button>
         <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
+        </div>
       </nav>
+
 
       <div className="details-hero" style={{ backgroundImage: `url('${heroImage}')` }}>
         <div className="details-hero-overlay"></div>

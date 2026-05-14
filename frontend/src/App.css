@@ -1758,38 +1758,33 @@ body {
   max-width: 520px;
 }
 
-/* ── iOS-STYLE TOGGLE ──
-   Outer wrapper centres the toggle and provides the upward overlap with the
-   controls row below. The inner .packages-toggle is the pill track.
-   .packages-toggle-slider is the white "thumb" that slides left/right.
-   Both buttons sit on top of the slider via z-index.
-*/
+
 .packages-toggle-wrapper {
   position: absolute;
-  bottom: -28px;           /* Overlaps the hero bottom edge */
+  bottom: -55px;           
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20;
+  z-index: 10;
 }
 
 .packages-toggle {
   position: relative;
   display: flex;
-  background-color: rgba(5,11,22,0.88);
+  background-color: #1a5c9e;
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 100px;     /* Full pill */
   padding: 5px;
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   /* Each half = 200px — total pill 400px + padding */
-  width: 420px;
+  width: 400px;
 }
 
 /* The sliding white background thumb */
 .packages-toggle-slider {
   position: absolute;
   top: 5px;
-  left: 5px;
+  left: 10px;
   /* Width = exactly half the inner track */
   width: calc(50% - 5px);
   height: calc(100% - 10px);
@@ -1822,7 +1817,7 @@ body {
 
 /* Active button = dark text on the white slider */
 .packages-toggle-btn.active {
-  color: #050b16;
+  color: #1a5c9e;
 }
 
 /* ── CONTROLS ROW (search + filter pills + count) ── */

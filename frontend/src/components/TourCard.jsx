@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; 
+import { useContext } from 'react';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 function TourCard({ tour }) {
-
+  // 1. We need formatPrice from the context!
+  const { formatPrice } = useContext(CurrencyContext);
   const imageUrl = tour.featuredImage;
 
   const difficultyColor = {
@@ -39,7 +42,8 @@ function TourCard({ tour }) {
                 >
                   {tour.difficulty}
                 </span>
-                <span className="card-price">${tour.price}</span>
+                {/* 2. Swapped the hardcoded $ for the dynamic function */}
+                <span className="card-price">{formatPrice(tour.price)}</span>
               </div>
               <span className="card-cta-btn" style={{ display: 'inline-block' }}>View Tour →</span>
             </div>
