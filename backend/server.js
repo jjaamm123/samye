@@ -190,7 +190,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
             return res.status(400).json({ message: 'No file uploaded' });
         }
         
-        const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+        const imageUrl = `${process.env.API_URL}/uploads/${req.file.filename}`;
         res.status(200).json({ imageUrl });
     } catch (error) {
         console.error("Upload error:", error);

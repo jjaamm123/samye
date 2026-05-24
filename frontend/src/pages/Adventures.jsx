@@ -19,7 +19,7 @@ function Adventures() {
   }, []);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/adventures')
+    axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`)
       .then(res => { setAdventures(res.data); setLoading(false); })
       .catch(err => {
         console.error("Fetch Error:", err);

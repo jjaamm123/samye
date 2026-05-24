@@ -166,11 +166,11 @@ export default function CustomTour() {
   }, []);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/tours')
+    axios.get(`${import.meta.env.VITE_API_URL}/api/tours`)
       .then(r => setTours(r.data))
       .catch(() => {})
       .finally(() => setLoadingTours(false));
-    axios.get('http://localhost:5000/api/adventures')
+    axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`)
       .then(r => setAdventures(r.data))
       .catch(() => {})
       .finally(() => setLoadingAdv(false));

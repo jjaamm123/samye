@@ -43,12 +43,12 @@ function AdminDashboard() {
     if (tab === 'inquiries' && inquiries.length === 0) fetchInquiries();
   }, [tab]);
 
-  const fetchTours = () => axios.get('http://localhost:5000/api/tours').then(r => setTours(r.data)).catch(console.error);
-  const fetchAdventures = () => axios.get('http://localhost:5000/api/adventures').then(r => setAdventures(r.data)).catch(console.error);
-  
+  const fetchTours = () => axios.get(`${import.meta.env.VITE_API_URL}/api/tours`).then(r => setTours(r.data)).catch(console.error);
+  const fetchAdventures = () => axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`).then(r => setAdventures(r.data)).catch(console.error);
+
   const fetchInquiries = () => {
     setLoadingInquiries(true);
-    axios.get('http://localhost:5000/api/inquiries')
+    axios.get(`${import.meta.env.VITE_API_URL}/api/inquiries`)
       .then(r => setInquiries(r.data))
       .catch(console.error).finally(() => setLoadingInquiries(false));
   };
@@ -92,7 +92,7 @@ function AdminDashboard() {
     uploadData.append('image', file);
     setUploadingImage(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/upload', uploadData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload`, uploadData, { headers: { 'Content-Type': 'multipart/form-data' } });
       setFormData(f => ({ ...f, featuredImage: response.data.imageUrl }));
     } catch (err) {
       alert('Failed to upload image. Check server console.');
@@ -111,7 +111,7 @@ function AdminDashboard() {
     delete payload.includedRaw;
     delete payload.excludedRaw;
 
-    const endpoint = `http://localhost:5000/api/${tab}`;
+    const endpoint = `${import.meta.env.VITE_API_URL}/api/${tab}`;
     const request = editingId 
       ? axios.put(`${endpoint}/${editingId}`, payload) // UPDATE
       : axios.post(endpoint, payload);                  // CREATE
@@ -127,13 +127,13 @@ function AdminDashboard() {
 
   const handleDelete = (id) => {
     if (!window.confirm(`Delete this ${tab.slice(0,-1)}? Cannot be undone.`)) return;
-    axios.delete(`http://localhost:5000/api/${tab}/${id}`)
+    axios.delete(`${import.meta.env.VITE_API_URL}/api/${tab}/${id}`)
       .then(() => tab === 'tours' ? fetchTours() : fetchAdventures())
       .catch(console.error);
   };
 
   const updateInquiryStatus = (id, status) => {
-    axios.patch(`http://localhost:5000/api/inquiries/${id}`, { status })
+    axios.patch(`${import.meta.env.VITE_API_URL}/api/inquiries/${id}`, { status })
       .then(() => fetchInquiries()).catch(console.error);
   };
 

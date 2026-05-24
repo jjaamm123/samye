@@ -51,7 +51,7 @@ function TourDetails() {
   }, [lightboxIndex, tour]);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/tours/${id}`)
+    axios.get(`${import.meta.env.VITE_API_URL}/api/tours/${id}`)
       .then(r => {
         setTour(r.data);
         setLoading(false);
@@ -78,7 +78,7 @@ function TourDetails() {
 
   const handleInquirySubmit = e => {
     e.preventDefault();
-    axios.post('http://localhost:5000/api/inquiries', {
+    axios.post(`${import.meta.env.VITE_API_URL}/api/inquiries`, {
       ...inquiryData,
       relatedTour: tour._id
     })

@@ -31,12 +31,12 @@ function Packages() {
   }, []);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/tours')
+    axios.get(`${import.meta.env.VITE_API_URL}/api/tours`)
       .then(r => setTours(r.data))
       .catch(() => setErrorTours('Could not load tour packages.'))
       .finally(() => setLoadingTours(false));
 
-    axios.get('http://localhost:5000/api/adventures')
+    axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`)
       .then(r => setAdventures(r.data))
       .catch(() => setErrorAdv('Could not load adventure packages.'))
       .finally(() => setLoadingAdv(false));
@@ -232,9 +232,9 @@ function Packages() {
                     <div className="packages-group-header">
                       <h2 className="section-title" style={{ color: '#0f172a' }}>{dest} Expeditions</h2>
                       <p className="section-subtitle" style={{ color: '#64748b' }}>
-                        {dest === 'Nepal' && 'Trekking routes, temples, and the roof of the world.'}
-                        {dest === 'Tibet' && 'Sacred monasteries and high plateau journeys.'}
-                        {dest === 'India' && 'Ancient heritage and spiritual heartlands.'}
+                        {dest === 'Nepal' && 'Journey into the heart of the Himalayas—where world-class trekking trails meet ancient temples and untamed wilderness.'}
+                        {dest === 'Tibet' && 'Traverse the highest plateau on Earth, discovering sacred monasteries, turquoise lakes, and profound spiritual heritage.'}
+                        {dest === 'India' && 'Immerse yourself in a tapestry of ancient cultures, sacred rivers, and vibrant traditions that have drawn seekers for centuries.'}
                       </p>
                     </div>
                     <div className="tours-grid">

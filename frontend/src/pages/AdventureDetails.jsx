@@ -46,7 +46,7 @@ function AdventureDetails() {
   }, [lightboxIndex, adventure]);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/adventures/${id}`)
+    axios.get(`${import.meta.env.VITE_API_URL}/api/adventures/${id}`)
       .then(r => {
         setAdventure(r.data);
         setLoading(false);
@@ -76,7 +76,7 @@ function AdventureDetails() {
 
   const handleInquirySubmit = e => {
     e.preventDefault();
-    axios.post('http://localhost:5000/api/inquiries', {
+    axios.post(`${import.meta.env.VITE_API_URL}/api/inquiries`, {
       ...inquiryData,
       relatedAdventure: adventure._id
     })

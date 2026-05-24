@@ -19,7 +19,7 @@ function Tours() {
   }, []);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/tours')
+    axios.get(`${import.meta.env.VITE_API_URL}/api/tours`)
       .then((response) => {
         setTours(response.data);
         setLoading(false);

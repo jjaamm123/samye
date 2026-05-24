@@ -33,7 +33,7 @@ function Contact() {
 
   const handleSubmit = e => {
     e.preventDefault();
-    axios.post('http://localhost:5000/api/inquiries', formData)
+    axios.post(`${import.meta.env.VITE_API_URL}/api/inquiries`, formData)
       .then(() => {
         setSubmitStatus('success');
         setFormData({
