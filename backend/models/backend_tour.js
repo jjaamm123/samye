@@ -1,6 +1,4 @@
-
 const mongoose = require('mongoose');
-
 
 const ItineraryDaySchema = new mongoose.Schema(
   {
@@ -20,13 +18,19 @@ const TourSchema = new mongoose.Schema(
     localPrice:    { type: Number, required: true },  // NPR (Nepali Rupee)
     difficulty:    { type: String, enum: ['Easy', 'Moderate', 'Hard', 'Challenging'], default: 'Moderate' },
     description:   { type: String, required: true },
-    featuredImage: { type: String, default: '/images/default.jpg' },
-    gallery:       [{ type: String }],
-
+    cardImage: { 
+        type: String, 
+        required: true 
+    },      
+    heroImage: { 
+        type: String, 
+        required: true 
+    },      
+    galleryImages: [{ 
+        type: String 
+    }],
     included: [{ type: String, trim: true }],  // ✅ rendered
     excluded: [{ type: String, trim: true }],  // ❌ rendered
-
-
     itinerary: [ItineraryDaySchema]
   },
   { timestamps: true }

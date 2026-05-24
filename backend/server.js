@@ -7,30 +7,13 @@ const Tour = require('./models/backend_tour');
 const Booking = require('./models/booking'); 
 const Adventure = require('./models/backend_adventure'); 
 const Inquiry = require('./models/backend_inquiry');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs')
+const upload = require('./middleware/upload'); // <-- Your new Cloudinary middleware
+
 const app = express();
-
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename: function(req, file, cb) {
-        
-        cb(null, Date.now() + path.extname(file.originalname)); 
-    }
-});
-const upload = multer({ storage: storage });
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.urlencoded({ extended: true }));
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Successfully connected to MongoDB"))
@@ -40,6 +23,7 @@ app.get('/api/test', (req, res) => {
     res.json({ message: "running" });
 });
 
+// ─── TOURS ─────────────────────────────────────────────────────────────
 app.get('/api/tours', async (req, res) => {
     try {
         const allTours = await Tour.find(); 
@@ -61,24 +45,51 @@ app.get('/api/tours/:id', async (req, res) => {
     }
 });
 
-app.put('/api/tours/:id', async (req, res) => {
+// POST - Create a new tour with multiple images
+app.post('/api/tours', upload.fields([
+    { name: 'cardImage', maxCount: 1 },
+    { name: 'heroImage', maxCount: 1 },
+    { name: 'galleryImages', maxCount: 10 }
+]), async (req, res) => {
     try {
-        const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const tourData = { ...req.body };
+
+        // Attach Cloudinary URLs if files were uploaded
+        if (req.files) {
+            if (req.files['cardImage']) tourData.cardImage = req.files['cardImage'][0].path;
+            if (req.files['heroImage']) tourData.heroImage = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) tourData.galleryImages = req.files['galleryImages'].map(file => file.path);
+        }
+
+        const newTour = await Tour.create(tourData);
+        res.status(201).json(newTour); 
+    } catch (error) {
+        console.error("Error creating tour:", error);
+        res.status(400).json({ message: "Failed to create tour." });
+    }
+});
+
+// PUT - Update a tour and optionally change images
+app.put('/api/tours/:id', upload.fields([
+    { name: 'cardImage', maxCount: 1 },
+    { name: 'heroImage', maxCount: 1 },
+    { name: 'galleryImages', maxCount: 10 }
+]), async (req, res) => {
+    try {
+        const updateData = { ...req.body };
+
+        if (req.files) {
+            if (req.files['cardImage']) updateData.cardImage = req.files['cardImage'][0].path;
+            if (req.files['heroImage']) updateData.heroImage = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) updateData.galleryImages = req.files['galleryImages'].map(file => file.path);
+        }
+
+        const updatedTour = await Tour.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedTour) return res.status(404).json({ message: "Tour not found." });
         res.status(200).json(updatedTour);
     } catch (error) {
         console.error("Error updating tour:", error);
         res.status(500).json({ message: "Failed to update tour." });
-    }
-});
-
-app.post('/api/tours', async (req, res) => {
-    try {
-        const newTour = await Tour.create(req.body);
-        res.status(201).json(newTour); 
-    } catch (error) {
-        console.error("Error creating tour:", error);
-        res.status(400).json({ message: "Failed to create tour." });
     }
 });
 
@@ -115,9 +126,45 @@ app.get('/api/adventures/:id', async (req, res) => {
     }
 });
 
-app.put('/api/adventures/:id', async (req, res) => {
+// POST - Create a new adventure with multiple images
+app.post('/api/adventures', upload.fields([
+    { name: 'cardImage', maxCount: 1 },
+    { name: 'heroImage', maxCount: 1 },
+    { name: 'galleryImages', maxCount: 10 }
+]), async (req, res) => {
     try {
-        const updatedAdv = await Adventure.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const advData = { ...req.body };
+
+        if (req.files) {
+            if (req.files['cardImage']) advData.cardImage = req.files['cardImage'][0].path;
+            if (req.files['heroImage']) advData.heroImage = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) advData.galleryImages = req.files['galleryImages'].map(file => file.path);
+        }
+
+        const newAdv = await Adventure.create(advData);
+        res.status(201).json(newAdv); 
+    } catch (error) {
+        console.error("Error creating adventure:", error);
+        res.status(400).json({ message: "Failed to create adventure." });
+    }
+});
+
+// PUT - Update an adventure and optionally change images
+app.put('/api/adventures/:id', upload.fields([
+    { name: 'cardImage', maxCount: 1 },
+    { name: 'heroImage', maxCount: 1 },
+    { name: 'galleryImages', maxCount: 10 }
+]), async (req, res) => {
+    try {
+        const updateData = { ...req.body };
+
+        if (req.files) {
+            if (req.files['cardImage']) updateData.cardImage = req.files['cardImage'][0].path;
+            if (req.files['heroImage']) updateData.heroImage = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) updateData.galleryImages = req.files['galleryImages'].map(file => file.path);
+        }
+
+        const updatedAdv = await Adventure.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedAdv) return res.status(404).json({ message: "Adventure not found." });
         res.status(200).json(updatedAdv);
     } catch (error) {
@@ -137,19 +184,7 @@ app.delete('/api/adventures/:id', async (req, res) => {
     }
 });
 
-app.post('/api/adventures', async (req, res) => {
-    try {
-        const newAdv = await Adventure.create(req.body);
-        res.status(201).json(newAdv); 
-    } catch (error) {
-        console.error("Error creating adventure:", error);
-        res.status(400).json({ message: "Failed to create adventure." });
-    }
-});
-
-
 // ─── INQUIRIES ─────────────────────────────────────────────────────────
-// GET all inquiries
 app.get('/api/inquiries', async (req, res) => {
     try {
         const inquiries = await Inquiry.find().sort({ createdAt: -1 });
@@ -160,7 +195,6 @@ app.get('/api/inquiries', async (req, res) => {
     }
 });
 
-// POST new inquiry (from Contact form + detail page forms)
 app.post('/api/inquiries', async (req, res) => {
     try {
         const inq = new Inquiry(req.body);
@@ -172,7 +206,6 @@ app.post('/api/inquiries', async (req, res) => {
     }
 });
 
-// PATCH status update (admin dashboard)
 app.patch('/api/inquiries/:id', async (req, res) => {
     try {
         const inq = await Inquiry.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -184,14 +217,13 @@ app.patch('/api/inquiries/:id', async (req, res) => {
     }
 });
 
+// General singular image upload route (just in case you still need it for generic tasks)
 app.post('/api/upload', upload.single('image'), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
-        
-        const imageUrl = `${process.env.API_URL}/uploads/${req.file.filename}`;
-        res.status(200).json({ imageUrl });
+        res.status(200).json({ imageUrl: req.file.path });
     } catch (error) {
         console.error("Upload error:", error);
         res.status(500).json({ message: "Image upload failed." });

@@ -7,13 +7,15 @@ const EMPTY_DAY = { day: '', title: '', description: '' };
 
 const EMPTY_TOUR = {
   title: '', destination: 'Nepal', duration: '', price: '', localPrice: '',
-  difficulty: 'Moderate', description: '', featuredImage: '',
+  difficulty: 'Moderate', description: '', 
+  cardImage: '', heroImage: '', galleryImages: [], // Upgraded Image Fields
   includedRaw: '', excludedRaw: '', itinerary: []
 };
 
 const EMPTY_ADVENTURE = {
   title: '', location: '', sportType: '', duration: '', price: '', localPrice: '', minAge: '16+',
-  intensity: 'Moderate', description: '', featuredImage: '',
+  intensity: 'Moderate', description: '', 
+  cardImage: '', heroImage: '', galleryImages: [], // Upgraded Image Fields
   includedRaw: '', excludedRaw: '', itinerary: []
 };
 
@@ -26,7 +28,7 @@ function AdminDashboard() {
 
   // Unified Form State
   const [formData, setFormData] = useState(EMPTY_TOUR);
-  const [editingId, setEditingId] = useState(null); // If null, we are creating. If ID, we are updating.
+  const [editingId, setEditingId] = useState(null); 
   const [submitStatus, setSubmitStatus] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -66,7 +68,6 @@ function AdminDashboard() {
     setEditingId(item._id);
     setFormData({
       ...item,
-      // Convert arrays back to comma-separated strings for the inputs
       includedRaw: item.included?.join(', ') || '',
       excludedRaw: item.excluded?.join(', ') || ''
     });
@@ -85,24 +86,64 @@ function AdminDashboard() {
   const updateDay = (index, field, value) => setFormData(f => ({ ...f, itinerary: f.itinerary.map((d, i) => i === index ? { ...d, [field]: value } : d) }));
   const removeDay = (index) => setFormData(f => ({ ...f, itinerary: f.itinerary.filter((_, i) => i !== index).map((d, i) => ({ ...d, day: i + 1 })) }));
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // ─── CLOUDINARY IMAGE UPLOAD LOGIC ───
+  const uploadSingleImageToCloud = async (file) => {
     const uploadData = new FormData();
     uploadData.append('image', file);
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload`, uploadData, { 
+        headers: { 'Content-Type': 'multipart/form-data' } 
+    });
+    return response.data.imageUrl;
+  };
+
+  const handleSingleFileUpload = async (e, fieldName) => {
+    const file = e.target.files[0];
+    if (!file) return;
     setUploadingImage(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload`, uploadData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setFormData(f => ({ ...f, featuredImage: response.data.imageUrl }));
+      const url = await uploadSingleImageToCloud(file);
+      setFormData(f => ({ ...f, [fieldName]: url }));
     } catch (err) {
-      alert('Failed to upload image. Check server console.');
+      alert(`Failed to upload ${fieldName}. Check server console.`);
+      console.error(err);
     } finally {
       setUploadingImage(false);
     }
-  };  
+  };
 
+  const handleGalleryUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploadingImage(true);
+    try {
+      const uploadPromises = files.map(file => uploadSingleImageToCloud(file));
+      const urls = await Promise.all(uploadPromises);
+      setFormData(f => ({ ...f, galleryImages: [...(f.galleryImages || []), ...urls] }));
+    } catch (err) {
+      alert('Failed to upload some gallery images. Check server console.');
+      console.error(err);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeGalleryImage = (indexToRemove) => {
+    setFormData(f => ({
+      ...f,
+      galleryImages: f.galleryImages.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  // ─── SUBMIT HANDLER ───
   const handleSubmit = e => {
     e.preventDefault();
+    
+    // Ensure critical images exist before submission
+    if (!formData.cardImage || !formData.heroImage) {
+        alert("Please upload both a Card Image and a Hero Image before saving.");
+        return;
+    }
+
     const payload = {
       ...formData,
       included: formData.includedRaw.split(',').map(s => s.trim()).filter(Boolean),
@@ -178,7 +219,7 @@ function AdminDashboard() {
             <div className="admin-card">
               <div className="admin-card-header">
                 <h2 className="admin-card-title">{editingId ? 'Edit' : 'Add New'} {isTour ? 'Package' : 'Adventure'}</h2>
-                {editingId && <button onClick={cancelEdit} className="admin-refresh-btn">Cancel Edit</button>}
+                {editingId && <button type="button" onClick={cancelEdit} className="admin-refresh-btn">Cancel Edit</button>}
               </div>
 
               {submitStatus === 'success' && <div className="admin-alert success">✓ Successfully saved!</div>}
@@ -231,7 +272,6 @@ function AdminDashboard() {
                   </>
                 )}
 
-                {/* Shared Fields */}
                 <div className="admin-form-group">
                   <label className="admin-label">Duration</label>
                   <input name="duration" value={formData.duration} onChange={handleChange} required placeholder="e.g. 14 Days" className="admin-input" />
@@ -247,16 +287,45 @@ function AdminDashboard() {
                   <input type="number" name="localPrice" value={formData.localPrice} onChange={handleChange} required className="admin-input" />
                 </div>
 
-                {/* Image Upload */}
+                {/* ─── NEW CLOUDINARY IMAGE UPLOADERS ─── */}
                 <div className="admin-form-group admin-form-full">
-                  <label className="admin-label">Featured Image</label>
-                  <input type="file" accept="image/*" onChange={handleImageUpload} className="admin-input" style={{ padding: '8px' }} />
-                  {uploadingImage && <p className="admin-label-hint">Uploading image to server...</p>}
-                  {formData.featuredImage && (
-                    <img src={formData.featuredImage} alt="Preview" style={{ width: '150px', marginTop: '10px', borderRadius: '8px' }} />
+                  <label className="admin-label">Card Image (Required)</label>
+                  <input type="file" accept="image/*" onChange={(e) => handleSingleFileUpload(e, 'cardImage')} className="admin-input" style={{ padding: '8px' }} />
+                  {formData.cardImage && (
+                    <img src={formData.cardImage} alt="Card Preview" style={{ width: '150px', marginTop: '10px', borderRadius: '8px', objectFit: 'cover' }} />
                   )}
                 </div>
 
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">Hero Image (Required)</label>
+                  <input type="file" accept="image/*" onChange={(e) => handleSingleFileUpload(e, 'heroImage')} className="admin-input" style={{ padding: '8px' }} />
+                  {formData.heroImage && (
+                    <img src={formData.heroImage} alt="Hero Preview" style={{ width: '100%', maxHeight: '200px', marginTop: '10px', borderRadius: '8px', objectFit: 'cover' }} />
+                  )}
+                </div>
+
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">Gallery Images (Select up to 10)</label>
+                  <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="admin-input" style={{ padding: '8px' }} />
+                  {uploadingImage && <p className="admin-label-hint">Uploading images to Cloudinary...</p>}
+                  
+                  {formData.galleryImages?.length > 0 && (
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                      {formData.galleryImages.map((url, index) => (
+                        <div key={index} style={{ position: 'relative' }}>
+                          <img src={url} alt={`Gallery ${index}`} style={{ width: '100px', height: '100px', borderRadius: '8px', objectFit: 'cover' }} />
+                          <button
+                            type="button"
+                            onClick={() => removeGalleryImage(index)}
+                            style={{ position: 'absolute', top: '5px', right: '5px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '50%', cursor: 'pointer', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+                          >✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* ─── TEXT & ITINERARY ─── */}
                 <div className="admin-form-group admin-form-full">
                   <label className="admin-label">Description</label>
                   <textarea name="description" value={formData.description} onChange={handleChange} required rows="3" className="admin-input admin-textarea"></textarea>
@@ -272,7 +341,6 @@ function AdminDashboard() {
                   <input name="excludedRaw" value={formData.excludedRaw} onChange={handleChange} className="admin-input" />
                 </div>
 
-                {/* Itinerary */}
                 <div className="admin-form-group admin-form-full">
                   <label className="admin-label">Itinerary Phases</label>
                   {formData.itinerary.map((day, index) => (
@@ -287,7 +355,7 @@ function AdminDashboard() {
                 </div>
 
                 <div className="admin-form-full">
-                  <button type="submit" className="admin-submit-btn">
+                  <button type="submit" className="admin-submit-btn" disabled={uploadingImage}>
                     {editingId ? 'Update' : 'Publish'} {isTour ? 'Tour' : 'Adventure'}
                   </button>
                 </div>
@@ -341,7 +409,6 @@ function AdminDashboard() {
               </div>
               <button className="admin-refresh-btn" onClick={fetchInquiries}>↺ Refresh</button>
             </div>
-            {/* Same Inquiry Rendering as before */}
             {!loadingInquiries && inquiries.length > 0 && (
               <div className="admin-inquiry-list">
                 {inquiries.map(inq => (
