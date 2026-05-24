@@ -4,8 +4,6 @@ import { useContext } from 'react';
 import { CurrencyContext } from '../context/CurrencyContext';
   
 function AdventureCard({ adventure }) {
-
-  // 1. We need formatPrice from the context!
   const { formatPrice } = useContext(CurrencyContext);
 
   const intensityColor = {
@@ -15,7 +13,8 @@ function AdventureCard({ adventure }) {
     Extreme: '#e63946',
   }[adventure.intensity] || '#1a5c9e';
 
-  const imageUrl = adventure.featuredImage || '';
+  // Look for the new cardImage first, fallback to the old featuredImage if needed
+  const imageUrl = adventure.cardImage || adventure.featuredImage || '';
 
   return (
     <div className="tour-card">

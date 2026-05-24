@@ -4,9 +4,10 @@ import { useContext } from 'react';
 import { CurrencyContext } from '../context/CurrencyContext';
 
 function TourCard({ tour }) {
-  // 1. We need formatPrice from the context!
   const { formatPrice } = useContext(CurrencyContext);
-  const imageUrl = tour.featuredImage;
+  
+  // Look for the new cardImage first, fallback to the old featuredImage if needed
+  const imageUrl = tour.cardImage || tour.featuredImage;
 
   const difficultyColor = {
     Easy: '#2ecc71',
@@ -42,7 +43,6 @@ function TourCard({ tour }) {
                 >
                   {tour.difficulty}
                 </span>
-                {/* 2. Swapped the hardcoded $ for the dynamic function */}
                 <span className="card-price">{formatPrice(tour.price)}</span>
               </div>
               <span className="card-cta-btn" style={{ display: 'inline-block' }}>View Tour →</span>
