@@ -108,47 +108,6 @@ function About() {
           </div>
         </div>
 
-        <div className="section-header" style={{ marginTop: '80px' }}>
-          <h2 className="section-title">Meet the Team</h2>
-          <p className="section-subtitle">The people who make your journey possible</p>
-        </div>
-
-        <div className="about-team-grid">
-          <div className="about-team-card">
-            <img
-              className="about-team-img"
-              src="https://images.unsplash.com/photo-1551114671-fa2b87f4c7d0?auto=format&fit=crop&w=400&q=80"
-              alt="A"
-            />
-            <div className="about-team-info">
-              <p className="about-team-name">Mr X</p>
-              <p className="about-team-role">Founder & Head Guide</p>
-            </div>
-          </div>
-          <div className="about-team-card">
-            <img
-              className="about-team-img"
-              src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=400&q=80"
-              alt="B"
-            />
-            <div className="about-team-info">
-              <p className="about-team-name">Mr Y</p>
-              <p className="about-team-role">Operations Lead</p>
-            </div>
-          </div>
-          <div className="about-team-card">
-            <img
-              className="about-team-img"
-              src="https://images.unsplash.com/photo-1605640840428-583c4b572240?auto=format&fit=crop&w=400&q=80"
-              alt="C"
-            />
-            <div className="about-team-info">
-              <p className="about-team-name">Mr Z</p>
-              <p className="about-team-role">Trek Safety Specialist</p>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       {/* Footer — same as homepage */}

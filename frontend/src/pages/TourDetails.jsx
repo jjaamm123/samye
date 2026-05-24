@@ -109,7 +109,7 @@ function TourDetails() {
               cursor: 'pointer', fontWeight: 'bold'
             }}
           >
-            {currency === 'USD' ? '🇺🇸 USD' : '🇳🇵 NPR'}
+            {currency === 'USD' ? 'USD' : 'NPR'}
           </button>
           <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
         </div>
@@ -122,7 +122,7 @@ function TourDetails() {
           <span className="details-hero-tag">{tour.package}</span>
           <h1 className="details-hero-title">{tour.title}</h1>
           <div className="details-hero-pills">
-            <span className="details-pill">⏱ {tour.duration} Days</span>
+            <span className="details-pill">{tour.duration} Days</span>
             <span className="details-pill" style={{ backgroundColor: difficultyColor }}>{tour.difficulty}</span>
           </div>
         </div>
@@ -146,11 +146,11 @@ function TourDetails() {
 
                 {tour.included?.length > 0 && (
                   <div className="inclusions-col">
-                    <h4 className="inclusions-col-title included">✅ Included</h4>
+                    <h4 className="inclusions-col-title included">Included</h4>
                     <ul className="inclusions-list">
                       {tour.included.map((item, i) => (
                         <li key={i} className="inclusions-item included">
-                          <span className="inclusions-icon">✅</span>
+                          <span className="inclusions-icon">&#10003;</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -160,11 +160,11 @@ function TourDetails() {
 
                 {tour.excluded?.length > 0 && (
                   <div className="inclusions-col">
-                    <h4 className="inclusions-col-title excluded">❌ Excluded</h4>
+                    <h4 className="inclusions-col-title excluded">Excluded</h4>
                     <ul className="inclusions-list">
                       {tour.excluded.map((item, i) => (
                         <li key={i} className="inclusions-item excluded">
-                          <span className="inclusions-icon">❌</span>
+                          <span className="inclusions-icon">&#10005;</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -225,7 +225,7 @@ function TourDetails() {
               <div className="carousel-wrapper">
                 <div className="carousel-slide" onClick={() => setLightboxIndex(activeSlide)}>
                   <img src={gallery[activeSlide]} alt={`Gallery ${activeSlide + 1}`} className="carousel-image" />
-                  <div className="carousel-expand-hint">⛶ Click to enlarge</div>
+                  <div className="carousel-expand-hint">Click to enlarge</div>
                 </div>
                 {gallery.length > 1 && (
                   <>

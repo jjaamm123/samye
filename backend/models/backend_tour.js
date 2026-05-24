@@ -17,6 +17,7 @@ const TourSchema = new mongoose.Schema(
     destination:   { type: String, required: true, enum: ['Nepal', 'Tibet', 'India'] },
     duration:      { type: Number, required: true },     // in days
     price:         { type: Number, required: true },
+    localPrice:    { type: Number, required: true },  // NPR (Nepali Rupee)
     difficulty:    { type: String, enum: ['Easy', 'Moderate', 'Hard', 'Challenging'], default: 'Moderate' },
     description:   { type: String, required: true },
     featuredImage: { type: String, default: '/images/default.jpg' },

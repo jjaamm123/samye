@@ -729,7 +729,7 @@ body {
 .admin-page-header { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #e0d9cc; }
 .admin-page-title { font-family: 'Lora', serif; font-size: 1.8rem; font-weight: 700; color: #050b16; margin: 0 0 4px; }
 .admin-page-subtitle { font-size: 0.9rem; color: #888; margin: 0; }
-.admin-card { background: #ffffff; border-radius: 8px; box-shadow: 0 2px 12px rgba(5,11,22,0.06); border: 1px solid rgba(5,11,22,0.06); overflow: hidden; }
+.admin-card { background: #ffffff; border-radius: 6px; box-shadow: none; border: 1px solid #e2e8f0; overflow: hidden; }
 .admin-card-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px; border-bottom: 1px solid #f0e8d8; }
 .admin-card-title { font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 600; color: #050b16; margin: 0; }
 .admin-card-count { font-size: 0.8rem; font-weight: 600; color: #888; background-color: #f7f2e8; padding: 4px 10px; border-radius: 20px; }
@@ -740,8 +740,8 @@ body {
 .admin-form-group { display: flex; flex-direction: column; gap: 6px; }
 .admin-form-full { grid-column: span 2; }
 .admin-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px; color: #666; text-transform: uppercase; }
-.admin-input { padding: 11px 14px; border: 1.5px solid #ddd; border-radius: 5px; font-size: 0.95rem; font-family: 'Lato', sans-serif; color: #050b16; background-color: #ffffff; color-scheme: light; transition: border-color 0.2s ease, box-shadow 0.2s ease; outline: none; width: 100%; }
-.admin-input:focus { border-color: #1a5c9e; box-shadow: 0 0 0 3px rgba(26,92,158,0.12); }
+.admin-input { padding: 11px 14px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.95rem; font-family: 'Lato', sans-serif; color: #050b16; background-color: #ffffff; color-scheme: light; transition: border-color 0.2s ease, box-shadow 0.2s ease; outline: none; width: 100%; }
+.admin-input:focus { border-color: #1a5c9e; box-shadow: 0 0 0 2px rgba(26,92,158,0.08); }
 .admin-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
 .admin-submit-btn { width: 100%; background-color: #1a5c9e; color: #fff; border: none; padding: 14px; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.5px; border-radius: 5px; cursor: pointer; font-family: 'Lato', sans-serif; transition: background-color 0.3s ease; }
 .admin-submit-btn:hover { background-color: #246ab5; }

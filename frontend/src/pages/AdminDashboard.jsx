@@ -6,13 +6,13 @@ import '../App.css';
 const EMPTY_DAY = { day: '', title: '', description: '' };
 
 const EMPTY_TOUR = {
-  title: '', destination: 'Nepal', duration: '', price: '',
+  title: '', destination: 'Nepal', duration: '', price: '', localPrice: '',
   difficulty: 'Moderate', description: '', featuredImage: '',
   includedRaw: '', excludedRaw: '', itinerary: []
 };
 
 const EMPTY_ADVENTURE = {
-  title: '', location: '', sportType: '', duration: '', price: '', minAge: '16+',
+  title: '', location: '', sportType: '', duration: '', price: '', localPrice: '', minAge: '16+',
   intensity: 'Moderate', description: '', featuredImage: '',
   includedRaw: '', excludedRaw: '', itinerary: []
 };
@@ -151,14 +151,14 @@ function AdminDashboard() {
           <span className="admin-sidebar-sub">Admin Panel</span>
         </div>
         <nav className="admin-sidebar-nav">
-          <span className={`admin-nav-item ${tab === 'tours' ? 'active' : ''}`} onClick={() => handleTabSwitch('tours')}>🏔️ Tours</span>
-          <span className={`admin-nav-item ${tab === 'adventures' ? 'active' : ''}`} onClick={() => handleTabSwitch('adventures')}>🏄 Adventures</span>
-          <span className={`admin-nav-item ${tab === 'inquiries' ? 'active' : ''}`} onClick={() => handleTabSwitch('inquiries')}>📬 Inquiries
+          <span className={`admin-nav-item ${tab === 'tours' ? 'active' : ''}`} onClick={() => handleTabSwitch('tours')}>Tours</span>
+          <span className={`admin-nav-item ${tab === 'adventures' ? 'active' : ''}`} onClick={() => handleTabSwitch('adventures')}>Adventures</span>
+          <span className={`admin-nav-item ${tab === 'inquiries' ? 'active' : ''}`} onClick={() => handleTabSwitch('inquiries')}>Inquiries
             {inquiries.filter(i => i.status === 'new').length > 0 && (
               <span className="admin-badge">{inquiries.filter(i => i.status === 'new').length}</span>
             )}
           </span>
-          <Link to="/" className="admin-nav-item">🌐 View Live Site</Link>
+          <Link to="/" className="admin-nav-item">View Live Site</Link>
         </nav>
       </aside>
 
@@ -242,6 +242,11 @@ function AdminDashboard() {
                   <input type="number" name="price" value={formData.price} onChange={handleChange} required className="admin-input" />
                 </div>
 
+                <div className="admin-form-group">
+                  <label className="admin-label">Local Price (NPR)</label>
+                  <input type="number" name="localPrice" value={formData.localPrice} onChange={handleChange} required className="admin-input" />
+                </div>
+
                 {/* Image Upload */}
                 <div className="admin-form-group admin-form-full">
                   <label className="admin-label">Featured Image</label>
@@ -258,18 +263,18 @@ function AdminDashboard() {
                 </div>
 
                 <div className="admin-form-group admin-form-full">
-                  <label className="admin-label">✅ Included (comma-separated)</label>
+                  <label className="admin-label">Included (comma-separated)</label>
                   <input name="includedRaw" value={formData.includedRaw} onChange={handleChange} className="admin-input" />
                 </div>
 
                 <div className="admin-form-group admin-form-full">
-                  <label className="admin-label">❌ Excluded (comma-separated)</label>
+                  <label className="admin-label">Excluded (comma-separated)</label>
                   <input name="excludedRaw" value={formData.excludedRaw} onChange={handleChange} className="admin-input" />
                 </div>
 
                 {/* Itinerary */}
                 <div className="admin-form-group admin-form-full">
-                  <label className="admin-label">🗓️ Itinerary Phases</label>
+                  <label className="admin-label">Itinerary Phases</label>
                   {formData.itinerary.map((day, index) => (
                     <div key={index} className="admin-itinerary-row">
                       <div className="admin-itinerary-day-badge">{isTour ? 'Day' : 'Phase'} {day.day}</div>

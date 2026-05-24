@@ -103,9 +103,9 @@ function getFeasibilityReport(selectedItems, travelDate, groupSize) {
     const hasRafting = selectedItems.some(i =>
       ['raft', 'kayak', 'river'].some(kw => (i.title || '').toLowerCase().includes(kw))
     );
-    if (hasTrek) warnings.push({ icon: '⚠️', text: 'Monsoon season (Jun–Sep): High-altitude trekking routes are slippery and some passes may be closed. Consider lower-altitude alternatives.' });
-    if (hasRafting) tips.push({ icon: '✅', text: 'Monsoon is actually great for white-water rafting — river levels are at their highest!' });
-    else tips.push({ icon: '☔', text: 'Monsoon offers dramatic landscapes and very few tourists. Budget accommodations are easier to find.' });
+    if (hasTrek) warnings.push({ icon: '—', text: 'Monsoon season (Jun–Sep): High-altitude trekking routes are slippery and some passes may be closed. Consider lower-altitude alternatives.' });
+    if (hasRafting) tips.push({ icon: '—', text: 'Monsoon is actually great for white-water rafting — river levels are at their highest!' });
+    else tips.push({ icon: '—', text: 'Monsoon offers dramatic landscapes and very few tourists. Budget accommodations are easier to find.' });
   }
 
   if (month && [12, 1, 2].includes(month)) {
@@ -114,24 +114,24 @@ function getFeasibilityReport(selectedItems, travelDate, groupSize) {
         (i.title || '').toLowerCase().includes(kw)
       )
     );
-    if (hasHighAltitude) warnings.push({ icon: '❄️', text: 'Winter (Dec–Feb): Thorong La pass on Annapurna Circuit may be closed. Everest region is clear but very cold (-20°C at base camp). Extra gear required.' });
-    else tips.push({ icon: '☀️', text: 'Winter is excellent for lower-altitude destinations like Chitwan, Pokhara lakeside, and India circuits — clear skies, minimal crowds.' });
+    if (hasHighAltitude) warnings.push({ icon: '—', text: 'Winter (Dec–Feb): Thorong La pass on Annapurna Circuit may be closed. Everest region is clear but very cold (-20°C at base camp). Extra gear required.' });
+    else tips.push({ icon: '—', text: 'Winter is excellent for lower-altitude destinations like Chitwan, Pokhara lakeside, and India circuits — clear skies, minimal crowds.' });
   }
 
   if (month && [10, 11].includes(month)) {
-    tips.push({ icon: '🏆', text: 'Peak season: Oct–Nov offers the best mountain views, stable weather, and ideal trekking conditions. Book accommodation well in advance.' });
+    tips.push({ icon: '—', text: 'Peak season: Oct–Nov offers the best mountain views, stable weather, and ideal trekking conditions. Book accommodation well in advance.' });
   }
 
   if (destinations.length >= 2) {
-    notes.push({ icon: '✈️', text: `Multi-destination trip (${destinations.join(' → ')}). We\'ve added ${destinations.length - 1} transit day(s) to your timeline for flights/ground transport.` });
+    notes.push({ icon: '—', text: `Multi-destination trip (${destinations.join(' → ')}). We\'ve added ${destinations.length - 1} transit day(s) to your timeline for flights/ground transport.` });
   }
 
   if (totalDays > 21) {
-    notes.push({ icon: '📋', text: `Long journey (${Math.ceil(totalDays)} days). Nepal standard visa is 15 days — you\'ll likely need a 30-day visa ($50) or extension ($45 per extra 15 days).` });
+    notes.push({ icon: '—', text: `Long journey (${Math.ceil(totalDays)} days). Nepal standard visa is 15 days — you\'ll likely need a 30-day visa ($50) or extension ($45 per extra 15 days).` });
   }
 
   if (groupSize >= 8) {
-    notes.push({ icon: '🚌', text: `Group of ${groupSize}: Private transport is recommended (vs shared). We can arrange a dedicated vehicle for the full journey.` });
+    notes.push({ icon: '—', text: `Group of ${groupSize}: Private transport is recommended (vs shared). We can arrange a dedicated vehicle for the full journey.` });
   }
 
   const permitTotalPerPerson = permits.reduce((s, p) => s + (p.perPerson ? p.cost : 0), 0);
@@ -260,8 +260,8 @@ export default function CustomTour() {
       >
         <div className="page-hero-overlay"></div>
         <div className="page-hero-content">
-          <span className="page-hero-eyebrow">Design Your Perfect Journey</span>
-          <h1 className="page-hero-title">Build My Custom Trip</h1>
+          <span className="page-hero-eyebrow">Custom Itineraries</span>
+          <h1 className="page-hero-title">Build Your Expedition</h1>
         </div>
       </div>
 
@@ -269,10 +269,10 @@ export default function CustomTour() {
       <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '24px', paddingRight: '5%', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ background: '#f1f5f9', borderRadius: '30px', padding: '4px', display: 'flex', gap: '4px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
           <button onClick={() => currency !== 'USD' && toggleCurrency()} style={{ padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold', background: currency === 'USD' ? '#1a5c9e' : 'transparent', color: currency === 'USD' ? 'white' : '#64748b', transition: 'all 0.3s ease' }}>
-            🇺🇸 USD
+            USD
           </button>
           <button onClick={() => currency !== 'NPR' && toggleCurrency()} style={{ padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold', background: currency === 'NPR' ? '#1a5c9e' : 'transparent', color: currency === 'NPR' ? 'white' : '#64748b', transition: 'all 0.3s ease' }}>
-            🇳🇵 NPR
+            NPR
           </button>
         </div>
       </div>
@@ -299,13 +299,13 @@ export default function CustomTour() {
               className={`builder-picker-tab ${pickerTab === 'tours' ? 'active' : ''}`}
               onClick={() => setPickerTab('tours')}
             >
-              🏔️ Tours ({filteredTours.length})
+              Tours ({filteredTours.length})
             </button>
             <button
               className={`builder-picker-tab ${pickerTab === 'adventures' ? 'active' : ''}`}
               onClick={() => setPickerTab('adventures')}
             >
-              🏄 Adventures ({filteredAdventures.length})
+              Adventures ({filteredAdventures.length})
             </button>
           </div>
 
@@ -397,7 +397,7 @@ export default function CustomTour() {
 
           {tripItems.length === 0 ? (
             <div className="builder-empty-trip">
-              <span className="builder-empty-icon">🗺️</span>
+              <span className="builder-empty-icon"></span>
               <p>Your trip is empty. Add packages from the left panel to get started.</p>
             </div>
           ) : (
@@ -406,7 +406,7 @@ export default function CustomTour() {
                 <div className="builder-timeline-item" key={item.uid}>
                   <div className="builder-timeline-connector">
                     <div className="builder-timeline-dot" style={{ backgroundColor: item.type === 'adventure' ? '#e63946' : '#1a5c9e' }}>
-                      {item.type === 'adventure' ? '🏄' : '🏔️'}
+                      {item.type === 'adventure' ? 'A' : 'T'}
                     </div>
                     {index < tripItems.length - 1 && <div className="builder-timeline-line"></div>}
                   </div>
@@ -418,10 +418,10 @@ export default function CustomTour() {
                         </span>
                         <h4 className="builder-timeline-title">{item.title}</h4>
                         <div className="builder-timeline-meta">
-                          <span>📍 {item.destination || item.location}</span>
-                          <span>⏱ {item.duration} {item.type === 'tour' ? 'days' : ''}</span>
+                          <span>{item.destination || item.location}</span>
+                          <span>{item.duration} {item.type === 'tour' ? 'days' : ''}</span>
                           {/* ── UPDATED PRICING ── */}
-                          <span>💰 {formatPrice(item.price)}/person</span>
+                          <span>{formatPrice(item.price)}/person</span>
                         </div>
                       </div>
                       <button className="builder-remove-btn" onClick={() => removeItem(item.uid)} title="Remove">✕</button>
@@ -441,11 +441,11 @@ export default function CustomTour() {
           {calc && (
             <div className="builder-totals-bar">
               <div className="builder-total-chip">
-                <span>📅 Total Duration</span>
+                <span>Total Duration</span>
                 <strong>{calc.feasibility.totalDays} Days</strong>
               </div>
               <div className="builder-total-chip">
-                <span>👥 {groupSize} Traveller{groupSize > 1 ? 's' : ''}</span>
+                <span>{groupSize} Traveller{groupSize > 1 ? 's' : ''}</span>
                 {/* ── UPDATED PRICING ── */}
                 <strong>{formatPrice(calc.finalPerPerson)}/person</strong>
               </div>
@@ -467,7 +467,7 @@ export default function CustomTour() {
           ) : calc && (
             <>
               <div className="builder-summary-card">
-                <h3 className="builder-summary-heading">💰 Cost Breakdown</h3>
+                <h3 className="builder-summary-heading">Cost Breakdown</h3>
 
                 <div className="builder-cost-row">
                   <span>Base cost ({tripItems.length} pkg × {groupSize} people)</span>
@@ -547,7 +547,7 @@ export default function CustomTour() {
               </div>
 
               <div className="builder-summary-card">
-                <h3 className="builder-summary-heading">🏷️ Available Discounts</h3>
+                <h3 className="builder-summary-heading">Available Discounts</h3>
                 <p className="builder-discount-info-note">Discounts stack additively, capped at 35% off base price.</p>
                 <div className="builder-discount-info-grid">
                   {[
@@ -577,7 +577,7 @@ export default function CustomTour() {
               </div>
 
               <div className="builder-summary-card">
-                <h3 className="builder-summary-heading">🗺️ Feasibility Report</h3>
+                <h3 className="builder-summary-heading">Feasibility Report</h3>
 
                 {calc.feasibility.permits.length > 0 && (
                   <div className="builder-feasibility-section">
@@ -591,13 +591,13 @@ export default function CustomTour() {
                         </div>
                         <p className="builder-permit-note">{p.note}</p>
                         {p.processDays > 0 && (
-                          <span className="builder-permit-days">⏳ Allow {p.processDays} day{p.processDays > 1 ? 's' : ''} processing time</span>
+                          <span className="builder-permit-days">Allow {p.processDays} day{p.processDays > 1 ? 's' : ''} processing time</span>
                         )}
                       </div>
                     ))}
                     {calc.feasibility.maxProcessDays > 0 && (
                       <div className="builder-permit-lead-time">
-                        📌 Book at least <strong>{calc.feasibility.maxProcessDays + 7} days</strong> before your travel date to process all permits.
+                        Book at least <strong>{calc.feasibility.maxProcessDays + 7} days</strong> before your travel date to process all permits.
                       </div>
                     )}
                   </div>
@@ -638,7 +638,7 @@ export default function CustomTour() {
 
                 {calc.feasibility.permits.length === 0 && calc.feasibility.warnings.length === 0 && calc.feasibility.notes.length === 0 && (
                   <div className="builder-feasibility-item tip">
-                    <span>✅</span><p>No major feasibility concerns detected for your current selection. Add a travel date for a seasonal analysis.</p>
+                    <span>—</span><p>No major feasibility concerns detected for your current selection. Add a travel date for a seasonal analysis.</p>
                   </div>
                 )}
               </div>
@@ -712,7 +712,7 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
         </div>
         <h4 className="picker-item-title">{item.title}</h4>
         <div className="picker-item-meta">
-          <span>⏱ {meta}</span>
+          <span>{meta}</span>
           {/* ── UPDATED PRICING ── */}
           <span className="picker-item-price">{formatPrice(item.price)}<small>/person</small></span>
         </div>
