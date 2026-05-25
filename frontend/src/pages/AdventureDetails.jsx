@@ -55,6 +55,11 @@ function AdventureDetails() {
       .catch(() => { setError('Could not load adventure details.'); setLoading(false); });
   }, [id]);
 
+  // Smooth scroll function for the booking button
+  const scrollToForm = () => {
+    document.getElementById('inquiry-form-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   if (loading) return <p className="status-msg">Loading adventure details…</p>;
   if (error)   return <p className="status-msg error">{error}</p>;
   if (!adventure) return <p className="status-msg">Adventure not found.</p>;
@@ -63,12 +68,10 @@ function AdventureDetails() {
     Easy: '#2ecc71', Moderate: '#f39c12', Intense: '#e67e22', Extreme: '#e63946'
   }[adventure.intensity] || '#1a5c9e';
 
-  // Updated to point to galleryImages
   const gallery = adventure.galleryImages || [];
   const goNext = () => setActiveSlide(s => (s + 1) % gallery.length);
   const goPrev = () => setActiveSlide(s => (s - 1 + gallery.length) % gallery.length);
 
-  // Updated to prioritize heroImage
   let heroImage = adventure.heroImage || adventure.featuredImage || '';
   if (!heroImage || heroImage.startsWith('/images/'))
     heroImage = 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=1920&q=80';
@@ -112,7 +115,6 @@ function AdventureDetails() {
         <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
         </div>
       </nav>
-
 
       <div className="details-hero" style={{ backgroundImage: `url('${heroImage}')` }}>
         <div className="details-hero-overlay"></div>
@@ -251,8 +253,8 @@ function AdventureDetails() {
             </div>
           )}
 
-          {/* Inquiry form */}
-          <div className="details-card" style={{ marginTop: '28px' }}>
+          {/* Contact Form with ID and Dynamic Placeholder */}
+          <div className="details-card" id="inquiry-form-section" style={{ marginTop: '28px' }}>
             <h2 className="details-section-heading">Enquire About This Adventure</h2>
 
             {inquiryStatus === 'success' && (
@@ -303,9 +305,14 @@ function AdventureDetails() {
                 </div>
               </div>
 
-              <textarea name="message" value={inquiryData.message} onChange={handleInquiryChange}
-                placeholder="Any specific questions about this adventure?" rows="4"
-                className="contact-input contact-textarea"></textarea>
+              <textarea 
+                name="message" 
+                value={inquiryData.message} 
+                onChange={handleInquiryChange}
+                placeholder={`Hi Samye Travels, I am ready for the ${adventure.title}! I'd love to know more about the best dates to go, what to pack, or...`} 
+                rows="5"
+                className="contact-input contact-textarea">
+              </textarea>
 
               <button type="submit" className="contact-submit-btn">Send Enquiry →</button>
             </form>
@@ -346,7 +353,7 @@ function AdventureDetails() {
               </div>
             </div>
             <div className="booking-divider"></div>
-            <button className="booking-cta-btn">Book This Adventure</button>
+            <button className="booking-cta-btn" onClick={scrollToForm}>Book This Adventure</button>
             <p className="booking-note">Free cancellation up to 48 hours before the activity</p>
           </div>
         </div>

@@ -61,6 +61,11 @@ function TourDetails() {
       .catch(() => { setError('Could not load tour details.'); setLoading(false); });
   }, [id]);
 
+  // Smooth scroll function for the booking button
+  const scrollToForm = () => {
+    document.getElementById('inquiry-form-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   if (loading) return <p className="status-msg">Loading your itinerary…</p>;
   if (error)   return <p className="status-msg error">{error}</p>;
   if (!tour)   return <p className="status-msg">Tour not found.</p>;
@@ -69,7 +74,6 @@ function TourDetails() {
     Easy: '#2ecc71', Moderate: '#f39c12', Hard: '#e63946', Challenging: '#c0392b'
   }[tour.difficulty] || '#1a5c9e';
 
-  // Updated to point to galleryImages
   const gallery = tour.galleryImages || [];
   const goNext = () => setActiveSlide(s => (s + 1) % gallery.length);
   const goPrev = () => setActiveSlide(s => (s - 1 + gallery.length) % gallery.length);
@@ -116,7 +120,7 @@ function TourDetails() {
         </div>
       </nav>
 
-      {/* Hero - Updated to prioritize heroImage */}
+      {/* Hero */}
       <div className="details-hero" style={{ backgroundImage: `url('${tour.heroImage || tour.featuredImage}')` }}>
         <div className="details-hero-overlay"></div>
         <div className="details-hero-content">
@@ -253,7 +257,8 @@ function TourDetails() {
             </div>
           )}
 
-          <div className="details-card" style={{ marginTop: '28px' }}>
+          {/* Contact Form with ID and Dynamic Placeholder */}
+          <div className="details-card" id="inquiry-form-section" style={{ marginTop: '28px' }}>
             <h2 className="details-section-heading">Enquire About This Tour</h2>
 
             {inquiryStatus === 'success' && (
@@ -304,9 +309,14 @@ function TourDetails() {
                 </div>
               </div>
 
-              <textarea name="message" value={inquiryData.message} onChange={handleInquiryChange}
-                placeholder="Any specific questions about this tour?" rows="4"
-                className="contact-input contact-textarea"></textarea>
+              <textarea 
+                name="message" 
+                value={inquiryData.message} 
+                onChange={handleInquiryChange}
+                placeholder={`Hi Samye Travels, I am interested in booking the ${tour.title}. Could you please provide more information about availability, customizing the itinerary, or...`} 
+                rows="5"
+                className="contact-input contact-textarea">
+              </textarea>
 
               <button type="submit" className="contact-submit-btn">Send Enquiry →</button>
             </form>
@@ -345,7 +355,7 @@ function TourDetails() {
               )}
             </div>
             <div className="booking-divider"></div>
-            <button className="booking-cta-btn">Book This Tour</button>
+            <button className="booking-cta-btn" onClick={scrollToForm}>Book This Tour</button>
             <p className="booking-note">Free cancellation up to 30 days before departure</p>
           </div>
         </div>
