@@ -38,8 +38,8 @@ function AdventureDetails() {
     const handleKey = e => {
       if (lightboxIndex === null) return;
       if (e.key === 'Escape') setLightboxIndex(null);
-      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % (adventure?.gallery?.length || 1));
-      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + (adventure?.gallery?.length || 1)) % (adventure?.gallery?.length || 1));
+      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % (adventure?.galleryImages?.length || 1));
+      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + (adventure?.galleryImages?.length || 1)) % (adventure?.galleryImages?.length || 1));
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -63,11 +63,13 @@ function AdventureDetails() {
     Easy: '#2ecc71', Moderate: '#f39c12', Intense: '#e67e22', Extreme: '#e63946'
   }[adventure.intensity] || '#1a5c9e';
 
-  const gallery = adventure.gallery || [];
+  // Updated to point to galleryImages
+  const gallery = adventure.galleryImages || [];
   const goNext = () => setActiveSlide(s => (s + 1) % gallery.length);
   const goPrev = () => setActiveSlide(s => (s - 1 + gallery.length) % gallery.length);
 
-  let heroImage = adventure.featuredImage || '';
+  // Updated to prioritize heroImage
+  let heroImage = adventure.heroImage || adventure.featuredImage || '';
   if (!heroImage || heroImage.startsWith('/images/'))
     heroImage = 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=1920&q=80';
 
@@ -135,7 +137,7 @@ function AdventureDetails() {
             <p className="details-description">{adventure.description}</p>
           </div>
 
-          {/* ── PHASE 1: Included / Excluded ── identical pattern to TourDetails */}
+          {/* ── PHASE 1: Included / Excluded ── */}
           {(adventure.included?.length > 0 || adventure.excluded?.length > 0) && (
             <div className="details-card" style={{ marginTop: '28px' }}>
               <h2 className="details-section-heading">What's Included</h2>
@@ -316,7 +318,7 @@ function AdventureDetails() {
           <div className="booking-card">
             <div className="booking-price-block">
               <span className="booking-price-label">From</span>
-              <div className="booking-price">${adventure.price} <span>/ person</span></div>
+              <div className="booking-price">{formatPrice(adventure.price)} <span>/ person</span></div>
             </div>
             <div className="booking-divider"></div>
             <div className="booking-facts">

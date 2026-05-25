@@ -43,8 +43,8 @@ function TourDetails() {
     const handleKey = e => {
       if (lightboxIndex === null) return;
       if (e.key === 'Escape') setLightboxIndex(null);
-      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % (tour?.gallery?.length || 1));
-      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + (tour?.gallery?.length || 1)) % (tour?.gallery?.length || 1));
+      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % (tour?.galleryImages?.length || 1));
+      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + (tour?.galleryImages?.length || 1)) % (tour?.galleryImages?.length || 1));
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -69,7 +69,8 @@ function TourDetails() {
     Easy: '#2ecc71', Moderate: '#f39c12', Hard: '#e63946', Challenging: '#c0392b'
   }[tour.difficulty] || '#1a5c9e';
 
-  const gallery = tour.gallery || [];
+  // Updated to point to galleryImages
+  const gallery = tour.galleryImages || [];
   const goNext = () => setActiveSlide(s => (s + 1) % gallery.length);
   const goPrev = () => setActiveSlide(s => (s - 1 + gallery.length) % gallery.length);
 
@@ -115,8 +116,8 @@ function TourDetails() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <div className="details-hero" style={{ backgroundImage: `url('${tour.featuredImage}')` }}>
+      {/* Hero - Updated to prioritize heroImage */}
+      <div className="details-hero" style={{ backgroundImage: `url('${tour.heroImage || tour.featuredImage}')` }}>
         <div className="details-hero-overlay"></div>
         <div className="details-hero-content">
           <span className="details-hero-tag">{tour.package}</span>
