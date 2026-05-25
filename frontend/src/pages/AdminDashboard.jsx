@@ -8,23 +8,28 @@ const EMPTY_DAY = { day: '', title: '', description: '' };
 const EMPTY_TOUR = {
   title: '', destination: 'Nepal', duration: '', price: '', localPrice: '',
   difficulty: 'Moderate', description: '', 
-  cardImage: '', heroImage: '', galleryImages: [], // Upgraded Image Fields
+  cardImage: '', heroImage: '', galleryImages: [],
   includedRaw: '', excludedRaw: '', itinerary: []
 };
 
 const EMPTY_ADVENTURE = {
   title: '', location: '', sportType: '', duration: '', price: '', localPrice: '', minAge: '16+',
   intensity: 'Moderate', description: '', 
-  cardImage: '', heroImage: '', galleryImages: [], // Upgraded Image Fields
+  cardImage: '', heroImage: '', galleryImages: [],
   includedRaw: '', excludedRaw: '', itinerary: []
 };
 
+const EMPTY_GALLERY = {
+  title: '', location: '', category: 'Scenic Views', mediaType: 'image', mediaUrl: ''
+};
+
 function AdminDashboard() {
-  const [tab, setTab] = useState('tours'); // 'tours', 'adventures', 'inquiries'
+  const [tab, setTab] = useState('tours'); // 'tours', 'adventures', 'inquiries', 'gallery'
   
   const [tours, setTours] = useState([]);
   const [adventures, setAdventures] = useState([]);
   const [inquiries, setInquiries] = useState([]);
+  const [galleries, setGalleries] = useState([]);
 
   // Unified Form State
   const [formData, setFormData] = useState(EMPTY_TOUR);
@@ -39,6 +44,7 @@ function AdminDashboard() {
   useEffect(() => { 
     fetchTours(); 
     fetchAdventures();
+    fetchGalleries();
   }, []);
 
   useEffect(() => {
@@ -47,6 +53,7 @@ function AdminDashboard() {
 
   const fetchTours = () => axios.get(`${import.meta.env.VITE_API_URL}/api/tours`).then(r => setTours(r.data)).catch(console.error);
   const fetchAdventures = () => axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`).then(r => setAdventures(r.data)).catch(console.error);
+  const fetchGalleries = () => axios.get(`${import.meta.env.VITE_API_URL}/api/gallery`).then(r => setGalleries(r.data)).catch(console.error);
 
   const fetchInquiries = () => {
     setLoadingInquiries(true);
@@ -62,6 +69,7 @@ function AdminDashboard() {
     setSubmitStatus(null);
     if (newTab === 'tours') setFormData(EMPTY_TOUR);
     if (newTab === 'adventures') setFormData(EMPTY_ADVENTURE);
+    if (newTab === 'gallery') setFormData(EMPTY_GALLERY);
   };
 
   const handleEdit = (item) => {
@@ -76,7 +84,9 @@ function AdminDashboard() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData(tab === 'tours' ? EMPTY_TOUR : EMPTY_ADVENTURE);
+    if (tab === 'tours') setFormData(EMPTY_TOUR);
+    else if (tab === 'adventures') setFormData(EMPTY_ADVENTURE);
+    else if (tab === 'gallery') setFormData(EMPTY_GALLERY);
   };
 
   // ─── FORM HANDLERS ───
@@ -86,10 +96,10 @@ function AdminDashboard() {
   const updateDay = (index, field, value) => setFormData(f => ({ ...f, itinerary: f.itinerary.map((d, i) => i === index ? { ...d, [field]: value } : d) }));
   const removeDay = (index) => setFormData(f => ({ ...f, itinerary: f.itinerary.filter((_, i) => i !== index).map((d, i) => ({ ...d, day: i + 1 })) }));
 
-  // ─── CLOUDINARY IMAGE UPLOAD LOGIC ───
-  const uploadSingleImageToCloud = async (file) => {
+  // ─── CLOUDINARY MEDIA UPLOAD LOGIC ───
+  const uploadSingleMediaToCloud = async (file) => {
     const uploadData = new FormData();
-    uploadData.append('image', file);
+    uploadData.append('image', file); // We use 'image' here so it matches the backend multer setup, Cloudinary auto-detects video
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload`, uploadData, { 
         headers: { 'Content-Type': 'multipart/form-data' } 
     });
@@ -101,10 +111,10 @@ function AdminDashboard() {
     if (!file) return;
     setUploadingImage(true);
     try {
-      const url = await uploadSingleImageToCloud(file);
+      const url = await uploadSingleMediaToCloud(file);
       setFormData(f => ({ ...f, [fieldName]: url }));
     } catch (err) {
-      alert(`Failed to upload ${fieldName}. Check server console.`);
+      alert(`Failed to upload ${fieldName}. Ensure video files aren't too massive.`);
       console.error(err);
     } finally {
       setUploadingImage(false);
@@ -116,11 +126,11 @@ function AdminDashboard() {
     if (!files.length) return;
     setUploadingImage(true);
     try {
-      const uploadPromises = files.map(file => uploadSingleImageToCloud(file));
+      const uploadPromises = files.map(file => uploadSingleMediaToCloud(file));
       const urls = await Promise.all(uploadPromises);
       setFormData(f => ({ ...f, galleryImages: [...(f.galleryImages || []), ...urls] }));
     } catch (err) {
-      alert('Failed to upload some gallery images. Check server console.');
+      alert('Failed to upload some gallery images.');
       console.error(err);
     } finally {
       setUploadingImage(false);
@@ -137,8 +147,23 @@ function AdminDashboard() {
   // ─── SUBMIT HANDLER ───
   const handleSubmit = e => {
     e.preventDefault();
+
+    if (tab === 'gallery') {
+        if (!formData.mediaUrl) {
+            alert("Please upload the media file before saving.");
+            return;
+        }
+        axios.post(`${import.meta.env.VITE_API_URL}/api/gallery`, formData)
+            .then(() => {
+                setSubmitStatus('success');
+                fetchGalleries();
+                setFormData(EMPTY_GALLERY);
+                setTimeout(() => setSubmitStatus(null), 4000);
+            })
+            .catch(err => { console.error(err); setSubmitStatus('error'); });
+        return;
+    }
     
-    // Ensure critical images exist before submission
     if (!formData.cardImage || !formData.heroImage) {
         alert("Please upload both a Card Image and a Hero Image before saving.");
         return;
@@ -154,8 +179,8 @@ function AdminDashboard() {
 
     const endpoint = `${import.meta.env.VITE_API_URL}/api/${tab}`;
     const request = editingId 
-      ? axios.put(`${endpoint}/${editingId}`, payload) // UPDATE
-      : axios.post(endpoint, payload);                  // CREATE
+      ? axios.put(`${endpoint}/${editingId}`, payload) 
+      : axios.post(endpoint, payload);                 
 
     request.then(() => {
         setSubmitStatus('success');
@@ -167,9 +192,13 @@ function AdminDashboard() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm(`Delete this ${tab.slice(0,-1)}? Cannot be undone.`)) return;
+    if (!window.confirm(`Delete this item? Cannot be undone.`)) return;
     axios.delete(`${import.meta.env.VITE_API_URL}/api/${tab}/${id}`)
-      .then(() => tab === 'tours' ? fetchTours() : fetchAdventures())
+      .then(() => {
+          if (tab === 'tours') fetchTours();
+          else if (tab === 'adventures') fetchAdventures();
+          else fetchGalleries();
+      })
       .catch(console.error);
   };
 
@@ -178,14 +207,12 @@ function AdminDashboard() {
       .then(() => fetchInquiries()).catch(console.error);
   };
 
-  // ─── RENDER HELPERS ───
-  const activeData = tab === 'tours' ? tours : adventures;
+  const activeData = tab === 'tours' ? tours : tab === 'adventures' ? adventures : galleries;
   const isTour = tab === 'tours';
 
   return (
     <div className="admin-layout">
 
-      {/* ─── SIDEBAR ─── */}
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <span className="admin-sidebar-logo">Samye</span>
@@ -194,6 +221,7 @@ function AdminDashboard() {
         <nav className="admin-sidebar-nav">
           <span className={`admin-nav-item ${tab === 'tours' ? 'active' : ''}`} onClick={() => handleTabSwitch('tours')}>Tours</span>
           <span className={`admin-nav-item ${tab === 'adventures' ? 'active' : ''}`} onClick={() => handleTabSwitch('adventures')}>Adventures</span>
+          <span className={`admin-nav-item ${tab === 'gallery' ? 'active' : ''}`} onClick={() => handleTabSwitch('gallery')}>Media Gallery</span>
           <span className={`admin-nav-item ${tab === 'inquiries' ? 'active' : ''}`} onClick={() => handleTabSwitch('inquiries')}>Inquiries
             {inquiries.filter(i => i.status === 'new').length > 0 && (
               <span className="admin-badge">{inquiries.filter(i => i.status === 'new').length}</span>
@@ -203,9 +231,9 @@ function AdminDashboard() {
         </nav>
       </aside>
 
-      {/* ─── MAIN CONTENT ─── */}
       <main className="admin-main">
 
+        {/* ─── TOURS / ADVENTURES TAB ─── */}
         {(tab === 'tours' || tab === 'adventures') && (
           <>
             <div className="admin-page-header">
@@ -215,7 +243,6 @@ function AdminDashboard() {
               </div>
             </div>
 
-            {/* ─── DYNAMIC FORM ─── */}
             <div className="admin-card">
               <div className="admin-card-header">
                 <h2 className="admin-card-title">{editingId ? 'Edit' : 'Add New'} {isTour ? 'Package' : 'Adventure'}</h2>
@@ -227,13 +254,11 @@ function AdminDashboard() {
 
               <form onSubmit={handleSubmit} className="admin-form">
                 
-                {/* Shared Field */}
                 <div className="admin-form-group">
                   <label className="admin-label">Title</label>
                   <input name="title" value={formData.title} onChange={handleChange} required className="admin-input" />
                 </div>
 
-                {/* Conditional Fields based on Tab */}
                 {isTour ? (
                   <>
                     <div className="admin-form-group">
@@ -287,7 +312,6 @@ function AdminDashboard() {
                   <input type="number" name="localPrice" value={formData.localPrice} onChange={handleChange} required className="admin-input" />
                 </div>
 
-                {/* ─── NEW CLOUDINARY IMAGE UPLOADERS ─── */}
                 <div className="admin-form-group admin-form-full">
                   <label className="admin-label">Card Image (Required)</label>
                   <input type="file" accept="image/*" onChange={(e) => handleSingleFileUpload(e, 'cardImage')} className="admin-input" style={{ padding: '8px' }} />
@@ -325,7 +349,6 @@ function AdminDashboard() {
                   )}
                 </div>
 
-                {/* ─── TEXT & ITINERARY ─── */}
                 <div className="admin-form-group admin-form-full">
                   <label className="admin-label">Description</label>
                   <textarea name="description" value={formData.description} onChange={handleChange} required rows="3" className="admin-input admin-textarea"></textarea>
@@ -362,7 +385,6 @@ function AdminDashboard() {
               </form>
             </div>
 
-            {/* ─── DYNAMIC DATA TABLE ─── */}
             <div className="admin-card" style={{ marginTop: '28px' }}>
               <div className="admin-card-header">
                 <h2 className="admin-card-title">Active {isTour ? 'Tours' : 'Adventures'}</h2>
@@ -396,6 +418,103 @@ function AdminDashboard() {
                   </table>
                 </div>
               )}
+            </div>
+          </>
+        )}
+
+        {/* ─── GALLERY TAB ─── */}
+        {tab === 'gallery' && (
+          <>
+            <div className="admin-page-header">
+              <div>
+                <h1 className="admin-page-title">Media Gallery</h1>
+                <p className="admin-page-subtitle">Upload photos and videos for the public gallery</p>
+              </div>
+            </div>
+
+            <div className="admin-card">
+              <div className="admin-card-header">
+                <h2 className="admin-card-title">Upload New Media</h2>
+              </div>
+              
+              {submitStatus === 'success' && <div className="admin-alert success">✓ Uploaded successfully!</div>}
+              {submitStatus === 'error' && <div className="admin-alert error">✗ Failed to save. Check the console.</div>}
+
+              <form onSubmit={handleSubmit} className="admin-form">
+                <div className="admin-form-group">
+                  <label className="admin-label">Title (e.g. "Sunrise at EBC")</label>
+                  <input name="title" value={formData.title} onChange={handleChange} required className="admin-input" />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Location / Tag</label>
+                  <input name="location" value={formData.location} onChange={handleChange} required placeholder="e.g. Everest Base Camp" className="admin-input" />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Category</label>
+                  <select name="category" value={formData.category} onChange={handleChange} className="admin-input">
+                    <option>Scenic Views</option>
+                    <option>Customer Moments</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Media Type</label>
+                  <select name="mediaType" value={formData.mediaType} onChange={handleChange} className="admin-input">
+                    <option value="image">Image</option>
+                    <option value="video">Video</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group admin-form-full">
+                  <label className="admin-label">Upload File</label>
+                  <input 
+                    type="file" 
+                    accept={formData.mediaType === 'video' ? "video/*" : "image/*"} 
+                    onChange={(e) => handleSingleFileUpload(e, 'mediaUrl')} 
+                    className="admin-input" 
+                    style={{ padding: '8px' }} 
+                  />
+                  {uploadingImage && <p className="admin-label-hint">Pushing to Cloudinary (this may take a moment for videos)...</p>}
+                  
+                  {formData.mediaUrl && formData.mediaType === 'image' && (
+                    <img src={formData.mediaUrl} alt="Preview" style={{ width: '200px', marginTop: '10px', borderRadius: '8px', objectFit: 'cover' }} />
+                  )}
+                  {formData.mediaUrl && formData.mediaType === 'video' && (
+                    <video src={formData.mediaUrl} controls style={{ width: '300px', marginTop: '10px', borderRadius: '8px' }} />
+                  )}
+                </div>
+
+                <div className="admin-form-full">
+                  <button type="submit" className="admin-submit-btn" disabled={uploadingImage}>Publish to Gallery</button>
+                </div>
+              </form>
+            </div>
+
+            <div className="admin-card" style={{ marginTop: '28px' }}>
+              <div className="admin-card-header">
+                <h2 className="admin-card-title">Live Gallery Assets</h2>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                {galleries.map(item => (
+                  <div key={item._id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden', position: 'relative', paddingBottom: '10px' }}>
+                    {item.mediaType === 'video' ? (
+                      <video src={item.mediaUrl} style={{ width: '100%', height: '140px', objectFit: 'cover', backgroundColor: '#000' }} />
+                    ) : (
+                      <img src={item.mediaUrl} style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
+                    )}
+                    <div style={{ padding: '10px' }}>
+                      <p style={{ fontWeight: 'bold', margin: '0 0 4px', fontSize: '0.9rem' }}>{item.title}</p>
+                      <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0' }}>{item.category} • {item.location}</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete(item._id)} 
+                      style={{ position: 'absolute', top: '8px', right: '8px', background: '#e63946', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px', fontSize: '0.8rem' }}
+                    >Delete</button>
+                  </div>
+                ))}
+              </div>
             </div>
           </>
         )}

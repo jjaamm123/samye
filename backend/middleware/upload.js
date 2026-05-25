@@ -17,7 +17,8 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'samye_travels', // All images will go into this folder in your Cloudinary dashboard
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    resource_type: 'auto',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp','mp4', 'mov', 'avi'],
     transformation: [{ width: 1920, crop: 'limit' }] // Automatically prevents massive file sizes from slowing down your site
   }
 });

@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
-
+const Gallery = require('./models/backend_gallery');
 const Tour = require('./models/backend_tour'); 
 const Booking = require('./models/booking'); 
 const Adventure = require('./models/backend_adventure'); 
@@ -227,6 +227,36 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     } catch (error) {
         console.error("Upload error:", error);
         res.status(500).json({ message: "Image upload failed." });
+    }
+});
+
+// ─── GALLERY ───────────────────────────────────────────────────────────
+app.get('/api/gallery', async (req, res) => {
+    try {
+        const gallery = await Gallery.find().sort({ createdAt: -1 });
+        res.status(200).json(gallery);
+    } catch (error) {
+        console.error("Error fetching gallery:", error);
+        res.status(500).json({ message: "Failed to fetch gallery." });
+    }
+});
+
+app.post('/api/gallery', async (req, res) => {
+    try {
+        const newGallery = await Gallery.create(req.body);
+        res.status(201).json(newGallery);
+    } catch (error) {
+        console.error("Error saving gallery item:", error);
+        res.status(400).json({ message: "Failed to save gallery item." });
+    }
+});
+
+app.delete('/api/gallery/:id', async (req, res) => {
+    try {
+        await Gallery.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: "Gallery item deleted successfully." });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to delete gallery item." });
     }
 });
 
