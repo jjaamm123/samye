@@ -2,6 +2,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import { Search, Map, Activity, AlertCircle } from 'lucide-react';
 import TourCard from '../components/TourCard';
 import AdventureCard from '../components/AdventureCard';
@@ -97,7 +98,12 @@ function Packages() {
 
       <div className="packages-hero" style={{ backgroundImage: `url('${heroImage}')` }}>
         <div className="packages-hero-overlay"></div>
-        <div className="packages-hero-content">
+        <motion.div
+          className="packages-hero-content"
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span className="packages-hero-eyebrow" style={{ letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.85rem' }}>
             {isTours ? 'Cultural Heritage' : 'Adventure Expeditions'}
           </span>
@@ -107,7 +113,7 @@ function Packages() {
               ? 'Guided treks, luxury monastery stays, and premium heritage circuits.'
               : 'White-water rafting, paragliding, and high-altitude Himalayan climbing.'}
           </p>
-        </div>
+        </motion.div>
 
         <div className="packages-toggle-wrapper">
           <div className="packages-toggle" style={{ background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>

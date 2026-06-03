@@ -16,20 +16,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/"               element={<Home />} />
-
-        {/* Unified packages page — replaces /tours and /adventures */}
-        <Route path="/packages"       element={<Packages />} />
-
-        {/* Detail pages still use their own routes */}
-        <Route path="/tour/:id"       element={<TourDetails />} />
-        <Route path="/adventure/:id"  element={<AdventureDetails />} />
-
-        <Route path="/custom-tour"    element={<CustomTour />} />
-        <Route path="/about"          element={<About />} />
-        <Route path="/gallery"        element={<Gallery />} />
-        <Route path="/contact"        element={<Contact />} />
-        <Route path="/admin"          element={<AdminDashboard />} />
+        <Route path="/"              element={<Home />} />
+        <Route path="/packages"      element={<Packages />} />
+        <Route path="/tour/:id"      element={<TourDetails />} />
+        <Route path="/adventure/:id" element={<AdventureDetails />} />
+        <Route path="/custom-tour"   element={<CustomTour />} />
+        <Route path="/about"         element={<About />} />
+        <Route path="/gallery"       element={<Gallery />} />
+        <Route path="/contact"       element={<Contact />} />
+        <Route path="/admin"         element={<AdminDashboard />} />
       </Routes>
     </Router>
   );

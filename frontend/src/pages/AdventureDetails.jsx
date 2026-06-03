@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import '../App.css';
 import { useContext } from 'react';
 import { CurrencyContext } from '../context/CurrencyContext';
+import { MapPin, Clock } from 'lucide-react';
 
 const MONTHS = [
   'January','February','March','April','May','June',
@@ -116,18 +118,26 @@ function AdventureDetails() {
         </div>
       </nav>
 
-      <div className="details-hero" style={{ backgroundImage: `url('${heroImage}')` }}>
+      <motion.div
+        className="details-hero"
+        style={{ backgroundImage: `url('${heroImage}')` }}
+      >
         <div className="details-hero-overlay"></div>
-        <div className="details-hero-content">
+        <motion.div
+          className="details-hero-content"
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span className="details-hero-tag">{adventure.sportType || 'Adventure'}</span>
           <h1 className="details-hero-title">{adventure.title}</h1>
           <div className="details-hero-pills">
-            <span className="details-pill">📍 {adventure.location}</span>
-            <span className="details-pill">⏱ {adventure.duration}</span>
+            <span className="details-pill" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MapPin size={12} /> {adventure.location}</span>
+            <span className="details-pill" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Clock size={12} /> {adventure.duration}</span>
             <span className="details-pill" style={{ backgroundColor: intensityColor }}>{adventure.intensity}</span>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <div className="content-container details-layout">
 

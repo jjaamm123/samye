@@ -2,6 +2,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import { CurrencyContext } from '../context/CurrencyContext';
 import '../App.css';
 
@@ -121,17 +122,25 @@ function TourDetails() {
       </nav>
 
       {/* Hero */}
-      <div className="details-hero" style={{ backgroundImage: `url('${tour.heroImage || tour.featuredImage}')` }}>
+      <motion.div
+        className="details-hero"
+        style={{ backgroundImage: `url('${tour.heroImage || tour.featuredImage}')` }}
+      >
         <div className="details-hero-overlay"></div>
-        <div className="details-hero-content">
+        <motion.div
+          className="details-hero-content"
+          initial={{ opacity: 0, y: 36 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span className="details-hero-tag">{tour.package}</span>
           <h1 className="details-hero-title">{tour.title}</h1>
           <div className="details-hero-pills">
             <span className="details-pill">{tour.duration} Days</span>
             <span className="details-pill" style={{ backgroundColor: difficultyColor }}>{tour.difficulty}</span>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <div className="content-container details-layout">
 

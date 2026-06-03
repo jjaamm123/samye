@@ -1,7 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { MapPin } from 'lucide-react';
 import '../App.css';
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 32, scale: 0.96 },
+  visible: (i) => ({
+    opacity: 1, y: 0, scale: 1,
+    transition: {
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1],
+      delay: i * 0.07
+    }
+  })
+};
 
 function Gallery() {
   const [galleryItems, setGalleryItems] = useState([]);
@@ -14,6 +28,10 @@ function Gallery() {
 
   // Lightbox / Carousel state
   const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  // Grid ref for stagger trigger
+  const gridRef = useRef(null);
+  const gridInView = useInView(gridRef, { once: false, margin: '-40px' });
 
   // Scroll effect for Navbar
   useEffect(() => {
@@ -77,7 +95,12 @@ function Gallery() {
       {/* ─── HERO SECTION ─── */}
       <div className="packages-hero" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80')` }}>
         <div className="packages-hero-overlay"></div>
-        <div className="packages-hero-content">
+        <motion.div
+          className="packages-hero-content"
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span className="packages-hero-eyebrow" style={{ letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.85rem' }}>
             Visual Journey
           </span>
@@ -85,81 +108,93 @@ function Gallery() {
           <p className="packages-hero-sub" style={{ fontSize: '1.2rem', fontWeight: '300' }}>
             Moments frozen in time. Explore breathtaking landscapes, thrilling adventures, and the smiles of our past travelers.
           </p>
-        </div>
+        </motion.div>
       </div>
 
       <div className="content-container" style={{ padding: '60px 5%' }}>
         
         {/* ─── TABS ─── */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '40px', flexWrap: 'wrap' }}>
-          <button 
-            onClick={() => { setActiveTab('scenic'); setLightboxIndex(null); }}
-            className={`packages-filter-pill ${activeTab === 'scenic' ? 'active' : ''}`}
-            style={{ padding: '10px 24px', fontSize: '1rem', border: activeTab === 'scenic' ? '1px solid #1a5c9e' : '1px solid #e2e8f0' }}
-          >
-            Scenic Views ({scenicImages.length})
-          </button>
-          <button 
-            onClick={() => { setActiveTab('customer'); setLightboxIndex(null); }}
-            className={`packages-filter-pill ${activeTab === 'customer' ? 'active' : ''}`}
-            style={{ padding: '10px 24px', fontSize: '1rem', border: activeTab === 'customer' ? '1px solid #1a5c9e' : '1px solid #e2e8f0' }}
-          >
-            Customer Moments ({customerImages.length})
-          </button>
-          <button 
-            onClick={() => { setActiveTab('video'); setLightboxIndex(null); }}
-            className={`packages-filter-pill ${activeTab === 'video' ? 'active' : ''}`}
-            style={{ padding: '10px 24px', fontSize: '1rem', border: activeTab === 'video' ? '1px solid #1a5c9e' : '1px solid #e2e8f0' }}
-          >
-            Videos ({videos.length})
-          </button>
-        </div>
+        <motion.div
+          style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '40px', flexWrap: 'wrap' }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          {[
+            { id: 'scenic', label: `Scenic Views (${scenicImages.length})` },
+            { id: 'customer', label: `Customer Moments (${customerImages.length})` },
+            { id: 'video', label: `Videos (${videos.length})` },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setLightboxIndex(null); }}
+              className={`packages-filter-pill ${activeTab === tab.id ? 'active' : ''}`}
+              style={{ padding: '10px 24px', fontSize: '1rem', border: activeTab === tab.id ? '1px solid #1a5c9e' : '1px solid #e2e8f0' }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </motion.div>
 
         {/* ─── STATUS MESSAGES ─── */}
         {loading && <p className="status-msg" style={{ textAlign: 'center', color: '#64748b' }}>Loading gallery media...</p>}
         {error && <p className="status-msg error" style={{ textAlign: 'center' }}>{error}</p>}
         {!loading && !error && currentArray.length === 0 && (
           <p style={{ textAlign: 'center', color: '#64748b', marginTop: '40px', fontSize: '1.1rem' }}>
-            More memories coming soon!
+            More memories coming soon.
           </p>
         )}
 
-        {/* ─── MEDIA GRID ─── */}
+        {/* ─── STAGGERED MEDIA GRID ─── */}
         {!loading && !error && currentArray.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '20px',
-            alignItems: 'start'
-          }}>
+          <motion.div
+            ref={gridRef}
+            key={activeTab}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '20px',
+              alignItems: 'start'
+            }}
+            initial="hidden"
+            animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
+          >
             {currentArray.map((item, index) => (
-              <div 
-                key={item._id} 
+              <motion.div
+                key={item._id}
+                custom={index}
+                variants={cardVariant}
                 className="gallery-card"
                 onClick={() => item.mediaType === 'image' && setLightboxIndex(index)}
                 style={{
                   position: 'relative',
                   borderRadius: '12px',
                   overflow: 'hidden',
-                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                  cursor: item.mediaType === 'image' ? 'zoom-in' : 'default',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  cursor: item.mediaType === 'image' ? 'none' : 'default',
                   aspectRatio: item.mediaType === 'video' ? 'auto' : '1 / 1',
                   backgroundColor: '#f1f5f9'
                 }}
+                whileHover={item.mediaType === 'image' ? {
+                  boxShadow: '0 16px 48px rgba(5,11,22,0.16)',
+                  y: -4,
+                  transition: { duration: 0.3, ease: 'easeOut' }
+                } : {}}
               >
                 {item.mediaType === 'image' ? (
-                  <img 
-                    src={item.mediaUrl} 
-                    alt={item.title} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }} 
-                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                  <motion.img
+                    src={item.mediaUrl}
+                    alt={item.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
                   />
                 ) : (
-                  <video 
-                    src={item.mediaUrl} 
-                    controls 
-                    style={{ width: '100%', display: 'block', borderRadius: '12px' }} 
+                  <video
+                    src={item.mediaUrl}
+                    controls
+                    style={{ width: '100%', display: 'block', borderRadius: '12px' }}
                   />
                 )}
                 
@@ -170,44 +205,64 @@ function Gallery() {
                     bottom: '0',
                     left: '0',
                     right: '0',
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-                    padding: '30px 20px 15px',
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.82), transparent)',
+                    padding: '36px 20px 16px',
                     color: 'white',
                     pointerEvents: 'none'
                   }}>
-                    <p style={{ margin: '0 0 4px', fontWeight: 'bold', fontSize: '1.1rem' }}>{item.title}</p>
-                    <p style={{ margin: '0', fontSize: '0.85rem', color: '#cbd5e1' }}>📍 {item.location}</p>
+                    <p style={{ margin: '0 0 4px', fontWeight: '600', fontSize: '1rem', fontFamily: "'Inter', sans-serif" }}>{item.title}</p>
+                    <p style={{ margin: '0', fontSize: '0.82rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={12} /> {item.location}
+                    </p>
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
 
       </div>
 
-      {/* ─── LIGHTBOX CAROUSEL (IMAGES ONLY) ─── */}
-      {lightboxIndex !== null && activeTab !== 'video' && (
-        <div className="lightbox-overlay" onClick={() => setLightboxIndex(null)}>
-          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-            <button className="lightbox-close" onClick={() => setLightboxIndex(null)}>✕</button>
-            <img src={currentArray[lightboxIndex].mediaUrl} alt={currentArray[lightboxIndex].title} className="lightbox-image" />
-            
-            <div style={{ position: 'absolute', bottom: '-40px', color: 'white', textAlign: 'center', width: '100%' }}>
-              <h3 style={{ margin: '0 0 5px' }}>{currentArray[lightboxIndex].title}</h3>
-              <p style={{ margin: '0', color: '#cbd5e1' }}>📍 {currentArray[lightboxIndex].location}</p>
-            </div>
+      {/* ─── GLASSMORPHISM LIGHTBOX ─── */}
+      <AnimatePresence>
+        {lightboxIndex !== null && activeTab !== 'video' && (
+          <motion.div
+            className="lightbox-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setLightboxIndex(null)}
+          >
+            <motion.div
+              className="lightbox-content"
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.88, opacity: 0 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 320 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button className="lightbox-close" onClick={() => setLightboxIndex(null)}>✕</button>
+              <img src={currentArray[lightboxIndex].mediaUrl} alt={currentArray[lightboxIndex].title} className="lightbox-image" />
+              
+              <div style={{ position: 'absolute', bottom: '-48px', color: 'white', textAlign: 'center', width: '100%' }}>
+                <h3 style={{ margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>{currentArray[lightboxIndex].title}</h3>
+                <p style={{ margin: '0', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontSize: '0.88rem' }}>
+                  <MapPin size={13} /> {currentArray[lightboxIndex].location}
+                </p>
+              </div>
 
-            {currentArray.length > 1 && (
-              <>
-                <button className="lightbox-nav lightbox-nav-prev" onClick={() => setLightboxIndex(i => (i - 1 + currentArray.length) % currentArray.length)}>‹</button>
-                <button className="lightbox-nav lightbox-nav-next" onClick={() => setLightboxIndex(i => (i + 1) % currentArray.length)}>›</button>
-                <span className="lightbox-counter">{lightboxIndex + 1} / {currentArray.length}</span>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+              {currentArray.length > 1 && (
+                <>
+                  <button className="lightbox-nav lightbox-nav-prev" onClick={() => setLightboxIndex(i => (i - 1 + currentArray.length) % currentArray.length)}>‹</button>
+                  <button className="lightbox-nav lightbox-nav-next" onClick={() => setLightboxIndex(i => (i + 1) % currentArray.length)}>›</button>
+                  <span className="lightbox-counter">{lightboxIndex + 1} / {currentArray.length}</span>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
