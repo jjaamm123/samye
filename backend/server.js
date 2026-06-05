@@ -1,13 +1,16 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+const express    = require('express');
+const cors       = require('cors');
+const mongoose   = require('mongoose');
 require('dotenv').config();
-const Gallery = require('./models/backend_gallery');
-const Tour = require('./models/backend_tour'); 
-const Booking = require('./models/booking'); 
-const Adventure = require('./models/backend_adventure'); 
-const Inquiry = require('./models/backend_inquiry');
-const upload = require('./middleware/upload'); // <-- Your new Cloudinary middleware
+
+const Gallery    = require('./models/backend_gallery');
+const Tour       = require('./models/backend_tour');
+const Booking    = require('./models/booking');
+const Adventure  = require('./models/backend_adventure');
+const Inquiry    = require('./models/backend_inquiry');
+const upload     = require('./middleware/upload');
+const authRoutes = require('./routes/auth');
+const { protect } = require('./middleware/authMiddleware');
 
 const app = express();
 
@@ -19,15 +22,17 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Successfully connected to MongoDB"))
     .catch((error) => console.error("MongoDB connection failed:", error.message));
 
-app.get('/api/test', (req, res) => {
-    res.json({ message: "running" });
-});
+// ─── PUBLIC ────────────────────────────────────────────────────────────────
+app.get('/api/test', (req, res) => res.json({ message: "running" }));
 
-// ─── TOURS ─────────────────────────────────────────────────────────────
+// Auth routes (login / register — all public)
+app.use('/api/auth', authRoutes);
+
+// ─── TOURS (GET = public, mutating = protected) ────────────────────────────
 app.get('/api/tours', async (req, res) => {
     try {
-        const allTours = await Tour.find(); 
-        res.status(200).json(allTours); 
+        const allTours = await Tour.find();
+        res.status(200).json(allTours);
     } catch (error) {
         console.error("Error fetching tours:", error);
         res.status(500).json({ message: "Server Error: Could not fetch tours." });
@@ -36,54 +41,47 @@ app.get('/api/tours', async (req, res) => {
 
 app.get('/api/tours/:id', async (req, res) => {
     try {
-        const tour = await Tour.findById(req.params.id); 
+        const tour = await Tour.findById(req.params.id);
         if (!tour) return res.status(404).json({ message: "Tour not found." });
-        res.status(200).json(tour); 
+        res.status(200).json(tour);
     } catch (error) {
         console.error("Error fetching single tour:", error);
         res.status(500).json({ message: "Server Error: Could not fetch the tour." });
     }
 });
 
-// POST - Create a new tour with multiple images
-app.post('/api/tours', upload.fields([
-    { name: 'cardImage', maxCount: 1 },
-    { name: 'heroImage', maxCount: 1 },
+app.post('/api/tours', protect, upload.fields([
+    { name: 'cardImage',    maxCount: 1  },
+    { name: 'heroImage',    maxCount: 1  },
     { name: 'galleryImages', maxCount: 10 }
 ]), async (req, res) => {
     try {
         const tourData = { ...req.body };
-
-        // Attach Cloudinary URLs if files were uploaded
         if (req.files) {
-            if (req.files['cardImage']) tourData.cardImage = req.files['cardImage'][0].path;
-            if (req.files['heroImage']) tourData.heroImage = req.files['heroImage'][0].path;
-            if (req.files['galleryImages']) tourData.galleryImages = req.files['galleryImages'].map(file => file.path);
+            if (req.files['cardImage'])     tourData.cardImage     = req.files['cardImage'][0].path;
+            if (req.files['heroImage'])     tourData.heroImage     = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) tourData.galleryImages = req.files['galleryImages'].map(f => f.path);
         }
-
         const newTour = await Tour.create(tourData);
-        res.status(201).json(newTour); 
+        res.status(201).json(newTour);
     } catch (error) {
         console.error("Error creating tour:", error);
         res.status(400).json({ message: "Failed to create tour." });
     }
 });
 
-// PUT - Update a tour and optionally change images
-app.put('/api/tours/:id', upload.fields([
-    { name: 'cardImage', maxCount: 1 },
-    { name: 'heroImage', maxCount: 1 },
+app.put('/api/tours/:id', protect, upload.fields([
+    { name: 'cardImage',    maxCount: 1  },
+    { name: 'heroImage',    maxCount: 1  },
     { name: 'galleryImages', maxCount: 10 }
 ]), async (req, res) => {
     try {
         const updateData = { ...req.body };
-
         if (req.files) {
-            if (req.files['cardImage']) updateData.cardImage = req.files['cardImage'][0].path;
-            if (req.files['heroImage']) updateData.heroImage = req.files['heroImage'][0].path;
-            if (req.files['galleryImages']) updateData.galleryImages = req.files['galleryImages'].map(file => file.path);
+            if (req.files['cardImage'])     updateData.cardImage     = req.files['cardImage'][0].path;
+            if (req.files['heroImage'])     updateData.heroImage     = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) updateData.galleryImages = req.files['galleryImages'].map(f => f.path);
         }
-
         const updatedTour = await Tour.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedTour) return res.status(404).json({ message: "Tour not found." });
         res.status(200).json(updatedTour);
@@ -93,7 +91,7 @@ app.put('/api/tours/:id', upload.fields([
     }
 });
 
-app.delete('/api/tours/:id', async (req, res) => {
+app.delete('/api/tours/:id', protect, async (req, res) => {
     try {
         const deletedTour = await Tour.findByIdAndDelete(req.params.id);
         if (!deletedTour) return res.status(404).json({ message: "Tour not found." });
@@ -104,7 +102,7 @@ app.delete('/api/tours/:id', async (req, res) => {
     }
 });
 
-// ─── ADVENTURES ────────────────────────────────────────────────────────
+// ─── ADVENTURES (GET = public, mutating = protected) ───────────────────────
 app.get('/api/adventures', async (req, res) => {
     try {
         const adventures = await Adventure.find();
@@ -126,44 +124,38 @@ app.get('/api/adventures/:id', async (req, res) => {
     }
 });
 
-// POST - Create a new adventure with multiple images
-app.post('/api/adventures', upload.fields([
-    { name: 'cardImage', maxCount: 1 },
-    { name: 'heroImage', maxCount: 1 },
+app.post('/api/adventures', protect, upload.fields([
+    { name: 'cardImage',    maxCount: 1  },
+    { name: 'heroImage',    maxCount: 1  },
     { name: 'galleryImages', maxCount: 10 }
 ]), async (req, res) => {
     try {
         const advData = { ...req.body };
-
         if (req.files) {
-            if (req.files['cardImage']) advData.cardImage = req.files['cardImage'][0].path;
-            if (req.files['heroImage']) advData.heroImage = req.files['heroImage'][0].path;
-            if (req.files['galleryImages']) advData.galleryImages = req.files['galleryImages'].map(file => file.path);
+            if (req.files['cardImage'])     advData.cardImage     = req.files['cardImage'][0].path;
+            if (req.files['heroImage'])     advData.heroImage     = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) advData.galleryImages = req.files['galleryImages'].map(f => f.path);
         }
-
         const newAdv = await Adventure.create(advData);
-        res.status(201).json(newAdv); 
+        res.status(201).json(newAdv);
     } catch (error) {
         console.error("Error creating adventure:", error);
         res.status(400).json({ message: "Failed to create adventure." });
     }
 });
 
-// PUT - Update an adventure and optionally change images
-app.put('/api/adventures/:id', upload.fields([
-    { name: 'cardImage', maxCount: 1 },
-    { name: 'heroImage', maxCount: 1 },
+app.put('/api/adventures/:id', protect, upload.fields([
+    { name: 'cardImage',    maxCount: 1  },
+    { name: 'heroImage',    maxCount: 1  },
     { name: 'galleryImages', maxCount: 10 }
 ]), async (req, res) => {
     try {
         const updateData = { ...req.body };
-
         if (req.files) {
-            if (req.files['cardImage']) updateData.cardImage = req.files['cardImage'][0].path;
-            if (req.files['heroImage']) updateData.heroImage = req.files['heroImage'][0].path;
-            if (req.files['galleryImages']) updateData.galleryImages = req.files['galleryImages'].map(file => file.path);
+            if (req.files['cardImage'])     updateData.cardImage     = req.files['cardImage'][0].path;
+            if (req.files['heroImage'])     updateData.heroImage     = req.files['heroImage'][0].path;
+            if (req.files['galleryImages']) updateData.galleryImages = req.files['galleryImages'].map(f => f.path);
         }
-
         const updatedAdv = await Adventure.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedAdv) return res.status(404).json({ message: "Adventure not found." });
         res.status(200).json(updatedAdv);
@@ -173,7 +165,7 @@ app.put('/api/adventures/:id', upload.fields([
     }
 });
 
-app.delete('/api/adventures/:id', async (req, res) => {
+app.delete('/api/adventures/:id', protect, async (req, res) => {
     try {
         const deletedAdv = await Adventure.findByIdAndDelete(req.params.id);
         if (!deletedAdv) return res.status(404).json({ message: "Adventure not found." });
@@ -184,8 +176,9 @@ app.delete('/api/adventures/:id', async (req, res) => {
     }
 });
 
-// ─── INQUIRIES ─────────────────────────────────────────────────────────
-app.get('/api/inquiries', async (req, res) => {
+// ─── INQUIRIES ──────────────────────────────────────────────────────────────
+// POST /api/inquiries is PUBLIC — customers submit contact forms unauthenticated
+app.get('/api/inquiries', protect, async (req, res) => {
     try {
         const inquiries = await Inquiry.find().sort({ createdAt: -1 });
         res.status(200).json(inquiries);
@@ -206,7 +199,7 @@ app.post('/api/inquiries', async (req, res) => {
     }
 });
 
-app.patch('/api/inquiries/:id', async (req, res) => {
+app.patch('/api/inquiries/:id', protect, async (req, res) => {
     try {
         const inq = await Inquiry.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!inq) return res.status(404).json({ message: "Inquiry not found." });
@@ -217,12 +210,10 @@ app.patch('/api/inquiries/:id', async (req, res) => {
     }
 });
 
-// General singular image upload route (just in case you still need it for generic tasks)
-app.post('/api/upload', upload.single('image'), (req, res) => {
+// ─── UPLOAD (protected — only admin should push images) ────────────────────
+app.post('/api/upload', protect, upload.single('image'), (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded' });
-        }
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
         res.status(200).json({ imageUrl: req.file.path });
     } catch (error) {
         console.error("Upload error:", error);
@@ -230,7 +221,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     }
 });
 
-// ─── GALLERY ───────────────────────────────────────────────────────────
+// ─── GALLERY (GET = public, mutating = protected) ──────────────────────────
 app.get('/api/gallery', async (req, res) => {
     try {
         const gallery = await Gallery.find().sort({ createdAt: -1 });
@@ -241,7 +232,7 @@ app.get('/api/gallery', async (req, res) => {
     }
 });
 
-app.post('/api/gallery', async (req, res) => {
+app.post('/api/gallery', protect, async (req, res) => {
     try {
         const newGallery = await Gallery.create(req.body);
         res.status(201).json(newGallery);
@@ -251,7 +242,7 @@ app.post('/api/gallery', async (req, res) => {
     }
 });
 
-app.delete('/api/gallery/:id', async (req, res) => {
+app.delete('/api/gallery/:id', protect, async (req, res) => {
     try {
         await Gallery.findByIdAndDelete(req.params.id);
         res.status(200).json({ message: "Gallery item deleted successfully." });
@@ -260,7 +251,7 @@ app.delete('/api/gallery/:id', async (req, res) => {
     }
 });
 
-// ─── SERVER INIT ───────────────────────────────────────────────────────
+// ─── SERVER INIT ────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
