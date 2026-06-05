@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
@@ -24,7 +24,14 @@ const EMPTY_GALLERY = {
 };
 
 function AdminDashboard() {
-  const [tab, setTab] = useState('tours'); // 'tours', 'adventures', 'inquiries', 'gallery'
+  const [tab, setTab] = useState('tours');
+  const navigate = useNavigate();
+
+  // ─── LOGOUT ───
+  const handleLogout = () => {
+    localStorage.removeItem('samye_admin_token');
+    navigate('/admin/login', { replace: true });
+  };
   
   const [tours, setTours] = useState([]);
   const [adventures, setAdventures] = useState([]);
@@ -51,13 +58,18 @@ function AdminDashboard() {
     if (tab === 'inquiries' && inquiries.length === 0) fetchInquiries();
   }, [tab]);
 
-  const fetchTours = () => axios.get(`${import.meta.env.VITE_API_URL}/api/tours`).then(r => setTours(r.data)).catch(console.error);
+  // ── AUTH HELPER ── reads token from localStorage for protected calls
+  const authHeaders = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('samye_admin_token') || ''}` }
+  });
+
+  const fetchTours      = () => axios.get(`${import.meta.env.VITE_API_URL}/api/tours`).then(r => setTours(r.data)).catch(console.error);
   const fetchAdventures = () => axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`).then(r => setAdventures(r.data)).catch(console.error);
-  const fetchGalleries = () => axios.get(`${import.meta.env.VITE_API_URL}/api/gallery`).then(r => setGalleries(r.data)).catch(console.error);
+  const fetchGalleries  = () => axios.get(`${import.meta.env.VITE_API_URL}/api/gallery`).then(r => setGalleries(r.data)).catch(console.error);
 
   const fetchInquiries = () => {
     setLoadingInquiries(true);
-    axios.get(`${import.meta.env.VITE_API_URL}/api/inquiries`)
+    axios.get(`${import.meta.env.VITE_API_URL}/api/inquiries`, authHeaders())
       .then(r => setInquiries(r.data))
       .catch(console.error).finally(() => setLoadingInquiries(false));
   };
@@ -153,7 +165,7 @@ function AdminDashboard() {
             alert("Please upload the media file before saving.");
             return;
         }
-        axios.post(`${import.meta.env.VITE_API_URL}/api/gallery`, formData)
+        axios.post(`${import.meta.env.VITE_API_URL}/api/gallery`, formData, authHeaders())
             .then(() => {
                 setSubmitStatus('success');
                 fetchGalleries();
@@ -178,9 +190,9 @@ function AdminDashboard() {
     delete payload.excludedRaw;
 
     const endpoint = `${import.meta.env.VITE_API_URL}/api/${tab}`;
-    const request = editingId 
-      ? axios.put(`${endpoint}/${editingId}`, payload) 
-      : axios.post(endpoint, payload);                 
+    const request = editingId
+      ? axios.put(`${endpoint}/${editingId}`, payload, authHeaders())
+      : axios.post(endpoint, payload, authHeaders());                 
 
     request.then(() => {
         setSubmitStatus('success');
@@ -193,7 +205,7 @@ function AdminDashboard() {
 
   const handleDelete = (id) => {
     if (!window.confirm(`Delete this item? Cannot be undone.`)) return;
-    axios.delete(`${import.meta.env.VITE_API_URL}/api/${tab}/${id}`)
+    axios.delete(`${import.meta.env.VITE_API_URL}/api/${tab}/${id}`, authHeaders())
       .then(() => {
           if (tab === 'tours') fetchTours();
           else if (tab === 'adventures') fetchAdventures();
@@ -203,7 +215,7 @@ function AdminDashboard() {
   };
 
   const updateInquiryStatus = (id, status) => {
-    axios.patch(`${import.meta.env.VITE_API_URL}/api/inquiries/${id}`, { status })
+    axios.patch(`${import.meta.env.VITE_API_URL}/api/inquiries/${id}`, { status }, authHeaders())
       .then(() => fetchInquiries()).catch(console.error);
   };
 
@@ -229,6 +241,39 @@ function AdminDashboard() {
           </span>
           <Link to="/" className="admin-nav-item">View Live Site</Link>
         </nav>
+
+        {/* Logout — bottom of sidebar */}
+        <div style={{ padding: '16px 20px', marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              background: 'rgba(230,57,70,0.12)',
+              color: '#e63946',
+              border: '1px solid rgba(230,57,70,0.22)',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'background 0.2s ease',
+              fontFamily: "'Inter', 'Lato', sans-serif",
+            }}
+            onMouseOver={e => e.currentTarget.style.background = 'rgba(230,57,70,0.22)'}
+            onMouseOut={e  => e.currentTarget.style.background = 'rgba(230,57,70,0.12)'}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Logout
+          </button>
+        </div>
       </aside>
 
       <main className="admin-main">
