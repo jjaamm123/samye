@@ -14,18 +14,30 @@ export const CurrencyProvider = ({ children }) => {
     setCurrency(prev => (prev === 'USD' ? 'NPR' : 'USD'));
   };
 
-  const formatPrice = (priceInUSD) => {
-    const NPR_RATE = 133.50; 
-    
+  // Formats a raw USD amount number into the current currency string.
+  // Safe to call with undefined/null — returns empty string.
+  const formatAmount = (amountInUSD) => {
+    if (amountInUSD == null || isNaN(amountInUSD)) return '';
+    const NPR_RATE = 133.50;
     if (currency === 'USD') {
-      return `$${priceInUSD}`;
+      return `$${Number(amountInUSD).toLocaleString('en-US')}`;
     } else {
-      return `Rs ${Math.round(priceInUSD * NPR_RATE).toLocaleString('en-IN')}`;
+      return `Rs ${Math.round(amountInUSD * NPR_RATE).toLocaleString('en-IN')}`;
     }
   };
 
+  // Legacy helper — still used by older call sites that pass a plain number.
+  // For new code, prefer using <PriceDisplay price={tour.price} /> instead.
+  const formatPrice = (priceInUSD) => {
+    // Handles both old (Number) and new (Object) price shapes.
+    const amount = typeof priceInUSD === 'object' && priceInUSD !== null
+      ? priceInUSD.amount
+      : priceInUSD;
+    return formatAmount(amount);
+  };
+
   return (
-    <CurrencyContext.Provider value={{ currency, toggleCurrency, formatPrice }}>
+    <CurrencyContext.Provider value={{ currency, toggleCurrency, formatPrice, formatAmount }}>
       {children}
     </CurrencyContext.Provider>
   );

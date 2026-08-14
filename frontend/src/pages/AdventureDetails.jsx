@@ -62,9 +62,52 @@ function AdventureDetails() {
     document.getElementById('inquiry-form-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  if (loading) return <p className="status-msg">Loading adventure details…</p>;
-  if (error)   return <p className="status-msg error">{error}</p>;
-  if (!adventure) return <p className="status-msg">Adventure not found.</p>;
+  if (loading) return (
+    <div className="page-loading-screen">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position:  600px 0; }
+        }
+        .skeleton {
+          background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+          background-size: 600px 100%;
+          animation: shimmer 1.4s ease-in-out infinite;
+          border-radius: 6px;
+        }
+      `}</style>
+      <div style={{ width: '100%', height: '55vh', background: '#1e293b' }} />
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px', display: 'grid', gridTemplateColumns: '1fr 320px', gap: '32px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="skeleton" style={{ height: '28px', width: '60%' }} />
+          <div className="skeleton" style={{ height: '16px', width: '90%' }} />
+          <div className="skeleton" style={{ height: '16px', width: '80%' }} />
+          <div className="skeleton" style={{ height: '16px', width: '75%' }} />
+          <div className="skeleton" style={{ height: '200px', marginTop: '12px' }} />
+        </div>
+        <div className="skeleton" style={{ height: '320px', borderRadius: '12px' }} />
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', background: '#f8fafc', fontFamily: "'Inter', sans-serif", textAlign: 'center' }}>
+      <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(230,57,70,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e63946" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h1 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#0f172a', marginBottom: '10px', fontFamily: "'Playfair Display', serif" }}>Could Not Load Adventure</h1>
+      <p style={{ color: '#64748b', marginBottom: '24px', maxWidth: '400px' }}>{error}</p>
+      <a href="/packages" style={{ padding: '11px 26px', background: '#1a5c9e', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontWeight: '700', fontSize: '0.9rem' }}>Browse All Packages</a>
+    </div>
+  );
+
+  if (!adventure) return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', background: '#f8fafc', fontFamily: "'Inter', sans-serif", textAlign: 'center' }}>
+      <h1 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#0f172a', marginBottom: '10px', fontFamily: "'Playfair Display', serif" }}>Adventure Not Found</h1>
+      <p style={{ color: '#64748b', marginBottom: '24px' }}>This adventure may have been removed or the link may be incorrect.</p>
+      <a href="/packages" style={{ padding: '11px 26px', background: '#1a5c9e', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontWeight: '700', fontSize: '0.9rem' }}>Browse All Packages</a>
+    </div>
+  );
 
   const intensityColor = {
     Easy: '#2ecc71', Moderate: '#f39c12', Intense: '#e67e22', Extreme: '#e63946'

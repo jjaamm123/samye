@@ -33,12 +33,29 @@ function Packages() {
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/tours`)
-      .then(r => setTours(r.data))
+      .then(r => {
+        const data = r.data;
+        // ── DIAGNOSTIC: open browser DevTools → Console to see exact API shape ──
+        console.log('API Response [tours]:', data);
+        const arr = Array.isArray(data)         ? data
+                  : Array.isArray(data?.tours)   ? data.tours
+                  : Array.isArray(data?.data)    ? data.data
+                  : [];
+        setTours(arr);
+      })
       .catch(() => setErrorTours('Could not load tour packages.'))
       .finally(() => setLoadingTours(false));
 
     axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`)
-      .then(r => setAdventures(r.data))
+      .then(r => {
+        const data = r.data;
+        console.log('API Response [adventures]:', data);
+        const arr = Array.isArray(data)              ? data
+                  : Array.isArray(data?.adventures)   ? data.adventures
+                  : Array.isArray(data?.data)          ? data.data
+                  : [];
+        setAdventures(arr);
+      })
       .catch(() => setErrorAdv('Could not load adventure packages.'))
       .finally(() => setLoadingAdv(false));
   }, []);
@@ -48,9 +65,15 @@ function Packages() {
     setSearch('');
   };
 
-  const tourFilterOptions = ['All', ...new Set(tours.map(t => t.destination).filter(Boolean))];
+  // Safe arrays — guard against any residual non-array state before deriving data.
+  // This is the defensive layer that prevents "X.map is not a function" even if
+  // the API response or a future code path sets state to a non-array value.
+  const safeTours      = Array.isArray(tours)      ? tours      : [];
+  const safeAdventures = Array.isArray(adventures) ? adventures : [];
 
-  const filteredTours = tours.filter(t => {
+  const tourFilterOptions = ['All', ...new Set(safeTours.map(t => t.destination).filter(Boolean))];
+
+  const filteredTours = safeTours.filter(t => {
     const matchFilter = tourFilter === 'All' || t.destination === tourFilter;
     const matchSearch = !search
       || t.title?.toLowerCase().includes(search.toLowerCase())
@@ -58,9 +81,9 @@ function Packages() {
     return matchFilter && matchSearch;
   });
 
-  const adventureFilterOptions = ['All', ...new Set(adventures.map(a => a.intensity).filter(Boolean))];
+  const adventureFilterOptions = ['All', ...new Set(safeAdventures.map(a => a.intensity).filter(Boolean))];
 
-  const filteredAdventures = adventures.filter(a => {
+  const filteredAdventures = safeAdventures.filter(a => {
     const matchFilter = adventureFilter === 'All' || a.intensity === adventureFilter;
     const matchSearch = !search
       || a.title?.toLowerCase().includes(search.toLowerCase())

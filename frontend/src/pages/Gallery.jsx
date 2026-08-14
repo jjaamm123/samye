@@ -44,7 +44,14 @@ function Gallery() {
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/gallery`)
       .then(r => {
-        setGalleryItems(r.data);
+        const data = r.data;
+        console.log('API Response [gallery]:', data);
+        // Handles bare array OR envelopes: { gallery:[...] } / { data:[...] }
+        const arr = Array.isArray(data)           ? data
+                  : Array.isArray(data?.gallery)   ? data.gallery
+                  : Array.isArray(data?.data)      ? data.data
+                  : [];
+        setGalleryItems(arr);
         setLoading(false);
       })
       .catch(() => {
@@ -53,10 +60,14 @@ function Gallery() {
       });
   }, []);
 
+  // Safe array guard — prevents "X.filter is not a function" if API returns
+  // a non-array (object envelope, null, server error, etc.)
+  const safeItems     = Array.isArray(galleryItems) ? galleryItems : [];
+
   // Categorize Data
-  const scenicImages = galleryItems.filter(i => i.mediaType === 'image' && i.category === 'Scenic Views');
-  const customerImages = galleryItems.filter(i => i.mediaType === 'image' && i.category === 'Customer Moments');
-  const videos = galleryItems.filter(i => i.mediaType === 'video');
+  const scenicImages   = safeItems.filter(i => i.mediaType === 'image' && i.category === 'Scenic Views');
+  const customerImages = safeItems.filter(i => i.mediaType === 'image' && i.category === 'Customer Moments');
+  const videos         = safeItems.filter(i => i.mediaType === 'video');
 
   // Determine which array is currently being viewed
   const currentArray = activeTab === 'scenic' ? scenicImages : activeTab === 'customer' ? customerImages : videos;

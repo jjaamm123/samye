@@ -1,11 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; 
-import { useContext } from 'react';
-import { CurrencyContext } from '../context/CurrencyContext';
+import PriceDisplay from './PriceDisplay';
 
 function TourCard({ tour }) {
-  const { formatPrice } = useContext(CurrencyContext);
-  
   // Look for the new cardImage first, fallback to the old featuredImage if needed
   const imageUrl = tour.cardImage || tour.featuredImage;
 
@@ -43,7 +40,9 @@ function TourCard({ tour }) {
                 >
                   {tour.difficulty}
                 </span>
-                <span className="card-price">{formatPrice(tour.price)}</span>
+                <span className="card-price">
+                  <PriceDisplay price={tour.price} size="sm" />
+                </span>
               </div>
               <span className="card-cta-btn" style={{ display: 'inline-block' }}>View Tour →</span>
             </div>
@@ -55,4 +54,4 @@ function TourCard({ tour }) {
   );
 }
 
-export default TourCard;
+export default TourCard;

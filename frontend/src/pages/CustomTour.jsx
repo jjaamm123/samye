@@ -167,11 +167,30 @@ export default function CustomTour() {
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/tours`)
-      .then(r => setTours(r.data))
+      .then(r => {
+        const data = r.data;
+        // ── DIAGNOSTIC: open browser DevTools → Console to see exact API shape ──
+        console.log('API Response [tours]:', data);
+        // Handles bare array OR envelope shapes like { tours: [...] } or { data: [...] }
+        const arr = Array.isArray(data)         ? data
+                  : Array.isArray(data?.tours)   ? data.tours
+                  : Array.isArray(data?.data)    ? data.data
+                  : [];
+        setTours(arr);
+      })
       .catch(() => {})
       .finally(() => setLoadingTours(false));
+
     axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`)
-      .then(r => setAdventures(r.data))
+      .then(r => {
+        const data = r.data;
+        console.log('API Response [adventures]:', data);
+        const arr = Array.isArray(data)              ? data
+                  : Array.isArray(data?.adventures)   ? data.adventures
+                  : Array.isArray(data?.data)          ? data.data
+                  : [];
+        setAdventures(arr);
+      })
       .catch(() => {})
       .finally(() => setLoadingAdv(false));
   }, []);
@@ -224,11 +243,20 @@ export default function CustomTour() {
     };
   }, [tripItems, groupSize, travelDate, bookingDate]);
 
-  const filteredTours = tours.filter(t =>
+  // ── SAFE ARRAY GUARDS ────────────────────────────────────────────────────
+  // These are the true crash sites. tours/adventures .filter() runs during
+  // every render — including the render triggered immediately after the fetch
+  // resolves. If the setter stored a non-array (object, null, etc.) these
+  // blow up with "X.filter is not a function".
+  // Wrapping in Array.isArray() is the single most important safety net here.
+  const safeTours      = Array.isArray(tours)      ? tours      : [];
+  const safeAdventures = Array.isArray(adventures) ? adventures : [];
+
+  const filteredTours = safeTours.filter(t =>
     !pickerSearch || t.title?.toLowerCase().includes(pickerSearch.toLowerCase()) ||
     t.destination?.toLowerCase().includes(pickerSearch.toLowerCase())
   );
-  const filteredAdventures = adventures.filter(a =>
+  const filteredAdventures = safeAdventures.filter(a =>
     !pickerSearch || a.title?.toLowerCase().includes(pickerSearch.toLowerCase()) ||
     a.sportType?.toLowerCase().includes(pickerSearch.toLowerCase()) ||
     a.location?.toLowerCase().includes(pickerSearch.toLowerCase())

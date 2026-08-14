@@ -6,7 +6,10 @@ import '../App.css';
 const EMPTY_DAY = { day: '', title: '', description: '' };
 
 const EMPTY_TOUR = {
-  title: '', destination: 'Nepal', duration: '', price: '', localPrice: '',
+  title: '', destination: 'Nepal', duration: '',
+  // price is now a nested object matching the PriceSchema in backend_tour.js
+  price: { amount: '', displayType: 'starting_from' },
+  localPrice: '',
   difficulty: 'Moderate', description: '', 
   cardImage: '', heroImage: '', galleryImages: [],
   includedRaw: '', excludedRaw: '', itinerary: []
@@ -37,6 +40,8 @@ function AdminDashboard() {
   const [adventures, setAdventures] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [galleries, setGalleries] = useState([]);
+  const [leads, setLeads] = useState([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
 
   // Unified Form State
   const [formData, setFormData] = useState(EMPTY_TOUR);
@@ -74,6 +79,13 @@ function AdminDashboard() {
       .catch(console.error).finally(() => setLoadingInquiries(false));
   };
 
+  const fetchLeads = () => {
+    setLoadingLeads(true);
+    axios.get(`${import.meta.env.VITE_API_URL}/api/leads`, authHeaders())
+      .then(r => setLeads(r.data))
+      .catch(console.error).finally(() => setLoadingLeads(false));
+  };
+
   // ─── TAB & EDIT MANAGEMENT ───
   const handleTabSwitch = (newTab) => {
     setTab(newTab);
@@ -86,10 +98,15 @@ function AdminDashboard() {
 
   const handleEdit = (item) => {
     setEditingId(item._id);
+    // Unpack nested price for the form fields
+    const priceObj = item.price && typeof item.price === 'object'
+      ? { amount: item.price.amount ?? '', displayType: item.price.displayType ?? 'starting_from' }
+      : { amount: item.price ?? '', displayType: 'starting_from' }; // backwards-compat old docs
     setFormData({
       ...item,
+      price: priceObj,
       includedRaw: item.included?.join(', ') || '',
-      excludedRaw: item.excluded?.join(', ') || ''
+      excludedRaw:  item.excluded?.join(', ')  || ''
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -183,6 +200,11 @@ function AdminDashboard() {
 
     const payload = {
       ...formData,
+      // Ensure price is a proper nested object before sending
+      price: {
+        amount:      Number(formData.price?.amount) || 0,
+        displayType: formData.price?.displayType   || 'starting_from',
+      },
       included: formData.includedRaw.split(',').map(s => s.trim()).filter(Boolean),
       excluded: formData.excludedRaw.split(',').map(s => s.trim()).filter(Boolean),
     };
@@ -231,12 +253,21 @@ function AdminDashboard() {
           <span className="admin-sidebar-sub">Admin Panel</span>
         </div>
         <nav className="admin-sidebar-nav">
-          <span className={`admin-nav-item ${tab === 'tours' ? 'active' : ''}`} onClick={() => handleTabSwitch('tours')}>Tours</span>
+          <span className={`admin-nav-item ${tab === 'tours'      ? 'active' : ''}`} onClick={() => handleTabSwitch('tours')}>Tours</span>
           <span className={`admin-nav-item ${tab === 'adventures' ? 'active' : ''}`} onClick={() => handleTabSwitch('adventures')}>Adventures</span>
-          <span className={`admin-nav-item ${tab === 'gallery' ? 'active' : ''}`} onClick={() => handleTabSwitch('gallery')}>Media Gallery</span>
-          <span className={`admin-nav-item ${tab === 'inquiries' ? 'active' : ''}`} onClick={() => handleTabSwitch('inquiries')}>Inquiries
+          <span className={`admin-nav-item ${tab === 'gallery'    ? 'active' : ''}`} onClick={() => handleTabSwitch('gallery')}>Media Gallery</span>
+          <span className={`admin-nav-item ${tab === 'inquiries'  ? 'active' : ''}`} onClick={() => handleTabSwitch('inquiries')}>Inquiries
             {inquiries.filter(i => i.status === 'new').length > 0 && (
               <span className="admin-badge">{inquiries.filter(i => i.status === 'new').length}</span>
+            )}
+          </span>
+          <span
+            className={`admin-nav-item ${tab === 'leads' ? 'active' : ''}`}
+            onClick={() => { handleTabSwitch('leads'); fetchLeads(); }}
+          >
+            Leads
+            {leads.length > 0 && (
+              <span className="admin-badge" style={{ background: '#e8b84b', color: '#1a1208' }}>{leads.length}</span>
             )}
           </span>
           <Link to="/" className="admin-nav-item">View Live Site</Link>
@@ -348,8 +379,30 @@ function AdminDashboard() {
                 </div>
 
                 <div className="admin-form-group">
-                  <label className="admin-label">Price (USD)</label>
-                  <input type="number" name="price" value={formData.price} onChange={handleChange} required className="admin-input" />
+                  <label className="admin-label">Price Amount (USD)</label>
+                  <input
+                    type="number"
+                    name="price.amount"
+                    value={formData.price?.amount ?? ''}
+                    onChange={e => setFormData(f => ({ ...f, price: { ...f.price, amount: e.target.value } }))}
+                    required
+                    placeholder="e.g. 1200"
+                    className="admin-input"
+                  />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Price Display Type</label>
+                  <select
+                    name="price.displayType"
+                    value={formData.price?.displayType ?? 'starting_from'}
+                    onChange={e => setFormData(f => ({ ...f, price: { ...f.price, displayType: e.target.value } }))}
+                    className="admin-input"
+                  >
+                    <option value="starting_from">Starting From (shows "Starting from $X")</option>
+                    <option value="exact">Exact Price (shows "$X")</option>
+                    <option value="por">Price on Request (hides amount)</option>
+                  </select>
                 </div>
 
                 <div className="admin-form-group">
@@ -452,7 +505,14 @@ function AdminDashboard() {
                         <tr key={item._id}>
                           <td className="admin-td-title">{item.title}</td>
                           <td><span className="admin-destination-badge">{isTour ? item.destination : item.location}</span></td>
-                          <td className="admin-td-price">${item.price}</td>
+                          <td className="admin-td-price">
+                            {isTour
+                              ? (typeof item.price === 'object'
+                                  ? `$${item.price?.amount ?? '—'} (${item.price?.displayType ?? ''})`
+                                  : `$${item.price}`)
+                              : `$${item.price}`
+                            }
+                          </td>
                           <td style={{ textAlign: 'right' }}>
                             <button onClick={() => handleEdit(item)} className="admin-action-view" style={{ marginRight: '8px', cursor: 'pointer', background: 'none', border: 'none', color: '#1a5c9e', fontWeight: 'bold' }}>Edit</button>
                             <button onClick={() => handleDelete(item._id)} className="admin-action-delete">Delete</button>
@@ -604,6 +664,74 @@ function AdminDashboard() {
                 ))}
               </div>
             )}
+          </>
+        )}
+
+        {/* ─── LEADS TAB ─── */}
+        {tab === 'leads' && (
+          <>
+            <div className="admin-page-header">
+              <div>
+                <h1 className="admin-page-title">Captured Leads</h1>
+                <p className="admin-page-subtitle">Visitors who downloaded the tour itinerary</p>
+              </div>
+              <button className="admin-refresh-btn" onClick={fetchLeads}>↺ Refresh</button>
+            </div>
+
+            <div className="admin-card">
+              <div className="admin-card-header">
+                <h2 className="admin-card-title">Lead List</h2>
+                <span className="admin-card-count">{leads.length} total</span>
+              </div>
+              {loadingLeads ? (
+                <p className="admin-empty-state">Loading leads…</p>
+              ) : leads.length === 0 ? (
+                <p className="admin-empty-state">No leads captured yet. They will appear here once visitors fill in the itinerary modal.</p>
+              ) : (
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>WhatsApp</th>
+                        <th>Tour</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leads.map(lead => (
+                        <tr key={lead._id}>
+                          <td className="admin-td-title">{lead.name}</td>
+                          <td>
+                            <a href={`mailto:${lead.email}`} style={{ color: '#1a5c9e', textDecoration: 'none' }}>
+                              {lead.email}
+                            </a>
+                          </td>
+                          <td>
+                            {lead.whatsapp ? (
+                              <a href={`https://wa.me/${lead.whatsapp.replace(/\D/g, '')}`}
+                                target="_blank" rel="noopener noreferrer"
+                                style={{ color: '#25d366', textDecoration: 'none', fontWeight: '600' }}>
+                                {lead.whatsapp}
+                              </a>
+                            ) : <span style={{ color: '#94a3b8' }}>—</span>}
+                          </td>
+                          <td>
+                            <span className="admin-destination-badge">
+                              {lead.tourTitle || (lead.tourId?.title) || '—'}
+                            </span>
+                          </td>
+                          <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                            {new Date(lead.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </>
         )}
       </main>

@@ -1,70 +1,70 @@
-# <font size="7">Samye Travels</font>
-### <font size="4"><i>Full-Stack Travel Agency & Adventure Booking Platform</i></font>
+# <font size="7">Yeshi</font>
+### <font size="4"><i>Full-Stack E-Commerce & Inventory Management Platform</i></font>
 
 ---
 
 ## <font size="5">Overview</font>
-This is a full-stack web application designed for a premium travel agency specializing in Himalayan expeditions across Nepal, Tibet, and India. The platform features an immersive customer portal paired with a secure, JWT-authenticated administrative dashboard for managing complex multi-day itineraries, extreme sports packages, user inquiries, and multimedia galleries.
+This is a full-stack web application designed for a high-fashion storefront, paired with an inventory manager built for an administrator. The project focuses on a clean, high-contrast, text-heavy layout inspired by editorial lookbooks.
 
 ---
 
 ## <font size="5">Live Links</font>
-* **Storefront:** https://samye.vercel.app/
-* **Backend API:** https://samye-c5nv.onrender.com
+* **Storefront:** [yeshi-two.vercel.app](https://yeshi-two.vercel.app)
+* **Backend API:** [yeshi-bg5i.onrender.com](https://yeshi-bg5i.onrender.com)
 
 ---
 
 ## <font size="5">Architecture & Code Map</font>
 ```text
-SAMYE/
+yeshi/
 ├── backend/               # Express API & database configuration
-│   ├── middleware/        # JWT auth verification & Cloudinary upload logic
-│   ├── models/            # Mongoose schemas (Admin, Tours, Adventures, Gallery)
-│   ├── routes/            # API endpoints (auth.js, etc.)
+│   ├── config/db.js       # Mongoose connection logic[cite: 1]
+│   ├── seed.mjs           # Populates Atlas with baseline products
 │   └── server.js          # Main entry point
-└── frontend/              # React SPA (Vite)
+└── frontend/              # React SPA (Vite + Tailwind v4)
     ├── src/
-    │   ├── components/    # Reusable UI (ProtectedRoute)
-    │   ├── context/       # Global state management (CurrencyContext)
-    │   ├── pages/         # TourDetails, AdventureDetails, Gallery, AdminDashboard
-    │   └── App.jsx        # Core routing and layout configuration
-    └── vercel.json        # Routing rules for production SPA deployment
- ```
-## <font size="7">Technical Features</font>
+    │   ├── components/    # Layout pieces (Footer, ScrollToTop)
+    │   ├── pages/
+    │   │   ├── admin/     # ProductManager.jsx (Inventory CRUD)
+    │   │   └── storefront/# Product catalog, CustomerCare.jsx
+    │   └── App.jsx        # Routing configuration
+    └── vercel.json        # Routing rules for production SPA
 
-### <font size="5">Frontend & Client-Side Logic</font>
+## Technical Features
 
-#### <font size="5">Immersive UI & Animations</font>
-Built with premium, brand-aligned color schemes, scroll-triggered staggered reveals, and clean native cursor enforcement to elevate the standard travel booking experience.
+### Frontend & Client-Side Logic
 
-#### <font size="5">Interactive Media Gallery</font>
-Features a segmented tab architecture (Scenic Views, Customer Moments, Videos) paired with a responsive, keyboard-navigable lightbox carousel for high-resolution asset viewing.
+#### Editorial Typography
+Built using a high-contrast layout utilizing structural borders and varying typographic weights.
 
-#### <font size="5">Contextual Booking Triggers</font>
-Implements dynamic anchor scrolling that directs users to inquiry forms, automatically injecting contextual placeholders based on the currently viewed tour or extreme sport package.
+#### SPA Route Fixing
+Includes a `vercel.json` configuration file to ensure manual URL refreshes on nested paths (like `/admin`) map back to the root index.
 
----
-
-### <font size="5">Admin Tools & Security</font>
-
-#### <font size="5">JWT-Secured Dashboard</font>
-Protected administrative routing utilizing `bcryptjs` password hashing and JSON Web Tokens to restrict unauthorized access to inventory and customer inquiry management.
-
-#### <font size="5">Dynamic Itinerary Management</font>
-Allows administrators to seamlessly append, edit, or remove individual phases and daily schedules within a complex multi-day package utilizing dynamic array subdocuments.
-
-#### <font size="5">Pre-Publish Media Previews</font>
-Utilizes client-side blob generation allowing admins to instantly preview selected Cloudinary image and video assets directly within the dashboard prior to executing database writes.
+#### Scroll Reset Utility
+Integrated custom hook to automatically force pages back to the top coordinate upon route changes.
 
 ---
 
-### <font size="5">Database & Asset Infrastructure</font>
+### Admin Tools & Variation Tracking
 
-#### <font size="5">Multi-Format Media Storage</font>
-Integrated Cloudinary upload pipeline configured with automated resource type detection to seamlessly process, optimize, and serve both imagery and video formats (`.mp4`, `.mov`).
+#### Dynamic Row Forms
+Allows administrators to append or remove individual product variation rows (managing unique size, color, and specific stock metrics) simultaneously.
 
-#### <font size="5">Relational Data Modeling</font>
-Managed through tailored Mongoose schemas designed to sanitize incoming package data, splitting comma-separated strings into clean inclusion/exclusion arrays.
+#### Image Management Pipeline
+Supports staging up to five images per document, generating localized client-side blob URLs for review before triggering network payloads.
 
-#### <font size="5">Multi-Currency Context</font>
-Implements a global React context provider to toggle and format dynamic pricing arrays, displaying metrics in both standard USD and local Nepalese Rupees (NPR).
+#### Localized Formatting
+Implements automated formatting pipes to process numbers into Nepalese Rupees (NPR).
+
+---
+
+### Database & Asset Infrastructure
+
+#### Data Modeling
+Managed through Mongoose schemas to sanitize incoming variations into clean array subdocuments.
+
+#### Cloud Storage
+Integrated with Cloudinary API for offloading multi-image uploads from the host server.
+
+#### Baseline Seeding
+Includes a decoupled data script (`seed.mjs`) to cleanly clear and populate the cluster remotely.    

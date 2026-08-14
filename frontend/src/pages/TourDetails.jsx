@@ -4,7 +4,12 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { CurrencyContext } from '../context/CurrencyContext';
+import PriceDisplay, { getPriceDisplayType } from '../components/PriceDisplay';
+import LeadCaptureModal from '../components/LeadCaptureModal';
 import '../App.css';
+
+// ── WhatsApp config — replace with your actual number (international format, no +) ──
+const WHATSAPP_NUMBER = 'YOUR_WHATSAPP_NUMBER'; // e.g. '9779800000000'
 
 const MONTHS = [
   'January','February','March','April','May','June',
@@ -19,6 +24,8 @@ function TourDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  // Lead capture modal visibility
+  const [showLeadModal, setShowLeadModal] = useState(false);
 
   // Carousel
   const [activeSlide, setActiveSlide] = useState(0);
@@ -67,9 +74,52 @@ function TourDetails() {
     document.getElementById('inquiry-form-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  if (loading) return <p className="status-msg">Loading your itinerary…</p>;
-  if (error)   return <p className="status-msg error">{error}</p>;
-  if (!tour)   return <p className="status-msg">Tour not found.</p>;
+  if (loading) return (
+    <div className="page-loading-screen">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position:  600px 0; }
+        }
+        .skeleton {
+          background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+          background-size: 600px 100%;
+          animation: shimmer 1.4s ease-in-out infinite;
+          border-radius: 6px;
+        }
+      `}</style>
+      <div style={{ width: '100%', height: '55vh', background: '#1e293b' }} />
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px', display: 'grid', gridTemplateColumns: '1fr 320px', gap: '32px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="skeleton" style={{ height: '28px', width: '60%' }} />
+          <div className="skeleton" style={{ height: '16px', width: '90%' }} />
+          <div className="skeleton" style={{ height: '16px', width: '80%' }} />
+          <div className="skeleton" style={{ height: '16px', width: '75%' }} />
+          <div className="skeleton" style={{ height: '200px', marginTop: '12px' }} />
+        </div>
+        <div className="skeleton" style={{ height: '320px', borderRadius: '12px' }} />
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', background: '#f8fafc', fontFamily: "'Inter', sans-serif", textAlign: 'center' }}>
+      <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(230,57,70,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e63946" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h1 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#0f172a', marginBottom: '10px', fontFamily: "'Playfair Display', serif" }}>Could Not Load Tour</h1>
+      <p style={{ color: '#64748b', marginBottom: '24px', maxWidth: '400px' }}>{error}</p>
+      <a href="/packages" style={{ padding: '11px 26px', background: '#1a5c9e', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontWeight: '700', fontSize: '0.9rem' }}>Browse All Packages</a>
+    </div>
+  );
+
+  if (!tour) return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', background: '#f8fafc', fontFamily: "'Inter', sans-serif", textAlign: 'center' }}>
+      <h1 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#0f172a', marginBottom: '10px', fontFamily: "'Playfair Display', serif" }}>Tour Not Found</h1>
+      <p style={{ color: '#64748b', marginBottom: '24px' }}>This tour may have been removed or the link may be incorrect.</p>
+      <a href="/packages" style={{ padding: '11px 26px', background: '#1a5c9e', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontWeight: '700', fontSize: '0.9rem' }}>Browse All Packages</a>
+    </div>
+  );
 
   const difficultyColor = {
     Easy: '#2ecc71', Moderate: '#f39c12', Hard: '#e63946', Challenging: '#c0392b'
@@ -151,6 +201,42 @@ function TourDetails() {
           <div className="details-card">
             <h2 className="details-section-heading">Overview</h2>
             <p className="details-description">{tour.description}</p>
+
+            {/* ── Gated Itinerary CTA ── */}
+            <button
+              id="open-itinerary-modal-btn"
+              onClick={() => setShowLeadModal(true)}
+              style={{
+                display:        'inline-flex',
+                alignItems:     'center',
+                gap:            '9px',
+                marginTop:      '20px',
+                padding:        '12px 22px',
+                background:     'linear-gradient(135deg, #0f4c8a 0%, #1a5c9e 100%)',
+                color:          '#fff',
+                border:         '1px solid rgba(255,255,255,0.12)',
+                borderRadius:   '10px',
+                fontSize:       '0.92rem',
+                fontWeight:     '700',
+                fontFamily:     "'Inter', sans-serif",
+                cursor:         'pointer',
+                letterSpacing:  '0.01em',
+                boxShadow:      '0 4px 14px rgba(26,92,158,0.35)',
+                transition:     'opacity 0.2s, transform 0.15s',
+              }}
+              onMouseOver={e => { e.currentTarget.style.opacity = '0.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseOut={e  => { e.currentTarget.style.opacity = '1';    e.currentTarget.style.transform = 'translateY(0)';    }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              Download Complete Itinerary &amp; Pricing
+            </button>
           </div>
 
           {(tour.included?.length > 0 || tour.excluded?.length > 0) && (
@@ -336,9 +422,24 @@ function TourDetails() {
         {/* ── RIGHT: Booking sidebar ── */}
         <div className="details-sidebar">
           <div className="booking-card">
+            {/* Dynamic price block — respects displayType */}
             <div className="booking-price-block">
-              <span className="booking-price-label">From</span>
-              <div className="booking-price">{formatPrice(tour.price)} <span>/ person</span></div>
+              {getPriceDisplayType(tour.price) === 'por' ? (
+                <>
+                  <span className="booking-price-label">Pricing</span>
+                  <div className="booking-price" style={{ fontSize: '1.2rem' }}>
+                    <PriceDisplay price={tour.price} size="lg" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="booking-price-label">From</span>
+                  <div className="booking-price">
+                    <PriceDisplay price={tour.price} size="lg" />
+                    <span> / person</span>
+                  </div>
+                </>
+              )}
             </div>
             <div className="booking-divider"></div>
             <div className="booking-facts">
@@ -364,12 +465,67 @@ function TourDetails() {
               )}
             </div>
             <div className="booking-divider"></div>
-            <button className="booking-cta-btn" onClick={scrollToForm}>Book This Tour</button>
+
+            {/* ── Conditional primary CTA ── */}
+            {getPriceDisplayType(tour.price) === 'por' ? (
+              <a
+                id="whatsapp-consult-btn"
+                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                  `Hi Samye Travels! I'm interested in the "${tour.title}" tour and would like to know more about pricing and availability.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display:        'flex',
+                  alignItems:     'center',
+                  justifyContent: 'center',
+                  gap:            '9px',
+                  width:          '100%',
+                  padding:        '14px 20px',
+                  background:     'linear-gradient(135deg, #128c3e 0%, #25d366 100%)',
+                  color:          '#fff',
+                  borderRadius:   '10px',
+                  fontFamily:     "'Inter', sans-serif",
+                  fontSize:       '0.97rem',
+                  fontWeight:     '700',
+                  textDecoration: 'none',
+                  letterSpacing:  '0.02em',
+                  boxSizing:      'border-box',
+                  boxShadow:      '0 4px 16px rgba(37,211,102,0.3)',
+                  transition:     'opacity 0.2s',
+                }}
+                onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={e  => e.currentTarget.style.opacity = '1'}
+              >
+                {/* WhatsApp SVG icon */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                </svg>
+                Consult a Travel Expert
+              </a>
+            ) : (
+              <button
+                id="book-tour-btn"
+                className="booking-cta-btn"
+                onClick={scrollToForm}
+              >
+                Book This Tour
+              </button>
+            )}
+
             <p className="booking-note">Free cancellation up to 30 days before departure</p>
           </div>
         </div>
 
       </div>
+
+      {/* Lead Capture Modal */}
+      {showLeadModal && tour && (
+        <LeadCaptureModal
+          tour={tour}
+          onClose={() => setShowLeadModal(false)}
+        />
+      )}
 
       {/* Lightbox */}
       {lightboxIndex !== null && (

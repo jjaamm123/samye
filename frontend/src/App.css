@@ -146,6 +146,7 @@ select,
 
 .navbar-enquire-btn:hover { background-color: #246ab5; transform: translateY(-1px); }
 
+
 /* ============================================================
    HOMEPAGE HERO
    ============================================================ */
@@ -531,8 +532,10 @@ select,
    ============================================================ */
 .content-container { max-width: 1280px; margin: 0 auto; padding: 80px 40px 60px; }
 
+.page-loading-screen { min-height: 100vh; background: #f8fafc; overflow: hidden; }
 .status-msg { text-align: center; margin-top: 50px; font-size: 1.1rem; color: #4a5a6a; }
 .status-msg.error { color: #e63946; font-weight: 600; }
+
 
 .destination-section { margin-bottom: 80px; }
 

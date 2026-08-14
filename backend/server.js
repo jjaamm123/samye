@@ -8,6 +8,7 @@ const Tour       = require('./models/backend_tour');
 const Booking    = require('./models/booking');
 const Adventure  = require('./models/backend_adventure');
 const Inquiry    = require('./models/backend_inquiry');
+const Lead       = require('./models/Lead');
 const upload     = require('./middleware/upload');
 const authRoutes = require('./routes/auth');
 const { protect } = require('./middleware/authMiddleware');
@@ -207,6 +208,34 @@ app.patch('/api/inquiries/:id', protect, async (req, res) => {
     } catch (error) {
         console.error("Error updating inquiry:", error);
         res.status(500).json({ message: "Failed to update inquiry status." });
+    }
+});
+
+// ─── LEADS (POST = public, GET = protected) ────────────────────────────────
+// Captures itinerary-download lead submissions from the gated modal.
+app.get('/api/leads', protect, async (req, res) => {
+    try {
+        const leads = await Lead.find()
+            .populate('tourId', 'title')
+            .sort({ createdAt: -1 });
+        res.status(200).json(leads);
+    } catch (error) {
+        console.error('Error fetching leads:', error);
+        res.status(500).json({ message: 'Failed to fetch leads.' });
+    }
+});
+
+app.post('/api/leads', async (req, res) => {
+    try {
+        const { name, email, whatsapp, tourId, tourTitle } = req.body;
+        if (!name || !email) {
+            return res.status(400).json({ message: 'Name and email are required.' });
+        }
+        const lead = await Lead.create({ name, email, whatsapp, tourId, tourTitle });
+        res.status(201).json(lead);
+    } catch (error) {
+        console.error('Error saving lead:', error);
+        res.status(500).json({ message: 'Failed to save lead.' });
     }
 });
 
