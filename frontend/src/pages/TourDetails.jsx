@@ -60,7 +60,7 @@ function TourDetails() {
   const { id }                                     = useParams();
   const { currency, toggleCurrency, formatPrice }  = useContext(CurrencyContext);
 
-  const [tour,            setTour]            = useState(null);
+  const [tourData,        setTourData]        = useState(null);
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState(null);
   const [openDay,         setOpenDay]         = useState(0); // first day open by default
@@ -74,6 +74,9 @@ function TourDetails() {
   });
   const [inquiryStatus, setInquiryStatus] = useState(null); // null | 'success' | 'error'
 
+  // Normalize tour data in case API returns an array for a single item fetch
+  const tour = Array.isArray(tourData) ? tourData[0] : tourData;
+
   // ── Nav scroll-hide ──────────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -85,9 +88,12 @@ function TourDetails() {
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/tours/${id}`)
       .then(r => {
-        setTour(r.data);
+        setTourData(r.data);
         setLoading(false);
-        setInquiryData(f => ({ ...f, subject: `Enquiry about: ${r.data.title}` }));
+        const resolvedTour = Array.isArray(r.data) ? r.data[0] : r.data;
+        if (resolvedTour) {
+          setInquiryData(f => ({ ...f, subject: `Enquiry about: ${resolvedTour.title}` }));
+        }
       })
       .catch(() => { setError('Could not load tour details.'); setLoading(false); });
   }, [id]);
@@ -111,9 +117,10 @@ function TourDetails() {
 
   const handleInquirySubmit = e => {
     e.preventDefault();
+    if (!tour?._id) return;
     axios.post(`${import.meta.env.VITE_API_URL}/api/inquiries`, {
       ...inquiryData,
-      relatedTour: tour?._id,
+      relatedTour: tour._id,
     })
       .then(() => {
         setInquiryStatus('success');
@@ -137,15 +144,15 @@ function TourDetails() {
     if (tour?.destination) stops.push(tour.destination);
     const itinTitles = tour?.itinerary
       ?.slice(0, 4)
-      .map(d => d.title)
-      .filter(Boolean) || [];
+      ?.map(d => d?.title)
+      ?.filter(Boolean) || [];
     return stops.concat(itinTitles).slice(0, 5);
   })();
 
   // ── Loading / Error states ───────────────────────────────────────────────────
   if (loading) return <Skeleton />;
 
-  if (error || !tour) return (
+  if (error || !tour || Object.keys(tour).length === 0) return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center',
       justifyContent:'center', background:'#f7f2e8', fontFamily:"'Inter',sans-serif", textAlign:'center', padding:'40px 20px' }}>
       <div style={{ fontSize:'3rem', marginBottom:'20px' }}>🏔️</div>
@@ -233,19 +240,22 @@ function TourDetails() {
           )}
 
           {/* Route chain */}
-          {routeStops.length > 0 && (
+          {routeStops?.length > 0 && (
             <div className="ed-route-chain">
-              {routeStops.map((stop, i) => (
-                <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:'6px' }}>
-                  <span className="ed-route-stop">
-                    <MapPin size={11} className="ed-route-pin" style={{ color:'#d4af37' }} />
-                    {stop}
+              {routeStops.map((stop, i) => {
+                if (!stop) return null;
+                return (
+                  <span key={stop._id || i} style={{ display:'inline-flex', alignItems:'center', gap:'6px' }}>
+                    <span className="ed-route-stop">
+                      <MapPin size={11} className="ed-route-pin" style={{ color:'#d4af37' }} />
+                      {stop}
+                    </span>
+                    {i < routeStops.length - 1 && (
+                      <span className="ed-route-arrow">→</span>
+                    )}
                   </span>
-                  {i < routeStops.length - 1 && (
-                    <span className="ed-route-arrow">→</span>
-                  )}
-                </span>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -334,12 +344,15 @@ function TourDetails() {
               <div style={{ marginTop:'36px' }}>
                 <h3 className="ed-section-title ed-section-title--sm">Journey Highlights</h3>
                 <ul className="ed-highlight-list">
-                  {tour.included.map((item, i) => (
-                    <li key={i} className="ed-highlight-item">
-                      <span className="ed-diamond" aria-hidden="true" />
-                      <span className="ed-highlight-text">{item}</span>
-                    </li>
-                  ))}
+                  {tour.included.map((item, i) => {
+                    if (!item) return null;
+                    return (
+                      <li key={item._id || i} className="ed-highlight-item">
+                        <span className="ed-diamond" aria-hidden="true" />
+                        <span className="ed-highlight-text">{item}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
@@ -353,12 +366,15 @@ function TourDetails() {
                     <div>
                       <h4 className="ed-inclusions-col-title inc">Included</h4>
                       <ul className="ed-inclusions-list">
-                        {tour.included.map((item, i) => (
-                          <li key={i} className="ed-inclusions-item">
-                            <span className="ed-inc-icon inc">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
+                        {tour.included.map((item, i) => {
+                          if (!item) return null;
+                          return (
+                            <li key={item._id || i} className="ed-inclusions-item">
+                              <span className="ed-inc-icon inc">✓</span>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   )}
@@ -366,12 +382,15 @@ function TourDetails() {
                     <div>
                       <h4 className="ed-inclusions-col-title exc">Excluded</h4>
                       <ul className="ed-inclusions-list">
-                        {tour.excluded.map((item, i) => (
-                          <li key={i} className="ed-inclusions-item">
-                            <span className="ed-inc-icon exc">✕</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
+                        {tour.excluded.map((item, i) => {
+                          if (!item) return null;
+                          return (
+                            <li key={item._id || i} className="ed-inclusions-item">
+                              <span className="ed-inc-icon exc">✕</span>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   )}
@@ -394,9 +413,10 @@ function TourDetails() {
 
               <div className="ed-accordion">
                 {tour.itinerary.map((day, idx) => {
+                  if (!day) return null;
                   const isOpen = openDay === idx;
                   return (
-                    <div key={idx} className={`ed-accordion-item ${isOpen ? 'open' : ''}`}>
+                    <div key={day._id || idx} className={`ed-accordion-item ${isOpen ? 'open' : ''}`}>
                       <button
                         className="ed-accordion-header"
                         onClick={() => setOpenDay(isOpen ? null : idx)}
@@ -441,33 +461,36 @@ function TourDetails() {
           )}
 
           {/* ─ GALLERY ──────────────────────────────── */}
-          {gallery.length > 0 && (
+          {gallery?.length > 0 && (
             <section id="section-gallery" className="ed-section">
               <span className="ed-section-label">Visual Story</span>
               <h2 className="ed-section-title">Gallery</h2>
               <div className="ed-gallery-grid">
-                {gallery.map((img, i) => (
-                  <div
-                    key={i}
-                    className="ed-gallery-thumb"
-                    onClick={() => setLightboxIndex(i)}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`View image ${i + 1}`}
-                    onKeyDown={e => e.key === 'Enter' && setLightboxIndex(i)}
-                  >
-                    <img src={img} alt={`${tour.title} — photo ${i + 1}`} loading="lazy" />
-                    <div className="ed-gallery-thumb-overlay">
-                      <span className="ed-gallery-expand">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                        </svg>
-                        Enlarge
-                      </span>
+                {gallery.map((img, i) => {
+                  if (!img) return null;
+                  return (
+                    <div
+                      key={img._id || i}
+                      className="ed-gallery-thumb"
+                      onClick={() => setLightboxIndex(i)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`View image ${i + 1}`}
+                      onKeyDown={e => e.key === 'Enter' && setLightboxIndex(i)}
+                    >
+                      <img src={img} alt={`${tour.title} — photo ${i + 1}`} loading="lazy" />
+                      <div className="ed-gallery-thumb-overlay">
+                        <span className="ed-gallery-expand">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+                            <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                          </svg>
+                          Enlarge
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           )}
@@ -583,12 +606,12 @@ function TourDetails() {
       {/* ═══════════════════════════════════════════
           LEAD CAPTURE MODAL (itinerary download)
       ═══════════════════════════════════════════ */}
-      <LeadCaptureModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        tourId={tour._id}
-        tourTitle={tour.title}
-      />
+      {modalOpen && (
+        <LeadCaptureModal
+          tour={tour}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
 
     </div>
   );

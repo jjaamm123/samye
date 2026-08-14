@@ -1,16 +1,15 @@
 // src/pages/AdventureDetails.jsx
-// Luxury editorial redesign — same layout as TourDetails, adapted for Adventures.
-// Sections: Split Hero | Sticky Tabs | Overview | Schedule | Gallery | Enquire
-// NOTE: Adventures use flat price (Number), not the nested PriceSchema. ExpertSidebar
-//       receives formatPrice helper and falls back to the flat number branch.
+// Luxury editorial redesign — Black Tomato / Scott Dunn inspired layout.
+// Sections: Split Hero | Sticky Tabs | Overview | Itinerary | Gallery | Enquire
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, Link }   from 'react-router-dom';
 import axios                  from 'axios';
 import { motion }             from 'framer-motion';
-import { MapPin, Clock }      from 'lucide-react';
+import { MapPin, Clock, Activity } from 'lucide-react';
 import '../App.css';
 
 import { CurrencyContext }    from '../context/CurrencyContext';
+import PriceDisplay           from '../components/PriceDisplay';
 import HeroCarousel           from '../components/HeroCarousel';
 import StickyTabNav           from '../components/StickyTabNav';
 import ExpertSidebar          from '../components/ExpertSidebar';
@@ -21,19 +20,12 @@ const MONTHS = [
   'July','August','September','October','November','December','Flexible',
 ];
 
-// No Route Map tab for Adventures (no GPS coordinates or structured route)
-const ADV_TABS = [
+const ADVENTURE_TABS = [
   { id: 'section-overview',   label: 'Overview'    },
-  { id: 'section-itinerary',  label: 'Schedule'    },
-  { id: 'section-safety',     label: 'Safety'      },
+  { id: 'section-itinerary',  label: 'Itinerary'   },
   { id: 'section-gallery',    label: 'Gallery'     },
   { id: 'section-enquire',    label: 'Enquire'     },
 ];
-
-// Intensity → color mapping
-const INTENSITY_COLOR = {
-  Easy: '#2ecc71', Moderate: '#f39c12', Intense: '#e67e22', Extreme: '#e63946',
-};
 
 // ── Skeleton loader ────────────────────────────────────────────────────────────
 function Skeleton() {
@@ -60,23 +52,26 @@ function Skeleton() {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 function AdventureDetails() {
-  const { id }                                    = useParams();
-  const { currency, toggleCurrency, formatPrice } = useContext(CurrencyContext);
+  const { id }                                     = useParams();
+  const { currency, toggleCurrency, formatPrice }  = useContext(CurrencyContext);
 
-  const [adventure,     setAdventure]     = useState(null);
-  const [loading,       setLoading]       = useState(true);
-  const [error,         setError]         = useState(null);
-  const [openDay,       setOpenDay]       = useState(0); // first phase open by default
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-  const [scrolled,      setScrolled]      = useState(false);
+  const [advData,         setAdvData]         = useState(null);
+  const [loading,         setLoading]         = useState(true);
+  const [error,           setError]           = useState(null);
+  const [openDay,         setOpenDay]         = useState(0); // first day open by default
+  const [lightboxIndex,   setLightboxIndex]   = useState(null);
+  const [scrolled,        setScrolled]        = useState(false);
 
   const [inquiryData, setInquiryData] = useState({
     name: '', email: '', subject: '', message: '',
     travelMonth: 'Flexible', groupSize: '2', budgetRange: 'Standard',
   });
-  const [inquiryStatus, setInquiryStatus] = useState(null);
+  const [inquiryStatus, setInquiryStatus] = useState(null); // null | 'success' | 'error'
 
-  // ── Nav scroll ───────────────────────────────────────────────────────────────
+  // Normalize data in case API returns an array for a single item fetch
+  const adventure = Array.isArray(advData) ? advData[0] : advData;
+
+  // ── Nav scroll-hide ──────────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -87,14 +82,17 @@ function AdventureDetails() {
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/adventures/${id}`)
       .then(r => {
-        setAdventure(r.data);
+        setAdvData(r.data);
         setLoading(false);
-        setInquiryData(f => ({ ...f, subject: `Enquiry about: ${r.data.title}` }));
+        const resolvedAdv = Array.isArray(r.data) ? r.data[0] : r.data;
+        if (resolvedAdv) {
+          setInquiryData(f => ({ ...f, subject: `Enquiry about Adventure: ${resolvedAdv.title}` }));
+        }
       })
       .catch(() => { setError('Could not load adventure details.'); setLoading(false); });
   }, [id]);
 
-  // ── Lightbox keyboard ────────────────────────────────────────────────────────
+  // ── Lightbox keyboard nav ────────────────────────────────────────────────────
   const gallery = adventure?.galleryImages || [];
   useEffect(() => {
     const handleKey = e => {
@@ -107,15 +105,16 @@ function AdventureDetails() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [lightboxIndex, gallery.length]);
 
-  // ── Inquiry handlers ─────────────────────────────────────────────────────────
+  // ── Inquiry form handlers ────────────────────────────────────────────────────
   const handleInquiryChange = e =>
     setInquiryData(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleInquirySubmit = e => {
     e.preventDefault();
+    if (!adventure?._id) return;
     axios.post(`${import.meta.env.VITE_API_URL}/api/inquiries`, {
       ...inquiryData,
-      relatedAdventure: adventure?._id,
+      relatedAdventure: adventure._id,
     })
       .then(() => {
         setInquiryStatus('success');
@@ -133,10 +132,10 @@ function AdventureDetails() {
     }
   }, []);
 
-  // ── Loading / Error ──────────────────────────────────────────────────────────
+  // ── Loading / Error states ───────────────────────────────────────────────────
   if (loading) return <Skeleton />;
 
-  if (error || !adventure) return (
+  if (error || !adventure || Object.keys(adventure).length === 0) return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center',
       justifyContent:'center', background:'#f7f2e8', fontFamily:"'Inter',sans-serif", textAlign:'center', padding:'40px 20px' }}>
       <div style={{ fontSize:'3rem', marginBottom:'20px' }}>🧗</div>
@@ -151,13 +150,20 @@ function AdventureDetails() {
     </div>
   );
 
-  const intensityColor = INTENSITY_COLOR[adventure.intensity] || '#1a5c9e';
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  const intensityColor = {
+    Easy: '#2ecc71', Moderate: '#f39c12', Intense: '#e67e22', Extreme: '#e63946',
+  }[adventure.intensity] || '#1a5c9e';
+
+  // Adventures use a flat number for price, unlike Tours.
+  // We mock the nested structure so PriceDisplay renders nicely.
+  const flatPriceObj = { amount: adventure.price, displayType: 'starting_from' };
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="app-wrapper">
 
-      {/* ── Minimal fixed nav ── */}
+      {/* ── Minimal fixed nav (dark, always visible on details page) ── */}
       <nav
         className="top-navbar"
         style={{
@@ -195,37 +201,32 @@ function AdventureDetails() {
       ═══════════════════════════════════════════ */}
       <section className="ed-split-hero">
 
-        {/* ── LEFT: Editorial text ── */}
+        {/* ── LEFT: Editorial text panel ── */}
         <motion.div
           className="ed-hero-left"
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Eyebrow: sport type */}
-          <span className="ed-hero-eyebrow">
-            {adventure.sportType || 'Adventure Sport'}
+          {/* Eyebrow */}
+          <span className="ed-hero-eyebrow" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+            {adventure.sportType && (
+              <span style={{ padding:'3px 8px', background:'rgba(212,175,55,0.15)', borderRadius:'2px', color:'#d4af37' }}>
+                {adventure.sportType}
+              </span>
+            )}
+            {adventure.location || 'Nepal'}
           </span>
 
           {/* Title */}
           <h1 className="ed-hero-title">{adventure.title}</h1>
 
-          {/* Narrative */}
+          {/* Narrative paragraph (description excerpt) */}
           {adventure.description && (
             <p className="ed-hero-narrative">
               {adventure.description.slice(0, 220)}
               {adventure.description.length > 220 ? '…' : ''}
             </p>
-          )}
-
-          {/* Location badge row */}
-          {adventure.location && (
-            <div className="ed-route-chain" style={{ marginBottom:'28px' }}>
-              <span className="ed-route-stop">
-                <MapPin size={11} style={{ color:'#d4af37' }} />
-                {adventure.location}
-              </span>
-            </div>
           )}
 
           {/* Meta row */}
@@ -243,20 +244,15 @@ function AdventureDetails() {
               <div className="ed-hero-meta-item">
                 <span className="ed-hero-meta-label">Intensity</span>
                 <span className="ed-hero-meta-value" style={{ color: intensityColor }}>
+                  <Activity size={13} style={{ marginRight:'4px', verticalAlign:'middle' }} />
                   {adventure.intensity}
                 </span>
               </div>
             )}
-            {adventure.minAge && (
-              <div className="ed-hero-meta-item">
-                <span className="ed-hero-meta-label">Min Age</span>
-                <span className="ed-hero-meta-value">{adventure.minAge}</span>
-              </div>
-            )}
             <div className="ed-hero-meta-item">
-              <span className="ed-hero-meta-label">From</span>
+              <span className="ed-hero-meta-label">Starting from</span>
               <span className="ed-hero-meta-value gold">
-                {formatPrice(adventure.price)}
+                <PriceDisplay price={flatPriceObj} size="md" />
               </span>
             </div>
           </div>
@@ -279,7 +275,7 @@ function AdventureDetails() {
       {/* ═══════════════════════════════════════════
           2 · STICKY TAB NAV
       ═══════════════════════════════════════════ */}
-      <StickyTabNav tabs={ADV_TABS} />
+      <StickyTabNav tabs={ADVENTURE_TABS} />
 
       {/* ═══════════════════════════════════════════
           3 · TWO-COLUMN CONTENT
@@ -291,26 +287,29 @@ function AdventureDetails() {
 
           {/* ─ OVERVIEW ─────────────────────────────── */}
           <section id="section-overview" className="ed-section">
-            <span className="ed-section-label">About This Experience</span>
+            <span className="ed-section-label">The Experience</span>
             <h2 className="ed-section-title">Overview</h2>
             <p className="ed-description">{adventure.description}</p>
 
-            {/* Highlights from included items */}
+            {/* Adventure Highlights */}
             {adventure.included?.length > 0 && (
               <div style={{ marginTop:'36px' }}>
-                <h3 className="ed-section-title ed-section-title--sm">Experience Highlights</h3>
+                <h3 className="ed-section-title ed-section-title--sm">Adventure Highlights</h3>
                 <ul className="ed-highlight-list">
-                  {adventure.included.map((item, i) => (
-                    <li key={i} className="ed-highlight-item">
-                      <span className="ed-diamond" aria-hidden="true" />
-                      <span className="ed-highlight-text">{item}</span>
-                    </li>
-                  ))}
+                  {adventure.included.map((item, i) => {
+                    if (!item) return null;
+                    return (
+                      <li key={item._id || i} className="ed-highlight-item">
+                        <span className="ed-diamond" aria-hidden="true" />
+                        <span className="ed-highlight-text">{item}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
 
-            {/* Included / Excluded */}
+            {/* What's NOT included */}
             {(adventure.included?.length > 0 || adventure.excluded?.length > 0) && (
               <div style={{ marginTop:'36px' }}>
                 <h3 className="ed-section-title ed-section-title--sm">What's Included</h3>
@@ -319,12 +318,15 @@ function AdventureDetails() {
                     <div>
                       <h4 className="ed-inclusions-col-title inc">Included</h4>
                       <ul className="ed-inclusions-list">
-                        {adventure.included.map((item, i) => (
-                          <li key={i} className="ed-inclusions-item">
-                            <span className="ed-inc-icon inc">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
+                        {adventure.included.map((item, i) => {
+                          if (!item) return null;
+                          return (
+                            <li key={item._id || i} className="ed-inclusions-item">
+                              <span className="ed-inc-icon inc">✓</span>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   )}
@@ -332,12 +334,15 @@ function AdventureDetails() {
                     <div>
                       <h4 className="ed-inclusions-col-title exc">Excluded</h4>
                       <ul className="ed-inclusions-list">
-                        {adventure.excluded.map((item, i) => (
-                          <li key={i} className="ed-inclusions-item">
-                            <span className="ed-inc-icon exc">✕</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
+                        {adventure.excluded.map((item, i) => {
+                          if (!item) return null;
+                          return (
+                            <li key={item._id || i} className="ed-inclusions-item">
+                              <span className="ed-inc-icon exc">✕</span>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   )}
@@ -346,27 +351,25 @@ function AdventureDetails() {
             )}
           </section>
 
-          {/* ─ SCHEDULE (phases accordion) ────────── */}
+          {/* ─ ITINERARY ────────────────────────────── */}
           {adventure.itinerary?.length > 0 && (
             <section id="section-itinerary" className="ed-section">
-              <span className="ed-section-label">Phase by Phase</span>
+              <span className="ed-section-label">The Plan</span>
               <h2 className="ed-section-title">
-                Schedule
-                <span style={{ marginLeft:'16px', fontSize:'1rem', fontWeight:'400',
-                  color:'#888', fontFamily:"'Inter',sans-serif", fontStyle:'normal' }}>
-                  {adventure.itinerary.length} Phases
-                </span>
+                Itinerary
               </h2>
 
               <div className="ed-accordion">
                 {adventure.itinerary.map((phase, idx) => {
+                  if (!phase) return null;
                   const isOpen = openDay === idx;
                   return (
-                    <div key={idx} className={`ed-accordion-item ${isOpen ? 'open' : ''}`}>
+                    <div key={phase._id || idx} className={`ed-accordion-item ${isOpen ? 'open' : ''}`}>
                       <button
                         className="ed-accordion-header"
                         onClick={() => setOpenDay(isOpen ? null : idx)}
                         aria-expanded={isOpen}
+                        id={`acc-${idx}`}
                       >
                         <span className="ed-day-number">
                           {phase.day || idx + 1}
@@ -393,51 +396,37 @@ function AdventureDetails() {
             </section>
           )}
 
-          {/* ─ SAFETY INFORMATION ───────────────────── */}
-          {adventure.safetyNotes && (
-            <section id="section-safety" className="ed-section">
-              <span className="ed-section-label">Your Safety</span>
-              <h2 className="ed-section-title">Safety Information</h2>
-              <div style={{
-                background:'#fffbf0', border:'1px solid rgba(243,156,18,0.3)',
-                borderLeft:'3px solid #f39c12', padding:'28px 32px', borderRadius:'2px',
-              }}>
-                <div style={{ display:'flex', gap:'14px', alignItems:'flex-start' }}>
-                  <span style={{ fontSize:'1.3rem', flexShrink:0, marginTop:'2px' }}>⚠️</span>
-                  <p className="ed-description">{adventure.safetyNotes}</p>
-                </div>
-              </div>
-            </section>
-          )}
-
           {/* ─ GALLERY ──────────────────────────────── */}
-          {gallery.length > 0 && (
+          {gallery?.length > 0 && (
             <section id="section-gallery" className="ed-section">
               <span className="ed-section-label">Visual Story</span>
               <h2 className="ed-section-title">Gallery</h2>
               <div className="ed-gallery-grid">
-                {gallery.map((img, i) => (
-                  <div
-                    key={i}
-                    className="ed-gallery-thumb"
-                    onClick={() => setLightboxIndex(i)}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`View image ${i + 1}`}
-                    onKeyDown={e => e.key === 'Enter' && setLightboxIndex(i)}
-                  >
-                    <img src={img} alt={`${adventure.title} — photo ${i + 1}`} loading="lazy" />
-                    <div className="ed-gallery-thumb-overlay">
-                      <span className="ed-gallery-expand">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                        </svg>
-                        Enlarge
-                      </span>
+                {gallery.map((img, i) => {
+                  if (!img) return null;
+                  return (
+                    <div
+                      key={img._id || i}
+                      className="ed-gallery-thumb"
+                      onClick={() => setLightboxIndex(i)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`View image ${i + 1}`}
+                      onKeyDown={e => e.key === 'Enter' && setLightboxIndex(i)}
+                    >
+                      <img src={img} alt={`${adventure.title} — photo ${i + 1}`} loading="lazy" />
+                      <div className="ed-gallery-thumb-overlay">
+                        <span className="ed-gallery-expand">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+                            <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                          </svg>
+                          Enlarge
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           )}
@@ -450,7 +439,7 @@ function AdventureDetails() {
             <div className="ed-inquiry-block">
               <h3 className="ed-inquiry-title">Send Us a Message</h3>
               <p className="ed-inquiry-sub">
-                Our adventure specialists respond within 24 hours with availability and a personalised plan.
+                Our experts respond within 24 hours to help plan your adventure.
               </p>
 
               {inquiryStatus === 'success' && (
@@ -465,7 +454,7 @@ function AdventureDetails() {
               )}
 
               <form className="inquiry-form" onSubmit={handleInquirySubmit} style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+                <div className="inquiry-form-row" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
                   <input name="name" value={inquiryData.name} onChange={handleInquiryChange}
                     placeholder="Your Name" required className="contact-input" />
                   <input type="email" name="email" value={inquiryData.email} onChange={handleInquiryChange}
@@ -505,7 +494,7 @@ function AdventureDetails() {
                   name="message"
                   value={inquiryData.message}
                   onChange={handleInquiryChange}
-                  placeholder={`Hi Samye Travels, I'm ready for the ${adventure.title}! I'd love to know about best dates, what to pack, group requirements…`}
+                  placeholder={`Hi Samye Travels, I'm interested in the ${adventure.title}. I'd love to know more about dates, group sizes, and possible customisations…`}
                   rows="5"
                   className="contact-input contact-textarea"
                 />
