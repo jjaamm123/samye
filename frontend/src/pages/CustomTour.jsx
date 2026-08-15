@@ -83,10 +83,16 @@ export default function CustomTour() {
   const removeItem = (uid) => setTripItems(prev => prev.filter(i => i.uid !== uid));
 
 
-  // ── DERIVED: total trip days ─────────────────────────────────────────────────
-  const totalTripDays = useMemo(() =>
-    Math.ceil(tripItems.reduce((s, i) => s + parseDurationToDays(i.duration ?? '1'), 0))
-  , [tripItems]);
+  // ── DERIVED: total trip days & transit days ──────────────────────────────────
+  const transitDays = useMemo(() => {
+    const destinations = [...new Set(tripItems.map(i => i.destination || i.location || '').filter(Boolean))];
+    return Math.max(0, destinations.length - 1);
+  }, [tripItems]);
+
+  const totalTripDays = useMemo(() => {
+    const baseDays = tripItems.reduce((s, i) => s + parseDurationToDays(i.duration ?? '1'), 0);
+    return Math.ceil(baseDays + transitDays);
+  }, [tripItems, transitDays]);
 
   // ── SAFE ARRAY GUARDS ────────────────────────────────────────────────────
   // These are the true crash sites. tours/adventures .filter() runs during
@@ -231,11 +237,11 @@ export default function CustomTour() {
                 <button onClick={() => setGroupSize(s => s + 1)}>+</button>
               </div>
               <span className="builder-input-hint">
-                {groupSize >= 12 ? '18% group discount!' : groupSize >= 8 ? '12% group discount!' : groupSize >= 4 ? '7% group discount' : 'Add 4+ for discount'}
+                Specify number of travellers
               </span>
             </div>
 
-            <div className="builder-input-group">
+            <div className="builder-input-group" style={{ gridColumn: 'span 2' }}>
               <label className="builder-input-label">Travel Date</label>
               <input
                 type="date"
@@ -244,17 +250,6 @@ export default function CustomTour() {
                 onChange={e => setTravelDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
               />
-            </div>
-
-            <div className="builder-input-group">
-              <label className="builder-input-label">Booking Date</label>
-              <input
-                type="date"
-                className="builder-date-input"
-                value={bookingDate}
-                onChange={e => setBookingDate(e.target.value)}
-              />
-              <span className="builder-input-hint">Earlier booking = more savings</span>
             </div>
           </div>
 
@@ -276,7 +271,18 @@ export default function CustomTour() {
                   <div className="builder-timeline-card">
                     <div className="builder-timeline-card-top">
                       <div>
-                        <span className="builder-type-tag" style={{ backgroundColor: item.type === 'adventure' ? 'rgba(230,57,70,0.1)' : 'rgba(26,92,158,0.1)', color: item.type === 'adventure' ? '#e63946' : '#1a5c9e' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '3px 8px',
+                          fontSize: '0.68rem',
+                          fontWeight: '700',
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          borderRadius: '2px',
+                          backgroundColor: item.type === 'adventure' ? 'rgba(230,57,70,0.1)' : 'rgba(26,92,158,0.1)',
+                          color: item.type === 'adventure' ? '#e63946' : '#1a5c9e',
+                          marginBottom: '6px'
+                        }}>
                           {item.type === 'adventure' ? item.sportType || 'Adventure' : 'Tour'}
                         </span>
                         <h4 className="builder-timeline-title">{item.title}</h4>
@@ -291,9 +297,9 @@ export default function CustomTour() {
                 </div>
               ))}
 
-              {calc && calc.feasibility.totalDays > tripItems.reduce((s, i) => s + parseDurationToDays(i.duration), 0) && (
+              {transitDays > 0 && (
                 <div className="builder-transit-note">
-                  + {Math.round(calc.feasibility.totalDays - tripItems.reduce((s, i) => s + parseDurationToDays(i.duration), 0))} transit day(s) added for multi-destination travel
+                  + {transitDays} transit day(s) added for multi-destination travel
                 </div>
               )}
             </div>
