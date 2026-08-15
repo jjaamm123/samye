@@ -4,6 +4,29 @@ import axios from 'axios';
 import '../App.css';
 import { CurrencyContext } from '../context/CurrencyContext';
 
+// ── PRICING HELPERS ────────────────────────────────────────────────────────────
+// Safely extract a numeric amount from a price field that may be:
+//   a) a nested object  { amount: 1200, displayType: 'exact' }
+//   b) a flat number    1200
+//   c) undefined / null
+function getPriceAmount(price) {
+  if (price === null || price === undefined) return 0;
+  if (typeof price === 'object') return Number(price?.amount ?? 0);
+  return Number(price ?? 0);
+}
+
+// Returns the displayType for a price, defaulting to 'exact' for flat numbers.
+function getPriceDisplayType(price) {
+  if (price && typeof price === 'object') return price?.displayType ?? 'starting_from';
+  return 'exact';
+}
+
+// Returns true if this price should NOT produce a hard numeric total.
+function isBespokePrice(price) {
+  const dt = getPriceDisplayType(price);
+  return dt === 'por' || dt === 'starting_from';
+}
+
 function calcGroupDiscount(size) {
   if (size >= 12) return { label: 'Large Group (12+)', rate: 0.18, desc: '18% off for groups of 12 or more' };
   if (size >= 8)  return { label: 'Group (8–11)',      rate: 0.12, desc: '12% off for groups of 8–11' };
@@ -206,7 +229,14 @@ export default function CustomTour() {
   const calc = useMemo(() => {
     if (tripItems.length === 0) return null;
 
-    const basePerPerson = tripItems.reduce((s, i) => s + Number(i.price || 0), 0);
+    // Determine if any item has bespoke (non-exact) pricing
+    const hasBespoke = tripItems.some(i => isBespokePrice(i.price));
+
+    // Only sum items whose price is a hard exact number; bespoke items contribute 0 to math.
+    const basePerPerson = tripItems.reduce((s, i) => {
+      if (isBespokePrice(i.price)) return s;
+      return s + getPriceAmount(i.price);
+    }, 0);
     const baseTotal = basePerPerson * groupSize;
 
     const discounts = [
@@ -222,7 +252,8 @@ export default function CustomTour() {
 
     const totalDiscountRate = discounts.reduce((s, d) => s + d.rate, 0);
     const cappedRate = Math.min(totalDiscountRate, 0.35);
-    const discountAmount = baseTotal * cappedRate;
+    // Only apply discounts to the exact-price portion
+    const discountAmount = hasBespoke ? 0 : Math.round(baseTotal * cappedRate);
     const finalTotal = Math.round(baseTotal - discountAmount);
     const finalPerPerson = groupSize > 0 ? Math.round(finalTotal / groupSize) : finalTotal;
 
@@ -230,6 +261,7 @@ export default function CustomTour() {
     const permitTotal = feasibility.permitTotalPerPerson * groupSize;
 
     return {
+      hasBespoke,
       basePerPerson,
       baseTotal,
       discounts,
@@ -239,7 +271,8 @@ export default function CustomTour() {
       finalPerPerson,
       feasibility,
       permitTotal,
-      grandTotal: finalTotal + permitTotal,
+      // If any item is bespoke, the "grand total" is only the fixed permit fees
+      grandTotal: hasBespoke ? permitTotal : finalTotal + permitTotal,
     };
   }, [tripItems, groupSize, travelDate, bookingDate]);
 
@@ -448,8 +481,15 @@ export default function CustomTour() {
                         <div className="builder-timeline-meta">
                           <span>{item.destination || item.location}</span>
                           <span>{item.duration} {item.type === 'tour' ? 'days' : ''}</span>
-                          {/* ── UPDATED PRICING ── */}
-                          <span>{formatPrice(item.price)}/person</span>
+                          {/* ── BESPOKE PRICING ── */}
+                          <span>
+                            {getPriceDisplayType(item.price) === 'por'
+                              ? <em style={{ color: '#1a5c9e', fontStyle: 'normal', fontWeight: 600 }}>Price on Request</em>
+                              : getPriceDisplayType(item.price) === 'starting_from'
+                                ? <em style={{ color: '#1a5c9e', fontStyle: 'normal', fontWeight: 600 }}>Starting at {formatPrice(getPriceAmount(item.price))}</em>
+                                : <>{formatPrice(getPriceAmount(item.price))}/person</>
+                            }
+                          </span>
                         </div>
                       </div>
                       <button className="builder-remove-btn" onClick={() => removeItem(item.uid)} title="Remove">✕</button>
@@ -474,13 +514,23 @@ export default function CustomTour() {
               </div>
               <div className="builder-total-chip">
                 <span>{groupSize} Traveller{groupSize > 1 ? 's' : ''}</span>
-                {/* ── UPDATED PRICING ── */}
-                <strong>{formatPrice(calc.finalPerPerson)}/person</strong>
+                {/* ── BESPOKE PRICING ── */}
+                {calc.hasBespoke
+                  ? <strong style={{ fontSize: '0.78rem', color: '#1a5c9e' }}>Custom Quote</strong>
+                  : <strong>{formatPrice(calc.finalPerPerson)}/person</strong>
+                }
               </div>
               <div className="builder-total-chip highlight">
-                <span>Grand Total (est.)</span>
-                {/* ── UPDATED PRICING ── */}
-                <strong>{formatPrice(calc.grandTotal)}</strong>
+                {calc.hasBespoke
+                  ? <>
+                      <span style={{ fontSize: '0.72rem', lineHeight: '1.3' }}>Fixed Fees (Permits)</span>
+                      <strong>{formatPrice(calc.permitTotal)}</strong>
+                    </>
+                  : <>
+                      <span>Grand Total (est.)</span>
+                      <strong>{formatPrice(calc.grandTotal)}</strong>
+                    </>
+                }
               </div>
             </div>
           )}
@@ -499,17 +549,29 @@ export default function CustomTour() {
 
                 <div className="builder-cost-row">
                   <span>Base cost ({tripItems.length} pkg × {groupSize} people)</span>
-                  {/* ── UPDATED PRICING ── */}
-                  <span>{formatPrice(calc.baseTotal)}</span>
+                  {/* ── BESPOKE PRICING ── */}
+                  {calc.hasBespoke
+                    ? <span style={{ color: '#1a5c9e', fontStyle: 'italic', fontSize: '0.85rem' }}>Includes custom-quoted items</span>
+                    : <span>{formatPrice(calc.baseTotal)}</span>
+                  }
                 </div>
 
-                {tripItems.map(item => (
-                  <div className="builder-cost-row sub" key={item.uid}>
-                    <span className="builder-cost-pkg-name">{item.title}</span>
-                    {/* ── UPDATED PRICING ── */}
-                    <span>{formatPrice(item.price * groupSize)}</span>
-                  </div>
-                ))}
+                {tripItems.map(item => {
+                  const dt = getPriceDisplayType(item.price);
+                  const amt = getPriceAmount(item.price);
+                  return (
+                    <div className="builder-cost-row sub" key={item.uid}>
+                      <span className="builder-cost-pkg-name">{item.title}</span>
+                      {/* ── BESPOKE PRICING ── */}
+                      {dt === 'por'
+                        ? <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: '0.82rem' }}>Price on Request</span>
+                        : dt === 'starting_from'
+                          ? <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: '0.82rem' }}>Starting at {formatPrice(amt)}</span>
+                          : <span>{formatPrice(amt * groupSize)}</span>
+                      }
+                    </div>
+                  );
+                })}
 
                 <div className="builder-cost-divider"></div>
 
@@ -563,15 +625,27 @@ export default function CustomTour() {
 
                 <div className="builder-cost-divider thick"></div>
 
-                <div className="builder-cost-row grand-total">
-                  <span>Estimated Grand Total</span>
-                  {/* ── UPDATED PRICING ── */}
-                  <span>{formatPrice(calc.grandTotal)}</span>
-                </div>
-                <div className="builder-cost-per-person">
-                  {/* ── UPDATED PRICING ── */}
-                  ≈ {formatPrice(calc.finalPerPerson)} / person (excl. permits)
-                </div>
+                {calc.hasBespoke ? (
+                  <>
+                    <div className="builder-cost-row grand-total">
+                      <span style={{ fontSize: '0.92rem' }}>Estimated Fixed Fees (Visas &amp; Permits Only)</span>
+                      <span>{formatPrice(calc.permitTotal)}</span>
+                    </div>
+                    <div className="builder-cost-per-person" style={{ fontStyle: 'italic', color: '#64748b' }}>
+                      Final expedition costs will be provided via custom quote.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="builder-cost-row grand-total">
+                      <span>Estimated Grand Total</span>
+                      <span>{formatPrice(calc.grandTotal)}</span>
+                    </div>
+                    <div className="builder-cost-per-person">
+                      ≈ {formatPrice(calc.finalPerPerson)} / person (excl. permits)
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="builder-summary-card">
@@ -741,8 +815,16 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
         <h4 className="picker-item-title">{item.title}</h4>
         <div className="picker-item-meta">
           <span>{meta}</span>
-          {/* ── UPDATED PRICING ── */}
-          <span className="picker-item-price">{formatPrice(item.price)}<small>/person</small></span>
+          {/* ── BESPOKE PRICING ── */}
+          {(() => {
+            const dt = getPriceDisplayType(item.price);
+            const amt = getPriceAmount(item.price);
+            if (dt === 'por')
+              return <span className="picker-item-price" style={{ fontStyle: 'italic', color: '#1a5c9e' }}>Price on Request</span>;
+            if (dt === 'starting_from')
+              return <span className="picker-item-price">From {formatPrice(amt)}<small>/person</small></span>;
+            return <span className="picker-item-price">{formatPrice(amt)}<small>/person</small></span>;
+          })()}
         </div>
       </div>
       <button
