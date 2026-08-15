@@ -3,29 +3,10 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 import { CurrencyContext } from '../context/CurrencyContext';
+import VisualMoodboard     from '../components/VisualMoodboard';
+import MultiStepLeadModal from '../components/MultiStepLeadModal';
+import { getPriceAmount, getPriceDisplayType, isBespokePrice } from '../utils/priceHelpers';
 
-// ── PRICING HELPERS ────────────────────────────────────────────────────────────
-// Safely extract a numeric amount from a price field that may be:
-//   a) a nested object  { amount: 1200, displayType: 'exact' }
-//   b) a flat number    1200
-//   c) undefined / null
-function getPriceAmount(price) {
-  if (price === null || price === undefined) return 0;
-  if (typeof price === 'object') return Number(price?.amount ?? 0);
-  return Number(price ?? 0);
-}
-
-// Returns the displayType for a price, defaulting to 'exact' for flat numbers.
-function getPriceDisplayType(price) {
-  if (price && typeof price === 'object') return price?.displayType ?? 'starting_from';
-  return 'exact';
-}
-
-// Returns true if this price should NOT produce a hard numeric total.
-function isBespokePrice(price) {
-  const dt = getPriceDisplayType(price);
-  return dt === 'por' || dt === 'starting_from';
-}
 
 function calcGroupDiscount(size) {
   if (size >= 12) return { label: 'Large Group (12+)', rate: 0.18, desc: '18% off for groups of 12 or more' };
@@ -167,6 +148,9 @@ export default function CustomTour() {
   // ── THE CONTEXT HOOK ──
   const { currency, toggleCurrency, formatPrice } = useContext(CurrencyContext);
 
+  // ── Lead-capture modal visibility ────────────────────────────────────────────
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [scrolled, setScrolled] = useState(false);
   const [tours, setTours] = useState([]);
   const [adventures, setAdventures] = useState([]);
@@ -275,6 +259,11 @@ export default function CustomTour() {
       grandTotal: hasBespoke ? permitTotal : finalTotal + permitTotal,
     };
   }, [tripItems, groupSize, travelDate, bookingDate]);
+
+  // ── DERIVED: total trip days ─────────────────────────────────────────────────
+  const totalTripDays = useMemo(() =>
+    Math.ceil(tripItems.reduce((s, i) => s + parseDurationToDays(i.duration ?? '1'), 0))
+  , [tripItems]);
 
   // ── SAFE ARRAY GUARDS ────────────────────────────────────────────────────
   // These are the true crash sites. tours/adventures .filter() runs during
@@ -536,233 +525,23 @@ export default function CustomTour() {
           )}
         </div>
 
-        <div className="builder-summary">
-
-          {tripItems.length === 0 ? (
-            <div className="builder-summary-empty">
-              <p>Add packages to your trip to see cost breakdown and feasibility analysis.</p>
-            </div>
-          ) : calc && (
-            <>
-              <div className="builder-summary-card">
-                <h3 className="builder-summary-heading">Cost Breakdown</h3>
-
-                <div className="builder-cost-row">
-                  <span>Base cost ({tripItems.length} pkg × {groupSize} people)</span>
-                  {/* ── BESPOKE PRICING ── */}
-                  {calc.hasBespoke
-                    ? <span style={{ color: '#1a5c9e', fontStyle: 'italic', fontSize: '0.85rem' }}>Includes custom-quoted items</span>
-                    : <span>{formatPrice(calc.baseTotal)}</span>
-                  }
-                </div>
-
-                {tripItems.map(item => {
-                  const dt = getPriceDisplayType(item.price);
-                  const amt = getPriceAmount(item.price);
-                  return (
-                    <div className="builder-cost-row sub" key={item.uid}>
-                      <span className="builder-cost-pkg-name">{item.title}</span>
-                      {/* ── BESPOKE PRICING ── */}
-                      {dt === 'por'
-                        ? <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: '0.82rem' }}>Price on Request</span>
-                        : dt === 'starting_from'
-                          ? <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: '0.82rem' }}>Starting at {formatPrice(amt)}</span>
-                          : <span>{formatPrice(amt * groupSize)}</span>
-                      }
-                    </div>
-                  );
-                })}
-
-                <div className="builder-cost-divider"></div>
-
-                {calc.discounts.length > 0 && (
-                  <>
-                    <div className="builder-cost-section-label">Applied Discounts</div>
-                    {calc.discounts.map((d, i) => (
-                      <div key={i} className={`builder-discount-row ${d.rate < 0 ? 'surcharge' : ''}`}>
-                        <div>
-                          <span className="builder-discount-label">{d.label}</span>
-                          <span className="builder-discount-desc">{d.desc}</span>
-                        </div>
-                        <span className="builder-discount-pct">
-                          {d.rate < 0 ? `+${Math.abs(d.rate * 100).toFixed(0)}%` : `−${(d.rate * 100).toFixed(0)}%`}
-                        </span>
-                      </div>
-                    ))}
-                    <div className="builder-cost-row total-discount">
-                      <span>Total discount</span>
-                      {/* ── UPDATED PRICING ── */}
-                      <span className="builder-savings">−{formatPrice(Math.round(calc.discountAmount))}</span>
-                    </div>
-                  </>
-                )}
-
-                <div className="builder-cost-divider"></div>
-
-                <div className="builder-cost-row final">
-                  <span>Package Total</span>
-                  {/* ── UPDATED PRICING ── */}
-                  <span>{formatPrice(calc.finalTotal)}</span>
-                </div>
-
-                {calc.feasibility.permits.length > 0 && (
-                  <>
-                    <div className="builder-cost-section-label">Estimated Permits & Fees</div>
-                    {calc.feasibility.permits.map((p, i) => (
-                      <div className="builder-cost-row sub" key={i}>
-                        <span>{p.name}</span>
-                        {/* ── UPDATED PRICING ── */}
-                        <span>{formatPrice(p.cost * groupSize)}</span>
-                      </div>
-                    ))}
-                    <div className="builder-cost-row">
-                      <span>Permits subtotal</span>
-                      {/* ── UPDATED PRICING ── */}
-                      <span>{formatPrice(calc.permitTotal)}</span>
-                    </div>
-                  </>
-                )}
-
-                <div className="builder-cost-divider thick"></div>
-
-                {calc.hasBespoke ? (
-                  <>
-                    <div className="builder-cost-row grand-total">
-                      <span style={{ fontSize: '0.92rem' }}>Estimated Fixed Fees (Visas &amp; Permits Only)</span>
-                      <span>{formatPrice(calc.permitTotal)}</span>
-                    </div>
-                    <div className="builder-cost-per-person" style={{ fontStyle: 'italic', color: '#64748b' }}>
-                      Final expedition costs will be provided via custom quote.
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="builder-cost-row grand-total">
-                      <span>Estimated Grand Total</span>
-                      <span>{formatPrice(calc.grandTotal)}</span>
-                    </div>
-                    <div className="builder-cost-per-person">
-                      ≈ {formatPrice(calc.finalPerPerson)} / person (excl. permits)
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="builder-summary-card">
-                <h3 className="builder-summary-heading">Available Discounts</h3>
-                <p className="builder-discount-info-note">Discounts stack additively, capped at 35% off base price.</p>
-                <div className="builder-discount-info-grid">
-                  {[
-                    { label: 'Group (4–7)',   value: '7%',  active: groupSize >= 4 && groupSize <= 7 },
-                    { label: 'Group (8–11)',  value: '12%', active: groupSize >= 8 && groupSize <= 11 },
-                    { label: 'Group (12+)',   value: '18%', active: groupSize >= 12 },
-                    { label: 'Early Bird 30d', value: '3%', active: calc.discounts.some(d => d.label.includes('30')) },
-                    { label: 'Early Bird 60d', value: '6%', active: calc.discounts.some(d => d.label.includes('60')) },
-                    { label: 'Early Bird 90d', value: '10%',active: calc.discounts.some(d => d.label.includes('90')) },
-                    { label: 'Early Bird 120d','value': '15%',active: calc.discounts.some(d => d.label.includes('120')) },
-                    { label: '10+ days',      value: '4%',  active: calc.feasibility.totalDays >= 10 },
-                    { label: '14+ days',      value: '7%',  active: calc.feasibility.totalDays >= 14 },
-                    { label: '21+ days',      value: '10%', active: calc.feasibility.totalDays >= 21 },
-                    { label: 'Tour + Adventure bundle', value: '8%', active: calc.discounts.some(d => d.label.includes('Bundle')) },
-                    { label: '3+ packages',   value: '5%',  active: tripItems.length >= 3 },
-                    { label: '5+ packages',   value: '10%', active: tripItems.length >= 5 },
-                    { label: 'Spring season', value: '5%',  active: calc.discounts.some(d => d.label.includes('Spring')) },
-                    { label: 'Monsoon season','value': '12%',active: calc.discounts.some(d => d.label.includes('Monsoon')) },
-                    { label: 'Peak season',   value: '+5%', active: calc.discounts.some(d => d.label.includes('Peak')), surcharge: true },
-                  ].map((item, i) => (
-                    <div key={i} className={`builder-discount-chip ${item.active ? 'active' : ''} ${item.surcharge ? 'surcharge' : ''}`}>
-                      <span className="builder-discount-chip-value">{item.value}</span>
-                      <span className="builder-discount-chip-label">{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="builder-summary-card">
-                <h3 className="builder-summary-heading">Feasibility Report</h3>
-
-                {calc.feasibility.permits.length > 0 && (
-                  <div className="builder-feasibility-section">
-                    <div className="builder-feasibility-section-title">Required Permits</div>
-                    {calc.feasibility.permits.map((p, i) => (
-                      <div className="builder-permit-item" key={i}>
-                        <div className="builder-permit-header">
-                          <span className="builder-permit-name">{p.name}</span>
-                          {/* ── UPDATED PRICING ── */}
-                          <span className="builder-permit-cost">{formatPrice(p.cost)}/person</span>
-                        </div>
-                        <p className="builder-permit-note">{p.note}</p>
-                        {p.processDays > 0 && (
-                          <span className="builder-permit-days">Allow {p.processDays} day{p.processDays > 1 ? 's' : ''} processing time</span>
-                        )}
-                      </div>
-                    ))}
-                    {calc.feasibility.maxProcessDays > 0 && (
-                      <div className="builder-permit-lead-time">
-                        Book at least <strong>{calc.feasibility.maxProcessDays + 7} days</strong> before your travel date to process all permits.
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {calc.feasibility.warnings.length > 0 && (
-                  <div className="builder-feasibility-section">
-                    <div className="builder-feasibility-section-title">Warnings</div>
-                    {calc.feasibility.warnings.map((w, i) => (
-                      <div className="builder-feasibility-item warning" key={i}>
-                        <span>{w.icon}</span><p>{w.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {calc.feasibility.notes.length > 0 && (
-                  <div className="builder-feasibility-section">
-                    <div className="builder-feasibility-section-title">Logistics Notes</div>
-                    {calc.feasibility.notes.map((n, i) => (
-                      <div className="builder-feasibility-item note" key={i}>
-                        <span>{n.icon}</span><p>{n.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {calc.feasibility.tips.length > 0 && (
-                  <div className="builder-feasibility-section">
-                    <div className="builder-feasibility-section-title">Seasonal Tips</div>
-                    {calc.feasibility.tips.map((t, i) => (
-                      <div className="builder-feasibility-item tip" key={i}>
-                        <span>{t.icon}</span><p>{t.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {calc.feasibility.permits.length === 0 && calc.feasibility.warnings.length === 0 && calc.feasibility.notes.length === 0 && (
-                  <div className="builder-feasibility-item tip">
-                    <span>—</span><p>No major feasibility concerns detected for your current selection. Add a travel date for a seasonal analysis.</p>
-                  </div>
-                )}
-              </div>
-
-              <Link 
-                to="/contact" 
-                state={{ 
-                  tripItems: tripItems, 
-                  groupSize: groupSize, 
-                  travelDate: travelDate, 
-                  grandTotal: calc.grandTotal 
-                }} 
-                className="builder-enquire-cta"
-              >
-                Send This Trip to Our Team →
-              </Link>
-              <p className="builder-cta-note">We'll review your custom itinerary and get back within 24 hours with a confirmed quote.</p>
-            </>
-          )}
-        </div>
+        {/* ── RIGHT: Visual Expedition Moodboard (replaces old cost breakdown) ── */}
+        <VisualMoodboard
+          selectedTours={tripItems}
+          totalTripDays={totalTripDays}
+          onRequestItinerary={() => setIsModalOpen(true)}
+          onRemove={removeItem}
+        />
 
       </div>
+
+      {/* ── MULTI-STEP LEAD CAPTURE MODAL ── */}
+      <MultiStepLeadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedTours={tripItems}
+        tripName={tripName}
+      />
 
       <footer className="site-footer">
         <div className="footer-inner">
