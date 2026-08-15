@@ -1,34 +1,23 @@
 // src/components/VisualMoodboard.jsx
-// Right-panel Expedition Moodboard.
+// Right-panel Expedition Moodboard — inquiry-only, no pricing shown.
 // Displays a visual card grid of the user's selected tours/adventures and a sticky CTA.
-import { useContext } from 'react';
-import { CurrencyContext } from '../context/CurrencyContext';
-import { getPriceAmount, getPriceDisplayType } from '../utils/priceHelpers';
 
-// ── Palette ──────────────────────────────────────────────────────────────────
-const NAVY  = '#050b16';
-const LAPIS = '#1a5c9e';
-const GOLD  = '#d4af37';
-const STONE = '#fafaf9';
+// ── Palette ───────────────────────────────────────────────────────────────────
+const NAVY   = '#050b16';
+const LAPIS  = '#1a5c9e';
+const GOLD   = '#d4af37';
+const STONE  = '#fafaf9';
 const BORDER = '#e5e7eb';
 
-// ── TYPE ACCENT COLOURS ──────────────────────────────────────────────────────
+// ── TYPE ACCENT COLOURS ───────────────────────────────────────────────────────
 const TYPE_TAG = {
   tour:      { bg: 'rgba(26,92,158,0.1)', color: LAPIS },
   adventure: { bg: 'rgba(230,57,70,0.1)', color: '#e63946' },
 };
 
 // ── Individual moodboard card ─────────────────────────────────────────────────
-function MoodCard({ item, onRemove, formatPrice }) {
+function MoodCard({ item, onRemove }) {
   const imgSrc = item.cardImage || item.heroImage || item.featuredImage || '';
-  const dt     = getPriceDisplayType(item.price);
-  const amt    = getPriceAmount(item.price);
-
-  const priceLabel = (() => {
-    if (dt === 'por')          return 'Price on Request';
-    if (dt === 'starting_from') return `From ${formatPrice(amt)}`;
-    return `${formatPrice(amt)} / person`;
-  })();
 
   return (
     <div style={{
@@ -73,30 +62,21 @@ function MoodCard({ item, onRemove, formatPrice }) {
       </div>
 
       {/* Card body */}
-      <div style={{ padding: '14px 16px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ padding: '14px 16px 12px', flex: 1 }}>
         <h4 style={{
-          margin: 0, fontSize: '0.9rem', fontWeight: '700',
+          margin: '0 0 6px',
+          fontSize: '0.9rem', fontWeight: '700',
           color: NAVY, fontFamily: "'Playfair Display', serif",
           lineHeight: 1.3,
         }}>
           {item.title}
         </h4>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '0.76rem', color: '#64748b', fontFamily: "'Inter', sans-serif" }}>
-            {item.duration} {item.type === 'tour' ? 'days' : ''}
-            {item.destination || item.location
-              ? ` · ${item.destination || item.location}`
-              : ''}
-          </span>
-          <span style={{
-            fontSize: '0.74rem', fontWeight: '600',
-            color: dt === 'por' ? '#64748b' : LAPIS,
-            fontStyle: dt === 'por' ? 'italic' : 'normal',
-            fontFamily: "'Inter', sans-serif",
-          }}>
-            {priceLabel}
-          </span>
-        </div>
+        <span style={{ fontSize: '0.76rem', color: '#64748b', fontFamily: "'Inter', sans-serif" }}>
+          {item.duration} {item.type === 'tour' ? 'days' : ''}
+          {item.destination || item.location
+            ? ` · ${item.destination || item.location}`
+            : ''}
+        </span>
       </div>
 
       {/* Remove button */}
@@ -123,8 +103,7 @@ function MoodCard({ item, onRemove, formatPrice }) {
 
 // ── Main moodboard component ──────────────────────────────────────────────────
 function VisualMoodboard({ selectedTours, totalTripDays, onRequestItinerary, onRemove }) {
-  const { formatPrice } = useContext(CurrencyContext);
-  const hasItems = selectedTours?.length > 0;
+  const hasItems = (selectedTours?.length ?? 0) > 0;
 
   return (
     <div style={{
@@ -138,6 +117,7 @@ function VisualMoodboard({ selectedTours, totalTripDays, onRequestItinerary, onR
       overflow: 'hidden',
       maxHeight: 'calc(100vh - 120px)',
     }}>
+
       {/* ── Header ── */}
       <div style={{
         padding: '20px 24px 16px',
@@ -159,9 +139,13 @@ function VisualMoodboard({ selectedTours, totalTripDays, onRequestItinerary, onR
               margin: 0, fontSize: '1.1rem', fontWeight: '700',
               fontFamily: "'Playfair Display', serif", color: '#fff',
             }}>
-              {hasItems ? `${selectedTours.length} Package${selectedTours.length > 1 ? 's' : ''} Selected` : 'Your Moodboard'}
+              {hasItems
+                ? `${selectedTours.length} Package${selectedTours.length > 1 ? 's' : ''} Selected`
+                : 'Your Moodboard'}
             </h3>
           </div>
+
+          {/* Total Days counter — the only numeric shown */}
           {hasItems && (
             <div style={{
               textAlign: 'right',
@@ -171,12 +155,17 @@ function VisualMoodboard({ selectedTours, totalTripDays, onRequestItinerary, onR
               borderRadius: '4px',
               flexShrink: 0,
             }}>
-              <span style={{ display: 'block', fontSize: '0.62rem', color: 'rgba(255,255,255,0.55)',
-                letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>
+              <span style={{
+                display: 'block', fontSize: '0.62rem', color: 'rgba(255,255,255,0.55)',
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                fontFamily: "'Inter', sans-serif",
+              }}>
                 Total Days
               </span>
-              <strong style={{ fontSize: '1.5rem', color: GOLD, fontFamily: "'Playfair Display', serif",
-                lineHeight: 1.1 }}>
+              <strong style={{
+                fontSize: '1.5rem', color: GOLD,
+                fontFamily: "'Playfair Display', serif", lineHeight: 1.1,
+              }}>
                 {totalTripDays}
               </strong>
             </div>
@@ -196,14 +185,16 @@ function VisualMoodboard({ selectedTours, totalTripDays, onRequestItinerary, onR
         {!hasItems ? (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px', opacity: 0.3 }}>🗺️</div>
-            <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6,
-              fontFamily: "'Inter', sans-serif", margin: 0 }}>
+            <p style={{
+              fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6,
+              fontFamily: "'Inter', sans-serif", margin: 0,
+            }}>
               Add tours and adventures from the left panel to begin building your expedition.
             </p>
           </div>
         ) : (
           <>
-            {/* Masonry-style 2-column grid for 3+ items, single column otherwise */}
+            {/* 2-column grid for 3+ items, single column otherwise */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: selectedTours.length >= 3 ? '1fr 1fr' : '1fr',
@@ -214,12 +205,10 @@ function VisualMoodboard({ selectedTours, totalTripDays, onRequestItinerary, onR
                   key={item.uid}
                   item={item}
                   onRemove={onRemove}
-                  formatPrice={formatPrice}
                 />
               ))}
             </div>
 
-            {/* Moodboard caption */}
             <p style={{
               margin: '4px 0 0',
               fontSize: '0.72rem', color: '#94a3b8',
