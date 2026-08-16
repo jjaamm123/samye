@@ -20,9 +20,11 @@ function App() {
       <Routes>
         <Route path="/"              element={<Home />} />
         <Route path="/packages"      element={<Packages />} />
-        <Route path="/tour/:id"      element={<TourDetails />} />
-        <Route path="/adventure/:id" element={<AdventureDetails />} />
-        <Route path="/custom-tour"   element={<CustomTour />} />
+        <Route path="/tour/:id"       element={<TourDetails />} />
+        <Route path="/tours/:id"      element={<TourDetails />} />
+        <Route path="/adventure/:id"  element={<AdventureDetails />} />
+        <Route path="/adventures/:id" element={<AdventureDetails />} />
+        <Route path="/custom-tour"    element={<CustomTour />} />
         <Route path="/about"         element={<About />} />
         <Route path="/gallery"       element={<Gallery />} />
         <Route path="/contact"       element={<Contact />} />
