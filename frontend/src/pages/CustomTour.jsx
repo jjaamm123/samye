@@ -90,7 +90,9 @@ export default function CustomTour() {
   }, [tripItems]);
 
   const totalTripDays = useMemo(() => {
-    const baseDays = tripItems.reduce((s, i) => s + parseDurationToDays(i.duration ?? '1'), 0);
+    // Number() correctly handles both stored-as-number (11) and numeric-string ('11') durations.
+    // parseDurationToDays only matched strings containing the word "day" — bare integers failed.
+    const baseDays = tripItems.reduce((acc, i) => acc + (Number(i.duration) || 0), 0);
     return Math.ceil(baseDays + transitDays);
   }, [tripItems, transitDays]);
 
@@ -544,8 +546,8 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
         >
           {added ? '✓ Added' : '+ Add to Trip'}
         </button>
-        <a
-          href={detailsPath}
+        <Link
+          to={detailsPath}
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -574,7 +576,7 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
           }}
         >
           View Details ↗
-        </a>
+        </Link>
       </div>
     </div>
   );

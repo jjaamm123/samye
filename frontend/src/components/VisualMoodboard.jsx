@@ -20,7 +20,7 @@ const TYPE_TAG = {
 
 // ── Individual editorial moodboard card ──────────────────────────────────────
 function MoodCard({ item, onRemove }) {
-  const imgSrc  = item.cardImage || item.heroImage || item.featuredImage || '';
+  const imgSrc  = item.cardImage || item.featuredImage || item.heroImage || '';
   const detailsPath = item.type === 'tour'
     ? `/tours/${item._id}`
     : `/adventures/${item._id}`;
@@ -105,9 +105,9 @@ function MoodCard({ item, onRemove }) {
           </span>
         </div>
 
-        {/* View Details link */}
-        <a
-          href={detailsPath}
+        {/* View Details link — opens in new tab, preserves moodboard state */}
+        <Link
+          to={detailsPath}
           target="_blank"
           rel="noopener noreferrer"
           title="View full details"
@@ -135,7 +135,7 @@ function MoodCard({ item, onRemove }) {
             <line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
           Details
-        </a>
+        </Link>
       </div>
 
       {/* Remove button — top right */}
