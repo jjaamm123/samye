@@ -16,7 +16,10 @@ const AdventureSchema = new mongoose.Schema(
     location:     { type: String, required: true },
     duration:     { type: String, required: true },  
     intensity:    { type: String, enum: ['Easy', 'Moderate', 'Intense', 'Extreme'], default: 'Moderate' },
-    price:        { type: Number, required: true },
+    price: {
+        amount:      { type: Number, required: true },
+        displayType: { type: String, enum: ['exact', 'starting_from', 'por'], default: 'exact' }
+    },
     localPrice:   { type: Number, required: true },  // NPR (Nepali Rupee)
     minAge:       { type: String, default: '16+' },
     description:  { type: String, required: true },

@@ -94,6 +94,26 @@ export default function CustomTour() {
     return Math.ceil(baseDays + transitDays);
   }, [tripItems, transitDays]);
 
+  // ── DERIVED: expedition stats (for overview block) ──────────────────────────
+  const INTENSITY_RANK = { Easy: 1, Moderate: 2, Hard: 3, Challenging: 4, Intense: 4, Extreme: 5 };
+  const INTENSITY_COLOR = {
+    Easy: '#2ecc71', Moderate: '#f39c12', Hard: '#e63946',
+    Challenging: '#c0392b', Intense: '#e67e22', Extreme: '#e63946',
+  };
+  const maxIntensity = useMemo(() => {
+    const tags = tripItems.map(i => i.difficulty || i.intensity).filter(Boolean);
+    if (tags.length === 0) return null;
+    return tags.reduce((best, cur) =>
+      (INTENSITY_RANK[cur] ?? 0) > (INTENSITY_RANK[best] ?? 0) ? cur : best
+    );
+  }, [tripItems]);
+
+  const hasBothTypes = useMemo(() => {
+    const hasTour = tripItems.some(i => i.type === 'tour');
+    const hasAdv  = tripItems.some(i => i.type === 'adventure');
+    return hasTour && hasAdv;
+  }, [tripItems]);
+
   // ── SAFE ARRAY GUARDS ────────────────────────────────────────────────────
   // These are the true crash sites. tours/adventures .filter() runs during
   // every render — including the render triggered immediately after the fetch
@@ -305,12 +325,143 @@ export default function CustomTour() {
             </div>
           )}
 
-          {/* Duration chip — the only summary shown */}
+          {/* ── Duration chip ── */}
           {totalTripDays > 0 && (
             <div className="builder-totals-bar">
               <div className="builder-total-chip">
                 <span>Total Duration</span>
-                <strong>{totalTripDays} Days</strong>
+                <strong>~{totalTripDays} Days</strong>
+              </div>
+            </div>
+          )}
+
+          {/* ── Expedition Overview — fills the empty bottom space ── */}
+          {tripItems.length > 0 && (
+            <div style={{
+              marginTop: '18px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}>
+
+              {/* Row 1: Max Intensity + Bundle badge */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {maxIntensity && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '10px 16px',
+                    background: '#fafaf9',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '4px',
+                    flex: '1 1 140px',
+                  }}>
+                    <span style={{
+                      width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
+                      background: INTENSITY_COLOR[maxIntensity] || '#888',
+                    }} />
+                    <div>
+                      <div style={{
+                        fontSize: '0.62rem', color: '#94a3b8', fontFamily: "'Inter', sans-serif",
+                        letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px',
+                      }}>
+                        Max Intensity
+                      </div>
+                      <div style={{
+                        fontSize: '0.82rem', fontWeight: '700', color: INTENSITY_COLOR[maxIntensity] || '#333',
+                        fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
+                      }}>
+                        {maxIntensity.toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {hasBothTypes && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '10px 16px',
+                    background: 'rgba(26,92,158,0.05)',
+                    border: '1px solid rgba(26,92,158,0.18)',
+                    borderRadius: '4px',
+                    flex: '1 1 140px',
+                  }}>
+                    <span style={{ fontSize: '1rem' }}>🎯</span>
+                    <div>
+                      <div style={{
+                        fontSize: '0.62rem', color: '#94a3b8', fontFamily: "'Inter', sans-serif",
+                        letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px',
+                      }}>
+                        Bundle
+                      </div>
+                      <div style={{
+                        fontSize: '0.82rem', fontWeight: '700', color: '#1a5c9e',
+                        fontFamily: "'Inter', sans-serif",
+                      }}>
+                        Tour + Adventure
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 16px',
+                  background: '#fafaf9',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '4px',
+                  flex: '1 1 120px',
+                }}>
+                  <span style={{ fontSize: '1rem' }}>👥</span>
+                  <div>
+                    <div style={{
+                      fontSize: '0.62rem', color: '#94a3b8', fontFamily: "'Inter', sans-serif",
+                      letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px',
+                    }}>
+                      Group Size
+                    </div>
+                    <div style={{
+                      fontSize: '0.82rem', fontWeight: '700', color: '#050b16',
+                      fontFamily: "'Inter', sans-serif",
+                    }}>
+                      {groupSize} {groupSize === 1 ? 'Person' : 'People'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2: Trip protection trust badges */}
+              <div style={{
+                display: 'flex', gap: '0',
+                border: '1px solid #e5e7eb',
+                borderRadius: '4px',
+                overflow: 'hidden',
+              }}>
+                {[
+                  { icon: '🛡️', label: 'Trip Protection', sub: 'Expert-guided safety' },
+                  { icon: '✈️', label: 'Visa Support',    sub: 'End-to-end assistance' },
+                  { icon: '📞', label: '24/7 Support',    sub: 'On-trip helpline' },
+                ].map((badge, i, arr) => (
+                  <div key={badge.label} style={{
+                    flex: 1, padding: '10px 12px',
+                    background: '#fafaf9',
+                    borderRight: i < arr.length - 1 ? '1px solid #e5e7eb' : 'none',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: '1.05rem', marginBottom: '3px' }}>{badge.icon}</div>
+                    <div style={{
+                      fontSize: '0.65rem', fontWeight: '700', color: '#050b16',
+                      fontFamily: "'Inter', sans-serif", lineHeight: 1.2,
+                    }}>
+                      {badge.label}
+                    </div>
+                    <div style={{
+                      fontSize: '0.6rem', color: '#94a3b8',
+                      fontFamily: "'Inter', sans-serif", marginTop: '1px',
+                    }}>
+                      {badge.sub}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -367,6 +518,7 @@ export default function CustomTour() {
 function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
   const intensityColors = { Easy: '#2ecc71', Moderate: '#f39c12', Hard: '#e63946', Intense: '#e67e22', Extreme: '#e63946', Challenging: '#c0392b' };
   const diffColor = intensityColors[difficulty] || '#888';
+  const detailsPath = type === 'tour' ? `/tours/${item._id}` : `/adventures/${item._id}`;
 
   return (
     <div className={`picker-item ${added ? 'added' : ''}`}>
@@ -384,13 +536,46 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
           <span>{meta}</span>
         </div>
       </div>
-      <button
-        className={`picker-add-btn ${added ? 'added' : ''}`}
-        onClick={onAdd}
-        disabled={added}
-      >
-        {added ? '✓ Added' : '+ Add to Trip'}
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0 }}>
+        <button
+          className={`picker-add-btn ${added ? 'added' : ''}`}
+          onClick={onAdd}
+          disabled={added}
+        >
+          {added ? '✓ Added' : '+ Add to Trip'}
+        </button>
+        <a
+          href={detailsPath}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            padding: '5px 10px',
+            background: 'transparent',
+            border: '1px solid #cbd5e1',
+            borderRadius: '4px',
+            color: '#64748b',
+            fontSize: '0.72rem',
+            fontWeight: '600',
+            fontFamily: "'Inter', sans-serif",
+            letterSpacing: '0.04em',
+            textDecoration: 'none',
+            transition: 'border-color 0.2s, color 0.2s',
+            whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = '#1a5c9e';
+            e.currentTarget.style.color = '#1a5c9e';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = '#cbd5e1';
+            e.currentTarget.style.color = '#64748b';
+          }}
+        >
+          View Details ↗
+        </a>
+      </div>
     </div>
   );
 }

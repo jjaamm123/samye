@@ -20,8 +20,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Successfully connected to MongoDB"))
-    .catch((error) => console.error("MongoDB connection failed:", error.message));
+    .then(() => {
+        const env = process.env.NODE_ENV || 'development';
+        console.log(`MongoDB Connected in [${env}] mode.`);
+    })
+    .catch((error) => console.error('MongoDB connection failed:', error.message));
 
 // ─── PUBLIC ────────────────────────────────────────────────────────────────
 app.get('/api/test', (req, res) => res.json({ message: "running" }));
