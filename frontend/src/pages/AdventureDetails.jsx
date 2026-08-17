@@ -13,6 +13,7 @@ import PriceDisplay           from '../components/PriceDisplay';
 import HeroCarousel           from '../components/HeroCarousel';
 import StickyTabNav           from '../components/StickyTabNav';
 import ExpertSidebar          from '../components/ExpertSidebar';
+import Navbar from '../components/Navbar';
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const MONTHS = [
@@ -164,37 +165,7 @@ function AdventureDetails() {
     <div className="app-wrapper">
 
       {/* ── Minimal fixed nav (dark, always visible on details page) ── */}
-      <nav
-        className="top-navbar"
-        style={{
-          position: 'fixed',
-          background: scrolled ? 'rgba(5,11,22,0.97)' : 'rgba(5,11,22,0.6)',
-          backdropFilter: scrolled ? 'blur(8px)' : 'blur(4px)',
-          transition: 'background 0.4s ease, padding 0.4s ease',
-          padding: scrolled ? '12px 60px' : '20px 60px',
-        }}
-      >
-        <Link to="/packages" className="details-back-link" style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          All Packages
-        </Link>
-        <span className="navbar-brand" style={{ position:'absolute', left:'50%', transform:'translateX(-50%)' }}>
-          Samye Travels
-        </span>
-        <div style={{ display:'flex', gap:'12px', alignItems:'center' }}>
-          <button
-            onClick={toggleCurrency}
-            style={{ background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.25)',
-              color:'#fff', padding:'7px 14px', borderRadius:'2px', cursor:'pointer',
-              fontWeight:'600', fontSize:'0.8rem', letterSpacing:'1px', fontFamily:"'Inter',sans-serif" }}
-          >
-            {currency}
-          </button>
-          <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ═══════════════════════════════════════════
           1 · SPLIT HERO

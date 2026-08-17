@@ -7,6 +7,11 @@ const EMPTY_DAY = { day: '', title: '', description: '' };
 
 const EMPTY_TOUR = {
   title: '', destination: 'Nepal', duration: '',
+  experienceTheme: 'Nature & Discovery',
+  subTheme: 'Walking and Hiking Vacations',
+  travelStyle: 'Group',
+  season: [],
+  location: '',
   // price is now a nested object matching the PriceSchema in backend_tour.js
   price: { amount: '', displayType: 'starting_from' },
   localPrice: '',
@@ -120,6 +125,15 @@ function AdminDashboard() {
 
   // ─── FORM HANDLERS ───
   const handleChange = e => setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
+  
+  const handleCheckboxChange = (e, field) => {
+    const value = e.target.value;
+    setFormData(f => {
+      const currentArray = f[field] || [];
+      if (e.target.checked) return { ...f, [field]: [...currentArray, value] };
+      return { ...f, [field]: currentArray.filter(v => v !== value) };
+    });
+  };
 
   const addDay = () => setFormData(f => ({ ...f, itinerary: [...f.itinerary, { ...EMPTY_DAY, day: f.itinerary.length + 1 }] }));
   const updateDay = (index, field, value) => setFormData(f => ({ ...f, itinerary: f.itinerary.map((d, i) => i === index ? { ...d, [field]: value } : d) }));
@@ -343,6 +357,60 @@ function AdminDashboard() {
                         <option>Nepal</option><option>Tibet</option><option>India</option>
                       </select>
                     </div>
+
+                    {/* ── New Taxonomy Fields ── */}
+                    <div className="admin-form-group">
+                      <label className="admin-label">Location / Region</label>
+                      <input name="location" value={formData.location || ''} onChange={handleChange} placeholder="e.g. Annapurna Region" className="admin-input" />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-label">Experience Theme</label>
+                      <select name="experienceTheme" value={formData.experienceTheme || 'Nature & Discovery'} onChange={handleChange} className="admin-input">
+                        <option>Adventure & Active</option>
+                        <option>Nature & Discovery</option>
+                        <option>Culture & Lifestyle</option>
+                      </select>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-label">Sub-Theme</label>
+                      <select name="subTheme" value={formData.subTheme || 'Walking and Hiking Vacations'} onChange={handleChange} className="admin-input">
+                        <option>Walking and Hiking Vacations</option>
+                        <option>Adventure Vacations</option>
+                        <option>Wildlife Vacations</option>
+                        <option>Expedition Cruises</option>
+                        <option>Cultural Vacations</option>
+                        <option>Foodie Vacations</option>
+                      </select>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-label">Travel Style</label>
+                      <select name="travelStyle" value={formData.travelStyle || 'Group'} onChange={handleChange} className="admin-input">
+                        <option>Family</option><option>Group</option><option>Solo</option>
+                        <option>Couples</option><option>Honeymoon</option>
+                        <option>Anniversary</option><option>Tailor-Made</option>
+                      </select>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-label">Best Seasons</label>
+                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', padding: '8px 0' }}>
+                        {['Spring', 'Summer', 'Fall', 'Winter'].map(s => (
+                          <label key={s} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input
+                              type="checkbox"
+                              value={s}
+                              checked={(formData.season || []).includes(s)}
+                              onChange={(e) => handleCheckboxChange(e, 'season')}
+                            />
+                            {s}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    {/* ──────────────────────── */}
                     <div className="admin-form-group">
                       <label className="admin-label">Difficulty</label>
                       <select name="difficulty" value={formData.difficulty || ''} onChange={handleChange} className="admin-input">

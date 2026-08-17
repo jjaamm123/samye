@@ -12,6 +12,7 @@ import {
   Star, Mountain, Users, Award, Globe
 } from 'lucide-react';
 import '../App.css';
+import Navbar from '../components/Navbar';
 
 // ── ANIMATION VARIANTS ──────────────────────────────────────
 const fadeUp = {
@@ -186,20 +187,7 @@ export default function Home() {
     <div className="app-wrapper">
 
       {/* ── NAVBAR ── */}
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-brand">
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
-        </div>
-        <div className="navbar-links">
-          <Link to="/" className="active-link">Home</Link>
-          <Link to="/about">About Us</Link>
-          <Link to="/packages">Packages</Link>
-          <Link to="/custom-tour">Build My Trip</Link>
-          <Link to="/gallery">Gallery</Link>
-          <Link to="/contact">Contact</Link>
-        </div>
-        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-      </nav>
+      <Navbar />
 
       {/* ── HERO ── */}
       <section className="hero-section" id="home">

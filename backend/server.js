@@ -26,16 +26,30 @@ mongoose.connect(process.env.MONGO_URI)
     })
     .catch((error) => console.error('MongoDB connection failed:', error.message));
 
-// ─── PUBLIC ────────────────────────────────────────────────────────────────
+// PUBLIC ROUTES
 app.get('/api/test', (req, res) => res.json({ message: "running" }));
 
-// Auth routes (login / register — all public)
+// AUTHENTICATION CONTROLLERS
 app.use('/api/auth', authRoutes);
 
-// ─── TOURS (GET = public, mutating = protected) ────────────────────────────
+// TOUR CONTROLLERS
 app.get('/api/tours', async (req, res) => {
     try {
-        const allTours = await Tour.find();
+        const { experienceTheme, subTheme, travelStyle, season, location, destination } = req.query;
+        const query = {};
+        
+        if (destination) query.destination = destination;
+        if (experienceTheme) query.experienceTheme = experienceTheme;
+        if (subTheme) query.subTheme = subTheme;
+        if (travelStyle) query.travelStyle = travelStyle;
+        if (location) query.location = location;
+        
+        if (season) {
+            const seasonsArray = season.split(',').map(s => s.trim());
+            query.season = { $in: seasonsArray };
+        }
+
+        const allTours = await Tour.find(query);
         res.status(200).json(allTours);
     } catch (error) {
         console.error("Error fetching tours:", error);
@@ -106,7 +120,7 @@ app.delete('/api/tours/:id', protect, async (req, res) => {
     }
 });
 
-// ─── ADVENTURES (GET = public, mutating = protected) ───────────────────────
+// ADVENTURE CONTROLLERS
 app.get('/api/adventures', async (req, res) => {
     try {
         const adventures = await Adventure.find();
@@ -180,8 +194,7 @@ app.delete('/api/adventures/:id', protect, async (req, res) => {
     }
 });
 
-// ─── INQUIRIES ──────────────────────────────────────────────────────────────
-// POST /api/inquiries is PUBLIC — customers submit contact forms unauthenticated
+// INQUIRY CONTROLLERS
 app.get('/api/inquiries', protect, async (req, res) => {
     try {
         const inquiries = await Inquiry.find().sort({ createdAt: -1 });

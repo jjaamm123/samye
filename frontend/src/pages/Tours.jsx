@@ -1,3 +1,4 @@
+import Navbar from '../components/Navbar';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -44,20 +45,7 @@ function Tours() {
   return (
     <div className="app-wrapper">
 
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-brand">
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
-        </div>
-        <div className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/about">About Us</Link>
-          <Link to="/tours" className="active-link">Tour Packages</Link>
-          <Link to="/adventures">Adventure Sports</Link>
-          <Link to="/gallery">Gallery</Link>
-          <Link to="/contact">Contact</Link>
-        </div>
-        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-      </nav>
+      <Navbar />
 
       {/* Hero banner for Tours */}
       <div className="page-hero" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80')" }}>

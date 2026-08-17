@@ -1,3 +1,4 @@
+import Navbar from '../components/Navbar';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
@@ -14,18 +15,7 @@ function About() {
   return (
     <div className="app-wrapper">
 
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        <Link to="/" className="navbar-brand">Samye Travels</Link>
-        <div className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/about" className="active-link">About Us</Link>
-          <Link to="/packages">Packages</Link>
-          <Link to="/custom-tour">Build My Trip</Link>
-          <Link to="/gallery">Gallery</Link>
-          <Link to="/contact">Contact</Link>
-        </div>
-        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-      </nav>
+      <Navbar />
 
 
       <div

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import '../App.css';
+import Navbar from '../components/Navbar';
 
 const cardVariant = {
   hidden: { opacity: 0, y: 32, scale: 0.96 },
@@ -88,20 +89,7 @@ function Gallery() {
     <div className="app-wrapper">
       
       {/* ─── NAVBAR ─── */}
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`} style={{ position: 'fixed' }}>
-        <div className="navbar-brand">
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
-        </div>
-        <div className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/about">About Us</Link>
-          <Link to="/packages">Packages</Link>
-          <Link to="/custom-tour">Build My Trip</Link>
-          <Link to="/gallery" className="active-link">Gallery</Link>
-          <Link to="/contact">Contact</Link>
-        </div>
-        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-      </nav>
+      <Navbar />
 
       {/* ─── HERO SECTION ─── */}
       <div className="packages-hero" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80')` }}>

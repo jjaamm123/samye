@@ -1,3 +1,4 @@
+import Navbar from '../components/Navbar';
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -6,7 +7,11 @@ import VisualMoodboard    from '../components/VisualMoodboard';
 import MultiStepLeadModal from '../components/MultiStepLeadModal';
 
 
-// ── Duration parser (kept for totalTripDays calculation) ─────────────────────
+/**
+ * Parses diverse duration strings into numerical days for aggregation.
+ * @param {string|number} durationStr - The duration (e.g., '11 days', 'half day', 3)
+ * @returns {number} The duration normalized in days.
+ */
 function parseDurationToDays(durationStr) {
   if (!durationStr) return 1;
   const s = String(durationStr).toLowerCase();
@@ -21,7 +26,7 @@ function parseDurationToDays(durationStr) {
 
 export default function CustomTour() {
 
-  // ── Lead-capture modal visibility ────────────────────────────────────────────
+  // STATE MANAGEMENT
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [scrolled, setScrolled] = useState(false);
@@ -48,12 +53,9 @@ export default function CustomTour() {
     axios.get(`${import.meta.env.VITE_API_URL}/api/tours`)
       .then(r => {
         const data = r.data;
-        // ── DIAGNOSTIC: open browser DevTools → Console to see exact API shape ──
-        console.log('API Response [tours]:', data);
-        // Handles bare array OR envelope shapes like { tours: [...] } or { data: [...] }
-        const arr = Array.isArray(data)         ? data
-                  : Array.isArray(data?.tours)   ? data.tours
-                  : Array.isArray(data?.data)    ? data.data
+        const arr = Array.isArray(data) ? data
+                  : Array.isArray(data?.tours) ? data.tours
+                  : Array.isArray(data?.data) ? data.data
                   : [];
         setTours(arr);
       })
@@ -63,10 +65,9 @@ export default function CustomTour() {
     axios.get(`${import.meta.env.VITE_API_URL}/api/adventures`)
       .then(r => {
         const data = r.data;
-        console.log('API Response [adventures]:', data);
-        const arr = Array.isArray(data)              ? data
-                  : Array.isArray(data?.adventures)   ? data.adventures
-                  : Array.isArray(data?.data)          ? data.data
+        const arr = Array.isArray(data) ? data
+                  : Array.isArray(data?.adventures) ? data.adventures
+                  : Array.isArray(data?.data) ? data.data
                   : [];
         setAdventures(arr);
       })
@@ -83,7 +84,7 @@ export default function CustomTour() {
   const removeItem = (uid) => setTripItems(prev => prev.filter(i => i.uid !== uid));
 
 
-  // ── DERIVED: total trip days & transit days ──────────────────────────────────
+  // DERIVED STATE
   const transitDays = useMemo(() => {
     const destinations = [...new Set(tripItems.map(i => i.destination || i.location || '').filter(Boolean))];
     return Math.max(0, destinations.length - 1);
@@ -96,7 +97,7 @@ export default function CustomTour() {
     return Math.ceil(baseDays + transitDays);
   }, [tripItems, transitDays]);
 
-  // ── DERIVED: expedition stats (for overview block) ──────────────────────────
+  // DERIVED EXPEDITION STATS
   const INTENSITY_RANK = { Easy: 1, Moderate: 2, Hard: 3, Challenging: 4, Intense: 4, Extreme: 5 };
   const INTENSITY_COLOR = {
     Easy: '#2ecc71', Moderate: '#f39c12', Hard: '#e63946',
@@ -116,12 +117,8 @@ export default function CustomTour() {
     return hasTour && hasAdv;
   }, [tripItems]);
 
-  // ── SAFE ARRAY GUARDS ────────────────────────────────────────────────────
-  // These are the true crash sites. tours/adventures .filter() runs during
-  // every render — including the render triggered immediately after the fetch
-  // resolves. If the setter stored a non-array (object, null, etc.) these
-  // blow up with "X.filter is not a function".
-  // Wrapping in Array.isArray() is the single most important safety net here.
+  // SAFE ARRAY GUARDS
+  // NOTE: Type-guarding API arrays to prevent runtime filter() exceptions during hot re-renders.
   const safeTours      = Array.isArray(tours)      ? tours      : [];
   const safeAdventures = Array.isArray(adventures) ? adventures : [];
 
@@ -140,20 +137,7 @@ export default function CustomTour() {
   return (
     <div className="app-wrapper">
 
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-brand">
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
-        </div>
-        <div className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/about">About Us</Link>
-          <Link to="/packages">Packages</Link>
-          <Link to="/gallery">Gallery</Link>
-          <Link to="/custom-tour" className="active-link">Build My Trip</Link>
-          <Link to="/contact">Contact</Link>
-        </div>
-        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-      </nav>
+      <Navbar />
 
       <div
         className="page-hero"

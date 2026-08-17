@@ -1,24 +1,18 @@
-// src/components/VisualMoodboard.jsx
-// RHS Expedition Blueprint — editorial redesign.
-// Editorial cards with edge-to-edge imagery, overlay gradient text,
-// dashed journey spine, and a "View Details" link per card.
-
 import { Link } from 'react-router-dom';
 
-// ── Palette ───────────────────────────────────────────────────────────────────
+// THEME TOKENS
 const NAVY   = '#050b16';
 const LAPIS  = '#1a5c9e';
 const GOLD   = '#d4af37';
 const STONE  = '#fafaf9';
 const BORDER = '#e5e7eb';
 
-// ── TYPE ACCENT COLOURS ───────────────────────────────────────────────────────
 const TYPE_TAG = {
   tour:      { bg: 'rgba(26,92,158,0.82)',  color: '#fff' },
   adventure: { bg: 'rgba(230,57,70,0.82)',  color: '#fff' },
 };
 
-// ── Individual editorial moodboard card ──────────────────────────────────────
+// MOOD CARD COMPONENT
 function MoodCard({ item, onRemove }) {
   const imgSrc  = item.cardImage || item.featuredImage || item.heroImage || '';
   const detailsPath = item.type === 'tour'
@@ -34,7 +28,6 @@ function MoodCard({ item, onRemove }) {
       background: '#1a1a2e',
       flexShrink: 0,
     }}>
-      {/* Edge-to-edge image */}
       {imgSrc
         ? <img
             src={imgSrc}
@@ -56,15 +49,11 @@ function MoodCard({ item, onRemove }) {
             🏔️
           </div>
       }
-
-      {/* Gradient overlay for legibility */}
       <div style={{
         position: 'absolute', inset: 0,
         background: 'linear-gradient(to top, rgba(5,11,22,0.92) 0%, rgba(5,11,22,0.4) 50%, rgba(5,11,22,0.1) 100%)',
         pointerEvents: 'none',
       }} />
-
-      {/* Type badge — top left */}
       <span style={{
         position: 'absolute', top: '10px', left: '10px',
         padding: '3px 9px',
@@ -76,8 +65,6 @@ function MoodCard({ item, onRemove }) {
       }}>
         {item.type === 'adventure' ? (item.sportType || 'Adventure') : 'Tour'}
       </span>
-
-      {/* Content — bottom overlay */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '12px 14px 12px',
@@ -104,8 +91,6 @@ function MoodCard({ item, onRemove }) {
               : ''}
           </span>
         </div>
-
-        {/* View Details link — opens in new tab, preserves moodboard state */}
         <Link
           to={detailsPath}
           target="_blank"
@@ -137,8 +122,6 @@ function MoodCard({ item, onRemove }) {
           Details
         </Link>
       </div>
-
-      {/* Remove button — top right */}
       <button
         onClick={() => onRemove(item.uid)}
         title="Remove from trip"

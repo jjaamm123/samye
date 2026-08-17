@@ -1,3 +1,4 @@
+import Navbar from '../components/Navbar';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -51,20 +52,7 @@ function Contact() {
   return (
     <div className="app-wrapper">
 
-      <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-brand">
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
-        </div>
-        <div className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/about">About Us</Link>
-          <Link to="/packages">Packages</Link>
-          <Link to="/custom-tour">Build My Trip</Link>
-          <Link to="/gallery">Gallery</Link>
-          <Link to="/contact" className="active-link">Contact</Link>
-        </div>
-        <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
-      </nav>
+      <Navbar />
 
       <div
         className="page-hero"
