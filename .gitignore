@@ -39,3 +39,5 @@ yarn-error.log*
 # ─── Misc ──────────────────────────────────────────────────────────────────────
 .cache/
 .parcel-cache/
+resetAdmin.js
+backend/resetAdmin.js
