@@ -19,10 +19,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-console.log("=== DEBUG MONGO URI ===");
-console.log(`URI: "${process.env.MONGO_URI}"`); 
-console.log("=======================");
-
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         const env = process.env.NODE_ENV || 'development';
