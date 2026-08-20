@@ -299,7 +299,7 @@ function TourDetails() {
       {/* ═══════════════════════════════════════════
           3 · TWO-COLUMN CONTENT & ENQUIRY
       ═══════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         
         {/* ========================================== */}
         {/* LEFT COLUMN */}
@@ -340,9 +340,9 @@ function TourDetails() {
                   if (!day) return null;
                   const isOpen = openDay === idx;
                   return (
-                    <div key={day._id || idx} className="bg-[#f4efe6] p-6 rounded-2xl border border-[#e2d9cc] shadow-sm overflow-hidden transition-all duration-300">
+                    <div key={day._id || idx} className="bg-[#f4efe6] border border-[#e2d9cc] rounded-xl overflow-hidden transition-all duration-300">
                       <button
-                        className="w-full text-left flex items-center justify-between focus:outline-none cursor-pointer"
+                        className="w-full text-left px-6 py-5 flex items-center justify-between focus:outline-none cursor-pointer"
                         onClick={() => setOpenDay(isOpen ? null : idx)}
                         aria-expanded={isOpen}
                       >
@@ -357,7 +357,7 @@ function TourDetails() {
                         </span>
                       </button>
                       <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`} style={{ overflow: 'hidden' }}>
-                        <div className="pt-4">
+                        <div className="px-6 pb-6 pt-2">
                           <p className="text-[#4a4238] leading-relaxed whitespace-pre-wrap">
                             {day.description || 'No additional detail for this day.'}
                           </p>
@@ -374,10 +374,12 @@ function TourDetails() {
           {(tour.location || tour.destination) && (
             <section id="section-map">
               <h2 className="font-serif text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">Route Map</h2>
-              <div className="w-full h-96 rounded-2xl overflow-hidden shadow-md border border-[#e2d9cc]">
+              <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden shadow-sm border border-[#e2d9cc]">
                 <iframe
                   title="Tour Location Map"
-                  className="w-full h-full" style={{ border: 0 }}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
                   loading="lazy"
                   allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
@@ -416,7 +418,7 @@ function TourDetails() {
         <div className="lg:col-span-4 space-y-6 sticky top-24">
           
           {/* Card 1: Pricing & Action Card */}
-          <div className="bg-[#f4efe6] p-6 rounded-2xl border border-[#e2d9cc] shadow-sm">
+          <div className="bg-[#f4efe6] p-6 sm:p-8 rounded-2xl border border-[#e2d9cc] shadow-sm">
             <h3 className="font-serif italic text-2xl text-[#1a1a1a] mb-2">{tour.title}</h3>
             
             <div className="mb-6 mt-4">
@@ -501,14 +503,15 @@ function TourDetails() {
       </div>
 
       {/* Centered Enquiry Section */}
-      <div className="max-w-3xl mx-auto px-4 py-16" id="enquiry-section">
+      <div id="enquiry-section" className="bg-[#f7f4ee] border-t border-[#e2d9cc]">
+        <div className="max-w-3xl mx-auto px-4 py-20">
           <div className="text-center mb-10">
             <span className="text-sm font-semibold tracking-widest text-[#9c826b] uppercase">Start Planning</span>
             <h2 className="font-serif text-4xl text-[#1a1a1a] mt-3">Enquire About This Tour</h2>
             <p className="text-[#64748b] mt-4">Our travel experts respond within 24 hours with a personalised proposal.</p>
           </div>
           
-          <div className="bg-[#f4efe6] p-8 rounded-2xl shadow-md border border-[#e2d9cc]">
+          <div className="bg-[#f4efe6] p-8 sm:p-10 rounded-2xl border border-[#e2d9cc] shadow-sm">
             {inquiryStatus === 'success' && (
               <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6">
                 ✓ Enquiry sent! We'll get back to you within 24 hours.
@@ -524,24 +527,24 @@ function TourDetails() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Your Name</label>
-                  <input name="name" value={inquiryData.name} onChange={handleInquiryChange} required className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]" />
+                  <input name="name" value={inquiryData.name} onChange={handleInquiryChange} required className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]/50" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Your Email</label>
-                  <input type="email" name="email" value={inquiryData.email} onChange={handleInquiryChange} required className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]" />
+                  <input type="email" name="email" value={inquiryData.email} onChange={handleInquiryChange} required className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]/50" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Travel Month</label>
-                  <select name="travelMonth" value={inquiryData.travelMonth} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]">
+                  <select name="travelMonth" value={inquiryData.travelMonth} onChange={handleInquiryChange} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]/50">
                     {MONTHS.map(m => <option key={m}>{m}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Group Size</label>
-                  <select name="groupSize" value={inquiryData.groupSize} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]">
+                  <select name="groupSize" value={inquiryData.groupSize} onChange={handleInquiryChange} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]/50">
                     <option value="1">Solo (1)</option>
                     <option value="2">Couple (2)</option>
                     <option value="3-5">Small Group (3–5)</option>
@@ -550,7 +553,7 @@ function TourDetails() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Budget Range</label>
-                  <select name="budgetRange" value={inquiryData.budgetRange} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]">
+                  <select name="budgetRange" value={inquiryData.budgetRange} onChange={handleInquiryChange} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]/50">
                     <option>Standard</option>
                     <option>Premium</option>
                     <option>Luxury</option>
@@ -566,7 +569,7 @@ function TourDetails() {
                   onChange={handleInquiryChange}
                   placeholder={`Hi Samye Travels, I'm interested in the ${tour.title}. I'd love to know more about dates, group sizes, and possible customisations...`}
                   rows="5"
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b] resize-y"
+                  className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]/50 resize-y"
                 />
               </div>
 
@@ -576,8 +579,9 @@ function TourDetails() {
             </form>
           </div>
         </div>
+      </div>
 
-      {/* -------------------------------------------
+      {/* ═══════════════════════════════════════════
           LIGHTBOX PORTAL
       ═══════════════════════════════════════════ */}
       {lightboxIndex !== null && (
