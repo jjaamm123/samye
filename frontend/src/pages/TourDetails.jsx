@@ -200,7 +200,7 @@ function TourDetails() {
           </span>
 
           {/* Title */}
-          <h1 className="ed-hero-title">{tour.title}</h1>
+          <h1 className="ed-hero-title text-3xl md:text-4xl lg:text-5xl font-serif mb-4">{tour.title}</h1>
 
           {/* Narrative paragraph (description excerpt) */}
           {tour.description && (
@@ -299,16 +299,16 @@ function TourDetails() {
       {/* ═══════════════════════════════════════════
           3 · TWO-COLUMN CONTENT & ENQUIRY
       ═══════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         
         {/* ========================================== */}
         {/* LEFT COLUMN */}
         {/* ========================================== */}
-        <div className="lg:col-span-8 space-y-10">
+        <div className="lg:col-span-8 space-y-8 lg:space-y-10 order-last lg:order-first">
           
           {/* Overview & Highlights */}
           <section id="section-overview">
-            <h2 className="font-serif text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">Overview</h2>
+            <h2 className="font-serif text-2xl md:text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">Overview</h2>
             <p className="text-[#4a4238] leading-relaxed text-lg mb-8 whitespace-pre-wrap">{tour.description}</p>
             
             {tour.included?.length > 0 && (
@@ -332,8 +332,8 @@ function TourDetails() {
           {/* Itinerary Accordion */}
           {tour.itinerary?.length > 0 && (
             <section id="section-itinerary">
-              <h2 className="font-serif text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">
-                Itinerary <span className="text-xl text-[#888] ml-3 font-sans font-normal">{tour.itinerary.length} Days</span>
+              <h2 className="font-serif text-2xl md:text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">
+                Itinerary <span className="text-lg md:text-xl text-[#888] ml-3 font-sans font-normal">{tour.itinerary.length} Days</span>
               </h2>
               <div className="space-y-4">
                 {tour.itinerary.map((day, idx) => {
@@ -373,8 +373,8 @@ function TourDetails() {
           {/* Embedded Google Map */}
           {(tour.location || tour.destination) && (
             <section id="section-map">
-              <h2 className="font-serif text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">Route Map</h2>
-              <div className="w-full h-96 rounded-2xl overflow-hidden shadow-md border border-[#e2d9cc]">
+              <h2 className="font-serif text-2xl md:text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">Route Map</h2>
+              <div className="w-full h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-sm border border-[#e2d9cc]">
                 <iframe
                   title="Tour Location Map"
                   className="w-full h-full" style={{ border: 0 }}
@@ -390,7 +390,7 @@ function TourDetails() {
           {/* Travel Tips / Practical Info */}
           {(tour.included?.length > 0 || tour.excluded?.length > 0) && (
             <section>
-              <h2 className="font-serif text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">Good to Know</h2>
+              <h2 className="font-serif text-2xl md:text-3xl text-[#1a1a1a] mb-6 border-b border-[#e2d9cc] pb-4">Good to Know</h2>
               <div className="bg-[#f4efe6] p-6 sm:p-8 rounded-2xl border border-[#e2d9cc] grid grid-cols-1 sm:grid-cols-2 gap-8">
                 {tour.included?.length > 0 && (
                   <div>
@@ -433,7 +433,7 @@ function TourDetails() {
         {/* ========================================== */}
         {/* RIGHT COLUMN (STICKY CARDS) */}
         {/* ========================================== */}
-        <div className="lg:col-span-4 space-y-6 sticky top-24 self-start">
+        <div className="lg:col-span-4 space-y-6 order-first lg:order-last lg:sticky lg:top-24 lg:self-start">
           
           {/* Card 1: Pricing & Action Card */}
           <div className="bg-[#f4efe6] p-6 rounded-2xl border border-[#e2d9cc] shadow-sm">
@@ -529,14 +529,14 @@ function TourDetails() {
       </div>
 
       {/* Centered Enquiry Section */}
-      <div className="max-w-3xl mx-auto px-4 py-16" id="enquiry-section">
+      <div className="max-w-3xl mx-auto px-4 py-10 md:py-16" id="enquiry-section">
           <div className="text-center mb-10">
             <span className="text-sm font-semibold tracking-widest text-[#9c826b] uppercase">Start Planning</span>
             <h2 className="font-serif text-4xl text-[#1a1a1a] mt-3">Enquire About This Tour</h2>
             <p className="text-[#64748b] mt-4">Our travel experts respond within 24 hours with a personalised proposal.</p>
           </div>
           
-          <div className="bg-[#f4efe6] p-8 rounded-2xl shadow-md border border-[#e2d9cc]">
+          <div className="bg-[#f4efe6] p-6 sm:p-8 md:p-10 rounded-2xl shadow-md border border-[#e2d9cc]">
             {inquiryStatus === 'success' && (
               <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6">
                 ✓ Enquiry sent! We'll get back to you within 24 hours.
@@ -549,7 +549,7 @@ function TourDetails() {
             )}
 
             <form onSubmit={handleInquirySubmit} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Your Name</label>
                   <input name="name" value={inquiryData.name} onChange={handleInquiryChange} required className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]" />
@@ -560,7 +560,7 @@ function TourDetails() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Travel Month</label>
                   <select name="travelMonth" value={inquiryData.travelMonth} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]">

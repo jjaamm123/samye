@@ -5,6 +5,7 @@ import '../App.css'; // Relies on existing .top-navbar classes, with some custom
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsMegaMenuOpen(false);
+    setIsMobileMenuOpen(false);
   }, [location.pathname, location.search]);
 
   const isActive = (path) => location.pathname === path ? 'active-link' : '';
@@ -26,23 +28,23 @@ export default function Navbar() {
   const locations = ['Nepal', 'Tibet', 'India'];
 
   return (
-    <nav className={`top-navbar ${scrolled ? 'scrolled' : ''}`}>
+    <nav className={`top-navbar ${scrolled ? 'scrolled' : ''} flex items-center justify-between px-4 py-4 md:px-8 md:py-6 relative`}>
       <div className="navbar-brand">
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
       </div>
       
-      <div className="navbar-links" style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+      {/* Desktop Navigation */}
+      <div className="navbar-links hidden md:flex md:items-center md:gap-8 relative">
         <Link to="/" className={isActive('/')}>Home</Link>
         <Link to="/about" className={isActive('/about')}>About Us</Link>
 
         {/* Mega Menu Trigger */}
         <div 
-          className="nav-dropdown-wrapper"
+          className="nav-dropdown-wrapper h-full flex items-center px-2"
           onMouseEnter={() => setIsMegaMenuOpen(true)}
           onMouseLeave={() => setIsMegaMenuOpen(false)}
-          style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', padding: '0 10px' }}
         >
-          <Link to="/packages" className={isActive('/packages')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Link to="/packages" className={`${isActive('/packages')} flex items-center gap-1`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             Packages
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isMegaMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -118,7 +120,41 @@ export default function Navbar() {
         <Link to="/contact" className={isActive('/contact')}>Contact</Link>
       </div>
 
-      <Link to="/contact" className="navbar-enquire-btn">Enquire Now</Link>
+      <Link to="/contact" className="navbar-enquire-btn hidden md:block">Enquire Now</Link>
+
+      {/* Mobile Hamburger Icon */}
+      <button 
+        className="block md:hidden text-gray-700 hover:text-gray-900 focus:outline-none"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        {isMobileMenuOpen ? (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        ) : (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        )}
+      </button>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white shadow-lg absolute top-full left-0 w-full z-40 border-t border-gray-100">
+          <div className="flex flex-col gap-6 p-6">
+            <Link to="/" className={isActive('/')} onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+            <Link to="/about" className={isActive('/about')} onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            <Link to="/packages" className={isActive('/packages')} onClick={() => setIsMobileMenuOpen(false)}>Packages</Link>
+            <Link to="/custom-tour" className={isActive('/custom-tour')} onClick={() => setIsMobileMenuOpen(false)}>Build My Trip</Link>
+            <Link to="/gallery" className={isActive('/gallery')} onClick={() => setIsMobileMenuOpen(false)}>Gallery</Link>
+            <Link to="/contact" className={isActive('/contact')} onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
+            <Link to="/contact" className="navbar-enquire-btn text-center w-full block mt-2" onClick={() => setIsMobileMenuOpen(false)}>Enquire Now</Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

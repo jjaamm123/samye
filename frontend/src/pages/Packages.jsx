@@ -112,7 +112,7 @@ function Packages() {
           <span className="packages-hero-eyebrow" style={{ letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.85rem' }}>
             {isTours ? 'Cultural Heritage' : 'Adventure Expeditions'}
           </span>
-          <h1 className="packages-hero-title" style={{ fontWeight: '700', letterSpacing: '-1px' }}>Our Curated Packages</h1>
+          <h1 className="packages-hero-title text-3xl md:text-4xl lg:text-5xl" style={{ fontWeight: '700', letterSpacing: '-1px' }}>Our Curated Packages</h1>
           <p className="packages-hero-sub" style={{ fontSize: '1.2rem', fontWeight: '300' }}>
             {isTours
               ? 'Guided treks, luxury monastery stays, and premium heritage circuits.'
@@ -152,45 +152,35 @@ function Packages() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '32px', paddingRight: '5%', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ 
-          background: '#ffffff', borderRadius: '8px', padding: '4px', 
-          display: 'flex', gap: '4px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' 
-        }}>
+      <div className="flex justify-center md:justify-end pt-16 md:pt-10 px-4 md:px-8 max-w-7xl mx-auto w-full mb-4 md:mb-0">
+        <div className="bg-white rounded-lg p-1 flex gap-1 border border-slate-200 shadow-sm">
           <button 
             onClick={() => currency !== 'USD' && toggleCurrency()} 
-            style={{ 
-              padding: '6px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem',
-              background: currency === 'USD' ? '#f1f5f9' : 'transparent', color: currency === 'USD' ? '#0f172a' : '#64748b', transition: 'all 0.2s ease' 
-            }}
+            className={`px-4 py-1.5 rounded-md border-none cursor-pointer font-semibold text-sm transition-all ${currency === 'USD' ? 'bg-slate-100 text-slate-900' : 'bg-transparent text-slate-500 hover:text-slate-700'}`}
           >USD</button>
           <button 
             onClick={() => currency !== 'NPR' && toggleCurrency()} 
-            style={{ 
-              padding: '6px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem',
-              background: currency === 'NPR' ? '#f1f5f9' : 'transparent', color: currency === 'NPR' ? '#0f172a' : '#64748b', transition: 'all 0.2s ease' 
-            }}
+            className={`px-4 py-1.5 rounded-md border-none cursor-pointer font-semibold text-sm transition-all ${currency === 'NPR' ? 'bg-slate-100 text-slate-900' : 'bg-transparent text-slate-500 hover:text-slate-700'}`}
           >NPR</button>
         </div>
       </div>
 
-      <div className="packages-controls" style={{ background: 'transparent', boxShadow: 'none', borderBottom: '1px solid #e2e8f0', paddingBottom: '24px', display: 'flex', gap: '20px', alignItems: 'center', paddingLeft: '5%', paddingRight: '5%', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ position: 'relative', flexGrow: 1, maxWidth: '400px' }}>
-          <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+      <div className="packages-controls flex flex-col md:flex-row gap-4 md:gap-5 items-center px-4 md:px-8 max-w-7xl mx-auto pb-6 border-b border-slate-200 bg-transparent shadow-none w-full">
+        <div className="relative w-full md:flex-grow md:max-w-md">
+          <Search size={18} color="#94a3b8" className="absolute left-4 top-1/2 transform -translate-y-1/2" />
           <input
             type="text"
-            className="packages-search"
+            className="packages-search w-full pl-11 pr-4 py-2 border border-slate-200 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder={isTours ? 'Search destinations or titles...' : 'Search activities...'}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ paddingLeft: '44px', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.01)', width: '100%' }}
           />
         </div>
 
         {!isTours && (
-          <div className="packages-filters">
+          <div className="packages-filters flex flex-wrap gap-2 w-full md:w-auto">
             {adventureFilterOptions.map(opt => (
-              <button key={opt} className={`packages-filter-pill ${adventureFilter === opt ? 'active' : ''}`} onClick={() => setAdventureFilter(opt)} style={{ border: adventureFilter === opt ? '1px solid #1a5c9e' : '1px solid #e2e8f0' }}>
+              <button key={opt} className={`packages-filter-pill px-4 py-2 rounded-full text-sm transition-colors ${adventureFilter === opt ? 'bg-blue-600 text-white border border-blue-700' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}`} onClick={() => setAdventureFilter(opt)}>
                 {opt}
               </button>
             ))}
@@ -198,30 +188,31 @@ function Packages() {
         )}
         
         {!loading && (
-          <span className="packages-result-count" style={{ color: '#64748b', fontWeight: '500', marginLeft: 'auto' }}>
+          <span className="packages-result-count text-slate-500 font-medium md:ml-auto w-full md:w-auto text-center md:text-right">
             {count} {isTours ? 'itinerary' : 'activity'}{count !== 1 ? 'ies' : ''} found
           </span>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '32px', maxWidth: '1200px', margin: '40px auto', padding: '0 5%', alignItems: 'flex-start' }}>
+      <div className="max-w-7xl mx-auto my-10 px-4 md:px-8 w-full">
         {/* FACETED TOUR FILTERS */}
         {isTours && (
-          <aside style={{ flexShrink: 0, width: '250px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-              <Filter size={18} color="#0f172a" />
-              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>Filters</h3>
+          <div className="flex flex-col md:flex-row gap-4 mb-8 bg-white border border-slate-200 rounded-lg p-4 md:p-6 items-start md:items-center w-full shadow-sm">
+            <div className="flex items-center gap-2 md:mr-4 w-full md:w-auto justify-between md:justify-start">
+              <div className="flex items-center gap-2">
+                <Filter size={18} color="#0f172a" />
+                <h3 className="m-0 text-lg text-slate-900 font-semibold">Filters</h3>
+              </div>
               {(searchParams.toString() !== '') && (
-                <button onClick={clearFilters} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ef4444', fontSize: '0.8rem', cursor: 'pointer', padding: 0 }}>Clear All</button>
+                <button onClick={clearFilters} className="text-red-500 text-sm cursor-pointer hover:underline">Clear All</button>
               )}
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h4 style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Destination</h4>
+            <div className="w-full md:w-auto flex-1">
               <select 
                 value={searchParams.get('destination') || ''} 
                 onChange={e => updateFilter('destination', e.target.value)}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                className="w-full p-2.5 rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Destinations</option>
                 <option value="Nepal">Nepal</option>
@@ -230,12 +221,11 @@ function Packages() {
               </select>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h4 style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Experience Theme</h4>
+            <div className="w-full md:w-auto flex-1">
               <select 
                 value={searchParams.get('experienceTheme') || ''} 
                 onChange={e => updateFilter('experienceTheme', e.target.value)}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                className="w-full p-2.5 rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Themes</option>
                 <option value="Adventure & Active">Adventure & Active</option>
@@ -245,12 +235,11 @@ function Packages() {
               </select>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h4 style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Travel Style</h4>
+            <div className="w-full md:w-auto flex-1">
               <select 
                 value={searchParams.get('travelStyle') || ''} 
                 onChange={e => updateFilter('travelStyle', e.target.value)}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                className="w-full p-2.5 rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Styles</option>
                 <option value="Family">Family</option>
@@ -263,12 +252,11 @@ function Packages() {
               </select>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h4 style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Season</h4>
+            <div className="w-full md:w-auto flex-1">
               <select 
                 value={searchParams.get('season') || ''} 
                 onChange={e => updateFilter('season', e.target.value)}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                className="w-full p-2.5 rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Seasons</option>
                 <option value="Spring">Spring</option>
@@ -277,34 +265,30 @@ function Packages() {
                 <option value="Winter">Winter</option>
               </select>
             </div>
-          </aside>
+          </div>
         )}
 
         {/* PACKAGE GRID */}
-        <div style={{ flexGrow: 1, minWidth: 0 }}>
-          {loading && <p className="status-msg" style={{ color: '#64748b', padding: '40px', textAlign: 'center' }}>Loading {isTours ? 'tours' : 'adventures'}…</p>}
+        <div className="flex-grow min-w-0 w-full">
+          {loading && <p className="text-slate-500 p-10 text-center">Loading {isTours ? 'tours' : 'adventures'}…</p>}
           {error && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#ef4444', padding: '40px' }}>
+            <div className="flex items-center justify-center gap-2 text-red-500 p-10">
               <AlertCircle size={20} /> {error}
             </div>
           )}
           
           {!loading && !error && count === 0 && (
-            <div className="packages-empty-state" style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '60px 20px', textAlign: 'center' }}>
-              <Search size={48} color="#cbd5e1" strokeWidth={1.5} style={{ marginBottom: '16px', display: 'inline-block' }} />
-              <p style={{ color: '#475569', fontSize: '1.1rem', marginBottom: '16px' }}>No {isTours ? 'tours' : 'adventures'} match your current filters.</p>
-              <button className="packages-reset-btn" onClick={clearFilters} style={{ background: '#1a5c9e', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>
+            <div className="packages-empty-state bg-slate-50 border border-dashed border-slate-300 rounded-xl p-16 text-center">
+              <Search size={48} color="#cbd5e1" strokeWidth={1.5} className="mx-auto mb-4" />
+              <p className="text-slate-600 text-lg mb-4">No {isTours ? 'tours' : 'adventures'} match your current filters.</p>
+              <button className="bg-blue-700 hover:bg-blue-800 text-white border-none py-2 px-5 rounded-md cursor-pointer transition-colors" onClick={clearFilters}>
                 Clear Filters
               </button>
             </div>
           )}
 
           {!loading && !error && count > 0 && (
-            <div className="tours-grid" style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-              gap: '24px' 
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {isTours 
                 ? filteredTours.map(tour => <TourCard key={tour._id} tour={tour} />)
                 : filteredAdventures.map(adv => <AdventureCard key={adv._id} adventure={adv} />)
