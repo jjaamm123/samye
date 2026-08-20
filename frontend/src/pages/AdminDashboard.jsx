@@ -7,9 +7,9 @@ const EMPTY_DAY = { day: '', title: '', description: '' };
 
 const EMPTY_TOUR = {
   title: '', destination: 'Nepal', duration: '',
-  experienceTheme: 'Nature & Discovery',
-  subTheme: 'Walking and Hiking Vacations',
-  travelStyle: 'Group',
+  experienceTheme: [],
+  subTheme: [],
+  travelStyle: [],
   season: [],
   location: '',
   // price is now a nested object matching the PriceSchema in backend_tour.js
@@ -365,33 +365,39 @@ function AdminDashboard() {
                     </div>
 
                     <div className="admin-form-group">
-                      <label className="admin-label">Experience Theme</label>
-                      <select name="experienceTheme" value={formData.experienceTheme || 'Nature & Discovery'} onChange={handleChange} className="admin-input">
-                        <option>Adventure & Active</option>
-                        <option>Nature & Discovery</option>
-                        <option>Culture & Lifestyle</option>
-                      </select>
+                      <label className="admin-label">Experience Themes</label>
+                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', padding: '8px 0' }}>
+                        {['Adventure & Active', 'Nature & Discovery', 'Culture & Lifestyle', 'Leisure & Scenic'].map(t => (
+                          <label key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input type="checkbox" value={t} checked={(formData.experienceTheme || []).includes(t)} onChange={(e) => handleCheckboxChange(e, 'experienceTheme')} />
+                            {t}
+                          </label>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="admin-form-group">
-                      <label className="admin-label">Sub-Theme</label>
-                      <select name="subTheme" value={formData.subTheme || 'Walking and Hiking Vacations'} onChange={handleChange} className="admin-input">
-                        <option>Walking and Hiking Vacations</option>
-                        <option>Adventure Vacations</option>
-                        <option>Wildlife Vacations</option>
-                        <option>Expedition Cruises</option>
-                        <option>Cultural Vacations</option>
-                        <option>Foodie Vacations</option>
-                      </select>
+                      <label className="admin-label">Sub-Themes</label>
+                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', padding: '8px 0' }}>
+                        {['Walking and Hiking Vacations', 'Adventure Vacations', 'Wildlife Vacations', 'Leisure Vacations', 'Cultural Vacations', 'Foodie Vacations'].map(t => (
+                          <label key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input type="checkbox" value={t} checked={(formData.subTheme || []).includes(t)} onChange={(e) => handleCheckboxChange(e, 'subTheme')} />
+                            {t}
+                          </label>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="admin-form-group">
-                      <label className="admin-label">Travel Style</label>
-                      <select name="travelStyle" value={formData.travelStyle || 'Group'} onChange={handleChange} className="admin-input">
-                        <option>Family</option><option>Group</option><option>Solo</option>
-                        <option>Couples</option><option>Honeymoon</option>
-                        <option>Anniversary</option><option>Tailor-Made</option>
-                      </select>
+                      <label className="admin-label">Travel Styles</label>
+                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', padding: '8px 0' }}>
+                        {['All', 'Family', 'Group', 'Solo', 'Couples', 'Honeymoon', 'Anniversary', 'Tailor-Made'].map(t => (
+                          <label key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input type="checkbox" value={t} checked={(formData.travelStyle || []).includes(t)} onChange={(e) => handleCheckboxChange(e, 'travelStyle')} />
+                            {t}
+                          </label>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="admin-form-group">

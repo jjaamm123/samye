@@ -34,18 +34,18 @@ const TourSchema = new mongoose.Schema(
     destination: { type: String, required: true, enum: ['Nepal', 'Tibet', 'India'] },
     
     // TAXONOMY
-    experienceTheme: { 
+    experienceTheme: [{ 
       type: String, 
-      enum: ['Adventure & Active', 'Nature & Discovery', 'Culture & Lifestyle']
-    },
-    subTheme: { 
+      enum: ['Adventure & Active', 'Nature & Discovery', 'Culture & Lifestyle', 'Leisure & Scenic']
+    }],
+    subTheme: [{ 
       type: String, 
-      enum: ['Walking and Hiking Vacations', 'Adventure Vacations', 'Wildlife Vacations', 'Expedition Cruises', 'Cultural Vacations', 'Foodie Vacations']
-    },
-    travelStyle: { 
+      enum: ['Walking and Hiking Vacations', 'Adventure Vacations', 'Wildlife Vacations', 'Leisure Vacations', 'Cultural Vacations', 'Foodie Vacations']
+    }],
+    travelStyle: [{ 
       type: String, 
-      enum: ['Family', 'Group', 'Solo', 'Couples', 'Honeymoon', 'Anniversary', 'Tailor-Made']
-    },
+      enum: ['All', 'Family', 'Group', 'Solo', 'Couples', 'Honeymoon', 'Anniversary', 'Tailor-Made']
+    }],
     season: [{ 
       type: String, 
       enum: ['Spring', 'Summer', 'Fall', 'Winter'] 

@@ -241,6 +241,7 @@ function Packages() {
                 <option value="Adventure & Active">Adventure & Active</option>
                 <option value="Nature & Discovery">Nature & Discovery</option>
                 <option value="Culture & Lifestyle">Culture & Lifestyle</option>
+                <option value="Leisure & Scenic">Leisure & Scenic</option>
               </select>
             </div>
 

@@ -39,9 +39,18 @@ app.get('/api/tours', async (req, res) => {
         const query = {};
         
         if (destination) query.destination = destination;
-        if (experienceTheme) query.experienceTheme = experienceTheme;
-        if (subTheme) query.subTheme = subTheme;
-        if (travelStyle) query.travelStyle = travelStyle;
+        
+        if (experienceTheme) {
+            query.experienceTheme = { $in: experienceTheme.split(',').map(s => s.trim()) };
+        }
+        if (subTheme) {
+            query.subTheme = { $in: subTheme.split(',').map(s => s.trim()) };
+        }
+        if (travelStyle && travelStyle !== 'All') {
+            const styles = travelStyle.split(',').map(s => s.trim());
+            if (!styles.includes('All')) styles.push('All');
+            query.travelStyle = { $in: styles };
+        }
         if (location) query.location = location;
         
         if (season) {

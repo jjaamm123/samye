@@ -19,8 +19,8 @@ export default function Navbar() {
 
   const isActive = (path) => location.pathname === path ? 'active-link' : '';
 
-  const themes = ['Adventure & Active', 'Nature & Discovery', 'Culture & Lifestyle'];
-  const subThemes = ['Walking and Hiking Vacations', 'Adventure Vacations', 'Wildlife Vacations', 'Expedition Cruises', 'Cultural Vacations', 'Foodie Vacations'];
+  const themes = ['Adventure & Active', 'Nature & Discovery', 'Culture & Lifestyle', 'Leisure & Scenic'];
+  const subThemes = ['Walking and Hiking Vacations', 'Adventure Vacations', 'Wildlife Vacations', 'Leisure Vacations', 'Cultural Vacations', 'Foodie Vacations'];
   const travelStyles = ['Family', 'Group', 'Solo', 'Couples', 'Honeymoon', 'Anniversary', 'Tailor-Made'];
   const seasons = ['Spring', 'Summer', 'Fall', 'Winter'];
   const locations = ['Nepal', 'Tibet', 'India'];

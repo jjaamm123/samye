@@ -5,25 +5,29 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// 1. Configure Cloudinary with your secure credentials
+// CLOUDINARY CONFIGURATION
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 2. Set up the Storage Engine
+// STORAGE ENGINE CONFIGURATION
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'samye_travels', // All images will go into this folder in your Cloudinary dashboard
+    folder: 'samye_travels',
     resource_type: 'auto',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp','mp4', 'mov', 'avi'],
-    transformation: [{ width: 1920, crop: 'limit' }] // Automatically prevents massive file sizes from slowing down your site
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov', 'avi'],
+    transformation: [
+      { width: 1920, crop: 'limit' },
+      { quality: 'auto' },
+      { fetch_format: 'auto' }
+    ]
   }
 });
 
-// 3. Initialize Multer
+// MULTER INITIALIZATION
 const upload = multer({ storage: storage });
 
 module.exports = upload;
