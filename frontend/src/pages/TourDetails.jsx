@@ -1,7 +1,7 @@
 // src/pages/TourDetails.jsx
 // Luxury editorial redesign — Black Tomato / Scott Dunn inspired layout.
 // Sections: Split Hero | Sticky Tabs | Overview | Itinerary | Map | Gallery | Enquire
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useParams, Link }   from 'react-router-dom';
 import axios                  from 'axios';
 import { motion }             from 'framer-motion';
@@ -59,6 +59,15 @@ function Skeleton() {
 // ── Main Component ─────────────────────────────────────────────────────────────
 function TourDetails() {
   const { id }                                     = useParams();
+  const galleryRef = useRef(null);
+
+  const scrollGallery = (direction) => {
+    if (galleryRef.current) {
+      const { current } = galleryRef;
+      const scrollAmount = direction === 'left' ? -current.offsetWidth / 2 : current.offsetWidth / 2;
+      current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
   const { currency, toggleCurrency, formatPrice }  = useContext(CurrencyContext);
 
   const [tourData,        setTourData]        = useState(null);
@@ -510,21 +519,31 @@ function TourDetails() {
           <span className="text-sm font-semibold tracking-widest text-[#9c826b] uppercase">Visual Story</span>
           <h2 className="font-serif text-4xl text-[#1a1a1a] mt-3">Tour Gallery</h2>
         </div>
-        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {(tour.galleryImages?.length > 0 ? tour.galleryImages : [tour.cardImage, tour.heroImage]).filter(Boolean).map((img, i) => (
-            <div 
-              key={i} 
-              className="flex-none w-[85%] sm:w-[60%] md:w-[45%] lg:w-[35%] snap-center rounded-2xl overflow-hidden shadow-sm border border-[#e2d9cc] relative cursor-pointer group"
-              onClick={() => setLightboxIndex(i)}
-            >
-              <img src={img} alt={`Gallery ${i+1}`} className="w-full h-72 sm:h-80 md:h-96 object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <span className="bg-white/90 text-[#1a1a1a] px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm">
-                  View Image
-                </span>
+        <div className="relative group">
+          <div ref={galleryRef} className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
+            {(tour.galleryImages?.length > 0 ? tour.galleryImages : [tour.cardImage, tour.heroImage]).filter(Boolean).map((img, i) => (
+              <div 
+                key={i} 
+                className="flex-none w-[85%] sm:w-[60%] md:w-[45%] lg:w-[35%] snap-center rounded-2xl overflow-hidden shadow-sm border border-[#e2d9cc] relative cursor-pointer group/item"
+                onClick={() => setLightboxIndex(i)}
+              >
+                <img src={img} alt={`Gallery ${i+1}`} className="w-full h-72 sm:h-80 md:h-96 object-cover transition-transform duration-700 group-hover/item:scale-105" loading="lazy" />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <span className="bg-white/90 text-[#1a1a1a] px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm">
+                    View Image
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          
+          <button onClick={() => scrollGallery('left')} className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-[#9c826b] w-12 h-12 rounded-full items-center justify-center shadow-lg transition-all focus:outline-none border border-[#e2d9cc] opacity-0 group-hover:opacity-100">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          
+          <button onClick={() => scrollGallery('right')} className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-[#9c826b] w-12 h-12 rounded-full items-center justify-center shadow-lg transition-all focus:outline-none border border-[#e2d9cc] opacity-0 group-hover:opacity-100">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
         </div>
       </div>
 

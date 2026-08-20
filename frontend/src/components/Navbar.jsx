@@ -3,13 +3,15 @@ import { Link, useLocation } from 'react-router-dom';
 import '../App.css'; // Relies on existing .top-navbar classes, with some custom mega-menu styles inline
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -19,7 +21,11 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname, location.search]);
 
-  const isActive = (path) => location.pathname === path ? 'active-link' : '';
+  const isActive = (path) => {
+    const base = `text-sm font-medium transition-colors hover:text-white ${isScrolled ? 'text-white' : 'text-gray-200'}`;
+    const active = location.pathname === path ? ' active-link border-b-2 border-[#9c826b]' : '';
+    return base + active;
+  };
 
   const themes = ['Adventure & Active', 'Nature & Discovery', 'Culture & Lifestyle', 'Leisure & Scenic'];
   const subThemes = ['Walking and Hiking Vacations', 'Adventure Vacations', 'Wildlife Vacations', 'Leisure Vacations', 'Cultural Vacations', 'Foodie Vacations'];
@@ -28,7 +34,7 @@ export default function Navbar() {
   const locations = ['Nepal', 'Tibet', 'India'];
 
   return (
-    <nav className={`top-navbar ${scrolled ? 'scrolled' : ''} flex items-center justify-between px-4 py-4 md:px-8 md:py-6 relative bg-[#0a0f16] text-white`}>
+    <nav className={`fixed top-0 z-50 w-full transition-all duration-300 flex items-center justify-between px-4 md:px-8 ${isScrolled ? 'bg-[#0a0f16] shadow-md py-3' : 'bg-transparent py-5'} ${isScrolled ? 'text-white' : 'text-gray-200'}`}>
       <div className="navbar-brand">
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
       </div>
@@ -120,11 +126,11 @@ export default function Navbar() {
         <Link to="/contact" className={isActive('/contact')}>Contact</Link>
       </div>
 
-      <Link to="/contact" className="navbar-enquire-btn hidden md:block">Enquire Now</Link>
+      <Link to="/contact" className="hidden md:block bg-[#9c826b] hover:bg-[#856d57] text-white px-6 py-2.5 rounded-md font-medium transition-colors">Enquire Now</Link>
 
       {/* Mobile Hamburger Icon */}
       <button 
-        className="block md:hidden text-white hover:text-gray-300 focus:outline-none"
+        className="block md:hidden hover:text-white transition-colors focus:outline-none"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         {isMobileMenuOpen ? (
@@ -151,7 +157,7 @@ export default function Navbar() {
             <Link to="/custom-tour" className={isActive('/custom-tour')} onClick={() => setIsMobileMenuOpen(false)}>Build My Trip</Link>
             <Link to="/gallery" className={isActive('/gallery')} onClick={() => setIsMobileMenuOpen(false)}>Gallery</Link>
             <Link to="/contact" className={isActive('/contact')} onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
-            <Link to="/contact" className="navbar-enquire-btn text-center w-full block mt-2" onClick={() => setIsMobileMenuOpen(false)}>Enquire Now</Link>
+            <Link to="/contact" className="bg-[#9c826b] hover:bg-[#856d57] text-white text-center w-full block mt-2 px-6 py-3 rounded-md font-medium transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Enquire Now</Link>
           </div>
         </div>
       )}

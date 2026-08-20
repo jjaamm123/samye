@@ -5,40 +5,54 @@ import PriceDisplay from './PriceDisplay';
 function TourCard({ tour }) {
   const imageUrl = tour.cardImage || tour.featuredImage;
 
+  const difficultyColor = {
+    Easy: '#2ecc71',
+    Moderate: '#f39c12',
+    Hard: '#e63946',
+    Challenging: '#c0392b',
+  }[tour.difficulty] || '#1a5c9e';
+
   return (
-    <div className="flex flex-col h-full rounded-2xl overflow-hidden bg-[#fbf9f5] shadow-sm hover:shadow-xl transition-shadow duration-300 border border-[#e2d9cc] group relative">
-      <Link to={`/tour/${tour._id}`} className="flex flex-col h-full" style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to={`/tour/${tour._id}`} className="relative block w-full h-[400px] sm:h-[450px] rounded-2xl overflow-hidden group shadow-md hover:shadow-2xl transition-all duration-500">
+      
+      {/* Base Image */}
+      <img src={imageUrl} alt={tour.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 z-0" loading="lazy" />
+
+      {/* Base State (Visible by default, fades out on hover) */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-6 transition-opacity duration-300 group-hover:opacity-0">
+        <h3 className="text-white font-serif text-2xl leading-snug drop-shadow-md">{tour.title}</h3>
+        <p className="text-gray-200 text-sm font-medium mt-2">{tour.duration}</p>
+      </div>
+
+      {/* Hover Overlay State (Hidden by default, fades in on hover) */}
+      <div className="absolute inset-0 z-20 bg-black/85 p-6 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
         
-        <div className="relative h-60 overflow-hidden">
-          <img src={imageUrl} alt={tour.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
-          <div className="absolute bottom-3 right-3 text-white text-xs font-semibold px-2 py-1 rounded z-10">
-            {tour.duration}
-          </div>
-        </div>
-
-        <div className="p-4 md:p-6 flex flex-col flex-grow">
-          <p className="text-xs font-bold tracking-widest text-[#9c826b] uppercase mb-2">
-            {tour.destination}
-          </p>
-          <h3 className="font-serif text-xl text-[#1a1a1a] leading-snug mb-3 line-clamp-2">{tour.title}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2 md:line-clamp-3 mb-4 flex-grow">{tour.description}</p>
-
+        <p className="text-[#eeddaa] text-xs uppercase tracking-[0.15em] mb-2 font-semibold">{tour.destination}</p>
+        <h3 className="text-white font-serif text-2xl mb-3">{tour.title}</h3>
+        <p className="text-gray-300 text-sm line-clamp-3 mb-6 font-light leading-relaxed">{tour.description}</p>
+        
+        <div className="mt-auto">
           <div className="flex items-center justify-between mb-4">
-            <span className="px-3 py-1 bg-[#eae3d5] text-[#4a4238] text-xs font-semibold tracking-wide rounded-md">
+            <span style={{ backgroundColor: difficultyColor }} className="text-white px-3 py-1 rounded-md text-xs font-bold tracking-wide">
               {tour.difficulty}
             </span>
-            <span className="text-lg font-bold text-slate-800">
+            <span className="text-white">
               <PriceDisplay price={tour.price} size="sm" />
             </span>
           </div>
-          <span className="w-full mt-auto py-3.5 bg-[#9c826b] hover:bg-[#856d57] text-white text-sm font-medium transition-colors text-center block rounded-md">
-            View Details →
+          
+          <span className="inline-flex items-center gap-2 text-white text-sm font-medium group-hover:text-[#eeddaa] transition-colors">
+            View Tour 
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
           </span>
         </div>
 
-      </Link>
-    </div>
+      </div>
+
+    </Link>
   );
 }
 
