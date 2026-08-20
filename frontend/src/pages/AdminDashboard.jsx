@@ -143,8 +143,15 @@ function AdminDashboard() {
   const uploadSingleMediaToCloud = async (file) => {
     const uploadData = new FormData();
     uploadData.append('image', file); // We use 'image' here so it matches the backend multer setup, Cloudinary auto-detects video
+    
+    // Make sure we attach both the multipart content type and the JWT token
+    const token = localStorage.getItem('samye_admin_token') || '';
+    
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload`, uploadData, { 
-        headers: { 'Content-Type': 'multipart/form-data' } 
+        headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+        } 
     });
     return response.data.imageUrl;
   };
