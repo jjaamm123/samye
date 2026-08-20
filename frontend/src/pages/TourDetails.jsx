@@ -460,12 +460,12 @@ function TourDetails() {
             <div className="flex gap-3">
               <button 
                 onClick={scrollToEnquire}
-                className="flex-1 bg-[#9c826b] hover:bg-[#856d57] text-white font-medium py-3.5 rounded-xl transition text-center shadow-sm cursor-pointer"
+                className="flex-1 bg-[#1a5c9e] hover:bg-[#246ab5] text-white font-medium py-3.5 rounded-xl transition text-center shadow-sm cursor-pointer"
               >
                 Enquire Now
               </button>
               <button 
-                className="w-14 h-14 flex items-center justify-center bg-white border border-[#e2d9cc] text-[#9c826b] hover:bg-[#fbf9f5] rounded-xl transition shadow-sm shrink-0 cursor-pointer"
+                className="w-14 h-14 flex items-center justify-center bg-white border border-[#e2d9cc] text-[#1a5c9e] hover:bg-[#fbf9f5] rounded-xl transition shadow-sm shrink-0 cursor-pointer"
                 onClick={() => {
                   const saved = JSON.parse(localStorage.getItem('samye_wishlist') || '[]');
                   if (saved.includes(tour._id)) {
@@ -552,24 +552,24 @@ function TourDetails() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Your Name</label>
-                  <input name="name" value={inquiryData.name} onChange={handleInquiryChange} required className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]" />
+                  <input name="name" value={inquiryData.name} onChange={handleInquiryChange} required className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Your Email</label>
-                  <input type="email" name="email" value={inquiryData.email} onChange={handleInquiryChange} required className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]" />
+                  <input type="email" name="email" value={inquiryData.email} onChange={handleInquiryChange} required className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Travel Month</label>
-                  <select name="travelMonth" value={inquiryData.travelMonth} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]">
+                  <select name="travelMonth" value={inquiryData.travelMonth} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]">
                     {MONTHS.map(m => <option key={m}>{m}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Group Size</label>
-                  <select name="groupSize" value={inquiryData.groupSize} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]">
+                  <select name="groupSize" value={inquiryData.groupSize} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]">
                     <option value="1">Solo (1)</option>
                     <option value="2">Couple (2)</option>
                     <option value="3-5">Small Group (3–5)</option>
@@ -578,7 +578,7 @@ function TourDetails() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#4a4238] mb-2">Budget Range</label>
-                  <select name="budgetRange" value={inquiryData.budgetRange} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b]">
+                  <select name="budgetRange" value={inquiryData.budgetRange} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]">
                     <option>Standard</option>
                     <option>Premium</option>
                     <option>Luxury</option>
@@ -594,11 +594,11 @@ function TourDetails() {
                   onChange={handleInquiryChange}
                   placeholder={`Hi Samye Travels, I'm interested in the ${tour.title}. I'd love to know more about dates, group sizes, and possible customisations...`}
                   rows="5"
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#9c826b] resize-y"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e] resize-y"
                 />
               </div>
 
-              <button type="submit" className="w-full bg-[#9c826b] hover:bg-[#856d57] text-white font-medium py-4 rounded-xl transition shadow-sm text-lg mt-2 cursor-pointer">
+              <button type="submit" className="w-full bg-[#1a5c9e] hover:bg-[#246ab5] text-white font-medium py-4 rounded-xl transition shadow-sm text-lg mt-2 cursor-pointer">
                 Send Enquiry →
               </button>
             </form>
