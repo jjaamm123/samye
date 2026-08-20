@@ -510,14 +510,14 @@ function TourDetails() {
           <span className="text-sm font-semibold tracking-widest text-[#9c826b] uppercase">Visual Story</span>
           <h2 className="font-serif text-4xl text-[#1a1a1a] mt-3">Tour Gallery</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {(tour.galleryImages?.length > 0 ? tour.galleryImages : [tour.cardImage, tour.heroImage]).filter(Boolean).map((img, i) => (
             <div 
               key={i} 
-              className="relative aspect-square overflow-hidden rounded-2xl cursor-pointer group"
+              className="flex-none w-[85%] sm:w-[60%] md:w-[45%] lg:w-[35%] snap-center rounded-2xl overflow-hidden shadow-sm border border-[#e2d9cc] relative cursor-pointer group"
               onClick={() => setLightboxIndex(i)}
             >
-              <img src={img} alt={`Gallery ${i+1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+              <img src={img} alt={`Gallery ${i+1}`} className="w-full h-72 sm:h-80 md:h-96 object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <span className="bg-white/90 text-[#1a1a1a] px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm">
                   View Image

@@ -28,7 +28,7 @@ export default function Navbar() {
   const locations = ['Nepal', 'Tibet', 'India'];
 
   return (
-    <nav className={`top-navbar ${scrolled ? 'scrolled' : ''} flex items-center justify-between px-4 py-4 md:px-8 md:py-6 relative`}>
+    <nav className={`top-navbar ${scrolled ? 'scrolled' : ''} flex items-center justify-between px-4 py-4 md:px-8 md:py-6 relative bg-[#0a0f16] text-white`}>
       <div className="navbar-brand">
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Samye Travels</Link>
       </div>
@@ -124,7 +124,7 @@ export default function Navbar() {
 
       {/* Mobile Hamburger Icon */}
       <button 
-        className="block md:hidden text-gray-700 hover:text-gray-900 focus:outline-none"
+        className="block md:hidden text-white hover:text-gray-300 focus:outline-none"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         {isMobileMenuOpen ? (
@@ -143,7 +143,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg absolute top-full left-0 w-full z-40 border-t border-gray-100">
+        <div className="md:hidden bg-[#0a0f16] shadow-lg absolute top-full left-0 w-full z-40 border-t border-gray-800 text-white">
           <div className="flex flex-col gap-6 p-6">
             <Link to="/" className={isActive('/')} onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
             <Link to="/about" className={isActive('/about')} onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
