@@ -92,8 +92,12 @@ app.post('/api/tours', protect, upload.fields([
         const newTour = await Tour.create(tourData);
         res.status(201).json(newTour);
     } catch (error) {
-        console.error("Error creating tour:", error);
-        res.status(400).json({ message: "Failed to create tour." });
+        console.error("Create Tour Error:", error);
+        return res.status(400).json({
+          message: error.message,
+          errors: error.errors || null,
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
@@ -109,12 +113,16 @@ app.put('/api/tours/:id', protect, upload.fields([
             if (req.files['heroImage'])     updateData.heroImage     = req.files['heroImage'][0].path;
             if (req.files['galleryImages']) updateData.galleryImages = req.files['galleryImages'].map(f => f.path);
         }
-        const updatedTour = await Tour.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const updatedTour = await Tour.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
         if (!updatedTour) return res.status(404).json({ message: "Tour not found." });
         res.status(200).json(updatedTour);
     } catch (error) {
-        console.error("Error updating tour:", error);
-        res.status(500).json({ message: "Failed to update tour." });
+        console.error("Update Tour Error:", error);
+        return res.status(400).json({
+          message: error.message,
+          errors: error.errors || null,
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 

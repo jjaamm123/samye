@@ -18,12 +18,8 @@ const ItineraryDaySchema = new mongoose.Schema(
  */
 const PriceSchema = new mongoose.Schema(
   {
-    amount:      { type: Number, required: true, default: 0 },
-    displayType: {
-      type:    String,
-      enum:    ['exact', 'starting_from', 'por'],
-      default: 'starting_from'
-    }
+    amount:      { type: Number, required: true },
+    displayType: { type: String, default: 'starting_from' }
   },
   { _id: false }
 );
@@ -52,9 +48,9 @@ const TourSchema = new mongoose.Schema(
     }],
     location: { type: String },
 
-    duration:    { type: Number, required: true },
+    duration:    { type: String, required: true },
     price:       { type: PriceSchema, required: true },
-    localPrice:  { type: Number, required: true },
+    localPrice:  { type: Number },
     difficulty:  { type: String, enum: ['Easy', 'Moderate', 'Hard', 'Challenging'], default: 'Moderate' },
     description: { type: String, required: true },
     cardImage:   { type: String, required: true },
