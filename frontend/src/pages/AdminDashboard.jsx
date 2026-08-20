@@ -176,12 +176,14 @@ function AdminDashboard() {
     if (!files.length) return;
     setUploadingImage(true);
     try {
+      // Each of these explicitly uses uploadSingleMediaToCloud which attaches the Bearer token
       const uploadPromises = files.map(file => uploadSingleMediaToCloud(file));
       const urls = await Promise.all(uploadPromises);
       setFormData(f => ({ ...f, galleryImages: [...(f.galleryImages || []), ...urls] }));
     } catch (err) {
-      alert('Failed to upload some gallery images.');
-      console.error(err);
+      const errMsg = err.response?.data?.message || err.message || 'Unknown error';
+      alert(`Batch image upload failed (${err.response?.status || 'Error'}): ${errMsg}. Please ensure your session is active.`);
+      console.error('[Gallery Upload Error]:', err);
     } finally {
       setUploadingImage(false);
     }
@@ -243,7 +245,12 @@ function AdminDashboard() {
         cancelEdit();
         setTimeout(() => setSubmitStatus(null), 4000);
       })
-      .catch(err => { console.error(err); setSubmitStatus('error'); });
+      .catch(err => { 
+        console.error('[Submit Error]:', err); 
+        setSubmitStatus('error');
+        const errMsg = err.response?.data?.message || err.message;
+        alert(`Failed to save package (${err.response?.status || 'Error'}): ${errMsg}.`);
+      });
   };
 
   const handleDelete = (id) => {
