@@ -49,8 +49,8 @@ function About() {
               monasteries, and the authentic heartbeat of the mountains.
             </p>
             <p>
-              Every journey we craft is tailored to honour the landscape, the culture, and — most
-              importantly — the traveller. Whether you seek the solitude of a high-altitude trek
+              Every journey we craft is tailored to honour the landscape, the culture, and ï¿½ most
+              importantly ï¿½ the traveller. Whether you seek the solitude of a high-altitude trek
               or the warmth of a monastery stay, we'll get you there safely and meaningfully.
             </p>
           </div>
@@ -75,7 +75,7 @@ function About() {
             <span className="about-value-icon">???</span>
             <h3 className="about-value-title">Deep Local Knowledge</h3>
             <p className="about-value-text">
-              Every guide is a local expert — born in the mountains, trained in the trails,
+              Every guide is a local expert ï¿½ born in the mountains, trained in the trails,
               fluent in both language and landscape.
             </p>
           </div>
