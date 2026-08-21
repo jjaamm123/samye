@@ -164,7 +164,12 @@ function AdminDashboard() {
       const url = await uploadSingleMediaToCloud(file);
       setFormData(f => ({ ...f, [fieldName]: url }));
     } catch (err) {
-      alert(`Failed to upload ${fieldName}. Ensure video files aren't too massive.`);
+      if (err.response?.status === 401) {
+        alert('Session expired. Please log in again to upload media.');
+        handleLogout();
+      } else {
+        alert(`Failed to upload ${fieldName}. Ensure video files aren't too massive.`);
+      }
       console.error(err);
     } finally {
       setUploadingImage(false);
@@ -181,8 +186,13 @@ function AdminDashboard() {
       const urls = await Promise.all(uploadPromises);
       setFormData(f => ({ ...f, galleryImages: [...(f.galleryImages || []), ...urls] }));
     } catch (err) {
-      const errMsg = err.response?.data?.message || err.message || 'Unknown error';
-      alert(`Batch image upload failed (${err.response?.status || 'Error'}): ${errMsg}. Please ensure your session is active.`);
+      if (err.response?.status === 401) {
+        alert('Session expired. Please log in again to upload media.');
+        handleLogout();
+      } else {
+        const errMsg = err.response?.data?.message || err.message || 'Unknown error';
+        alert(`Batch image upload failed (${err.response?.status || 'Error'}): ${errMsg}. Please ensure your session is active.`);
+      }
       console.error('[Gallery Upload Error]:', err);
     } finally {
       setUploadingImage(false);
