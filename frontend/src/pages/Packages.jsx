@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+﻿import { useState, useEffect, useContext } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -270,7 +270,7 @@ function Packages() {
 
         {/* PACKAGE GRID */}
         <div className="flex-grow min-w-0 w-full">
-          {loading && <p className="text-slate-500 p-10 text-center">Loading {isTours ? 'tours' : 'adventures'}…</p>}
+          {loading && <p className="text-slate-500 p-10 text-center">Loading {isTours ? 'tours' : 'adventures'}â€¦</p>}
           {error && (
             <div className="flex items-center justify-center gap-2 text-red-500 p-10">
               <AlertCircle size={20} /> {error}
@@ -298,31 +298,6 @@ function Packages() {
         </div>
       </div>
 
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="footer-logo">Samye Travels</span>
-            <p>Crafting sacred journeys across Nepal, Tibet & India since 2010.</p>
-          </div>
-          <div className="footer-links">
-            <h4>Quick Links</h4>
-            <Link to="/">Home</Link>
-            <Link to="/packages">Packages</Link>
-            <Link to="/custom-tour">Build My Trip</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
-          </div>
-          <div className="footer-contact">
-            <h4>Get In Touch</h4>
-            <p>namaste@samyetravels.com</p>
-            <p>+977 1-4412345</p>
-            <p>Thamel, Kathmandu, Nepal</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>© 2026 Samye Travels. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

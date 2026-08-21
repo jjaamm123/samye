@@ -1,7 +1,7 @@
-import Navbar from '../components/Navbar';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
+import Navbar from '../components/Navbar';
 
 function About() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,7 +16,6 @@ function About() {
     <div className="app-wrapper">
 
       <Navbar />
-
 
       <div
         className="page-hero"
@@ -50,8 +49,8 @@ function About() {
               monasteries, and the authentic heartbeat of the mountains.
             </p>
             <p>
-              Every journey we craft is tailored to honour the landscape, the culture, and — most
-              importantly — the traveller. Whether you seek the solitude of a high-altitude trek
+              Every journey we craft is tailored to honour the landscape, the culture, and � most
+              importantly � the traveller. Whether you seek the solitude of a high-altitude trek
               or the warmth of a monastery stay, we'll get you there safely and meaningfully.
             </p>
           </div>
@@ -73,15 +72,15 @@ function About() {
 
         <div className="about-values-grid">
           <div className="about-value-card">
-            <span className="about-value-icon">🏔️</span>
+            <span className="about-value-icon">???</span>
             <h3 className="about-value-title">Deep Local Knowledge</h3>
             <p className="about-value-text">
-              Every guide is a local expert — born in the mountains, trained in the trails,
+              Every guide is a local expert � born in the mountains, trained in the trails,
               fluent in both language and landscape.
             </p>
           </div>
           <div className="about-value-card">
-            <span className="about-value-icon">🙏</span>
+            <span className="about-value-icon">??</span>
             <h3 className="about-value-title">Spiritual Sensitivity</h3>
             <p className="about-value-text">
               We approach sacred spaces with respect and humility, ensuring travellers
@@ -89,7 +88,7 @@ function About() {
             </p>
           </div>
           <div className="about-value-card">
-            <span className="about-value-icon">🌿</span>
+            <span className="about-value-icon">??</span>
             <h3 className="about-value-title">Responsible Travel</h3>
             <p className="about-value-text">
               We minimise environmental impact, support local communities, and ensure
@@ -99,32 +98,6 @@ function About() {
         </div>
 
       </div>
-
-      {/* Footer — same as homepage */}
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="footer-logo">Samye Travels</span>
-            <p>Crafting sacred journeys across Nepal, Tibet & India since 2010.</p>
-          </div>
-          <div className="footer-links">
-            <h4>Quick Links</h4>
-            <Link to="/">Home</Link>
-            <Link to="/#tours">Tours</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
-          </div>
-          <div className="footer-contact">
-            <h4>Get In Touch</h4>
-            <p>namaste@samyetravels.com</p>
-            <p>+977 1-4412345</p>
-            <p>Thamel, Kathmandu, Nepal</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>© 2025 Samye Travels. All rights reserved.</p>
-        </div>
-      </footer>
 
     </div>
   );

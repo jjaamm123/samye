@@ -28,7 +28,7 @@ const EMPTY_ADVENTURE = {
 };
 
 const EMPTY_GALLERY = {
-  title: '', location: '', category: 'Scenic Views', mediaType: 'image', mediaUrl: ''
+  title: '', country: 'Nepal', location: '', category: 'Scenic Views', mediaType: 'image', mediaUrl: ''
 };
 
 function AdminDashboard() {
@@ -650,15 +650,24 @@ function AdminDashboard() {
                 </div>
 
                 <div className="admin-form-group">
-                  <label className="admin-label">Location / Tag</label>
-                  <input name="location" value={formData.location} onChange={handleChange} required placeholder="e.g. Everest Base Camp" className="admin-input" />
+                  <label className="admin-label">Country</label>
+                  <select name="country" value={formData.country || 'Nepal'} onChange={handleChange} className="admin-input">
+                    <option value="Nepal">Nepal</option>
+                    <option value="Tibet">Tibet</option>
+                    <option value="India">India</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-label">Location / Sublocation</label>
+                  <input name="location" value={formData.location} onChange={handleChange} required placeholder="e.g. Pokhara, Everest Base Camp" className="admin-input" />
                 </div>
 
                 <div className="admin-form-group">
                   <label className="admin-label">Category</label>
                   <select name="category" value={formData.category} onChange={handleChange} className="admin-input">
-                    <option>Scenic Views</option>
-                    <option>Customer Moments</option>
+                    <option value="Scenic Views">Scenic Views</option>
+                    <option value="Customer Moments">Customer Moments</option>
                   </select>
                 </div>
 

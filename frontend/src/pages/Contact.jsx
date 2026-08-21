@@ -1,4 +1,4 @@
-import Navbar from '../components/Navbar';
+﻿import Navbar from '../components/Navbar';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -88,7 +88,7 @@ function Contact() {
             <div className="contact-info-divider"></div>
             <div className="contact-info-block">
               <span className="contact-info-label">Office Hours</span>
-              <p className="contact-info-value">Sunday – Friday<br />9:00 AM – 6:00 PM NST</p>
+              <p className="contact-info-value">Sunday â€“ Friday<br />9:00 AM â€“ 6:00 PM NST</p>
             </div>
           </div>
 
@@ -97,12 +97,12 @@ function Contact() {
 
             {submitStatus === 'success' && (
               <div className="admin-alert success" style={{ marginBottom: '20px' }}>
-                ✓ Message sent! We'll get back to you within 24 hours.
+                âœ“ Message sent! We'll get back to you within 24 hours.
               </div>
             )}
             {submitStatus === 'error' && (
               <div className="admin-alert error" style={{ marginBottom: '20px' }}>
-                ✗ Something went wrong. Please try again or email us directly.
+                âœ— Something went wrong. Please try again or email us directly.
               </div>
             )}
 
@@ -116,7 +116,7 @@ function Contact() {
               </div>
 
               <input name="subject" value={formData.subject} onChange={handleChange}
-                placeholder="Subject — e.g. Enquiry about Nepal Trek" required className="contact-input" />
+                placeholder="Subject â€” e.g. Enquiry about Nepal Trek" required className="contact-input" />
 
               <div className="contact-form-row contact-form-row-3">
 
@@ -142,7 +142,7 @@ function Contact() {
                   >
                     <option value="1">Solo (1)</option>
                     <option value="2">Couple (2)</option>
-                    <option value="3-5">Small Group (3–5)</option>
+                    <option value="3-5">Small Group (3â€“5)</option>
                     <option value="6+">Large Group (6+)</option>
                   </select>
                 </div>
@@ -167,14 +167,14 @@ function Contact() {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Tell us about your dream journey — destinations, specific treks, anything you have in mind…"
+                placeholder="Tell us about your dream journey â€” destinations, specific treks, anything you have in mindâ€¦"
                 rows="5"
                 required
                 className="contact-input contact-textarea"
               ></textarea>
 
               <button type="submit" className="contact-submit-btn">
-                Send Message →
+                Send Message â†’
               </button>
 
             </form>
@@ -183,31 +183,6 @@ function Contact() {
         </div>
       </div>
 
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="footer-logo">Samye Travels</span>
-            <p>Crafting sacred journeys across Nepal, Tibet & India since 2010.</p>
-          </div>
-          <div className="footer-links">
-            <h4>Quick Links</h4>
-            <Link to="/">Home</Link>
-            <Link to="/packages">Packages</Link>
-            <Link to="/custom-tour">Build My Trip</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
-          </div>
-          <div className="footer-contact">
-            <h4>Get In Touch</h4>
-            <p>namaste@samyetravels.com</p>
-            <p>+977 1-4412345</p>
-            <p>Thamel, Kathmandu, Nepal</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>© 2026 Samye Travels. All rights reserved.</p>
-        </div>
-      </footer>
 
     </div>
   );

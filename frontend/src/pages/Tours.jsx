@@ -1,4 +1,4 @@
-import Navbar from '../components/Navbar';
+﻿import Navbar from '../components/Navbar';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -58,9 +58,9 @@ function Tours() {
 
       <div className="adventure-sport-strip">
         {[
-          { label: 'Nepal', icon: '🏔️' },
-          { label: 'Tibet', icon: '📿' },
-          { label: 'India', icon: '🛕' }
+          { label: 'Nepal', icon: 'ðŸ”ï¸' },
+          { label: 'Tibet', icon: 'ðŸ“¿' },
+          { label: 'India', icon: 'ðŸ›•' }
         ].map(dest => (
           <button
             key={dest.label}
@@ -96,7 +96,7 @@ function Tours() {
         </div>
 
         {loading && <p className="status-msg">Loading tours...</p>}
-        {error && <p className="status-msg error">⚠️ {error}</p>}
+        {error && <p className="status-msg error">âš ï¸ {error}</p>}
         {!loading && !error && filteredTours.length === 0 && (
           <p className="status-msg">No tours match your search. Try resetting the filter!</p>
         )}
@@ -110,14 +110,6 @@ function Tours() {
         )}
       </div>
 
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="footer-logo">Samye Travels</span>
-            <p>Crafting sacred journeys across Nepal, Tibet & India since 2010.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

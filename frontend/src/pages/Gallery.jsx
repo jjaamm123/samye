@@ -1,57 +1,54 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, ArrowLeft } from 'lucide-react';
 import '../App.css';
 import Navbar from '../components/Navbar';
 
+// ─── Animation Variants ───────────────────────────────────────────────────────
 const cardVariant = {
-  hidden: { opacity: 0, y: 32, scale: 0.96 },
+  hidden: { opacity: 0, y: 28, scale: 0.97 },
   visible: (i) => ({
     opacity: 1, y: 0, scale: 1,
-    transition: {
-      duration: 0.5,
-      ease: [0.22, 1, 0.36, 1],
-      delay: i * 0.07
-    }
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: i * 0.06 }
   })
 };
 
+const fadeSlide = {
+  hidden:   { opacity: 0, x: 24 },
+  visible:  { opacity: 1, x: 0,  transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  exit:     { opacity: 0, x: -24, transition: { duration: 0.25 } }
+};
+
+// ─── Country meta (emoji + accent color) ────────────────────────────────────
+const COUNTRY_META = {
+  Nepal: { emoji: '🇳🇵' },
+  Tibet: { emoji: '🏔️' },
+  India: { emoji: '🇮🇳' },
+};
+
+// ─── Main Gallery Component ───────────────────────────────────────────────────
 function Gallery() {
-  const [galleryItems, setGalleryItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // Tab state: 'scenic', 'customer', 'video'
-  const [activeTab, setActiveTab] = useState('scenic');
-  const [scrolled, setScrolled] = useState(false);
+  const [galleryItems, setGalleryItems]         = useState([]);
+  const [loading, setLoading]                   = useState(true);
+  const [error, setError]                       = useState(null);
 
-  // Lightbox / Carousel state
-  const [lightboxIndex, setLightboxIndex] = useState(null);
+  // Navigation state
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [activeCategory, setActiveCategory]     = useState('Scenic Views');
 
-  // Grid ref for stagger trigger
-  const gridRef = useRef(null);
-  const gridInView = useInView(gridRef, { once: false, margin: '-40px' });
+  // Lightbox
+  const [lightboxIndex, setLightboxIndex]       = useState(null);
 
-  // Scroll effect for Navbar
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  // Fetch Gallery Data
+  // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/gallery`)
       .then(r => {
         const data = r.data;
-        console.log('API Response [gallery]:', data);
-        // Handles bare array OR envelopes: { gallery:[...] } / { data:[...] }
-        const arr = Array.isArray(data)           ? data
-                  : Array.isArray(data?.gallery)   ? data.gallery
-                  : Array.isArray(data?.data)      ? data.data
-                  : [];
+        const arr = Array.isArray(data)         ? data
+                : Array.isArray(data?.gallery)   ? data.gallery
+                : Array.isArray(data?.data)      ? data.data
+                : [];
         setGalleryItems(arr);
         setLoading(false);
       })
@@ -61,39 +58,77 @@ function Gallery() {
       });
   }, []);
 
-  // Safe array guard — prevents "X.filter is not a function" if API returns
-  // a non-array (object envelope, null, server error, etc.)
-  const safeItems     = Array.isArray(galleryItems) ? galleryItems : [];
+  // ── Client-side grouping: country → location → items ──────────────────────
+  const safeItems = Array.isArray(galleryItems) ? galleryItems : [];
 
-  // Categorize Data
-  const scenicImages   = safeItems.filter(i => i.mediaType === 'image' && i.category === 'Scenic Views');
-  const customerImages = safeItems.filter(i => i.mediaType === 'image' && i.category === 'Customer Moments');
-  const videos         = safeItems.filter(i => i.mediaType === 'video');
+  const grouped = safeItems.reduce((acc, item) => {
+    const country  = item.country  || 'Nepal';
+    const location = item.location || 'Other';
+    if (!acc[country]) acc[country] = {};
+    if (!acc[country][location]) acc[country][location] = [];
+    acc[country][location].push(item);
+    return acc;
+  }, {});
 
-  // Determine which array is currently being viewed
-  const currentArray = activeTab === 'scenic' ? scenicImages : activeTab === 'customer' ? customerImages : videos;
+  const countries = Object.keys(grouped);
 
-  // Lightbox Keyboard Navigation
+  // ── Items shown in subpage (filtered by location + category) ──────────────
+  const subpageItems = selectedLocation
+    ? safeItems.filter(item =>
+        item.location === selectedLocation &&
+        item.category === activeCategory
+      )
+    : [];
+
+  // Pool of images in subpage for lightbox cycling
+  const lightboxPool = subpageItems.filter(i => i.mediaType === 'image');
+
+  // ── Lightbox keyboard nav ──────────────────────────────────────────────────
   useEffect(() => {
     const handleKey = e => {
       if (lightboxIndex === null) return;
-      if (e.key === 'Escape') setLightboxIndex(null);
-      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % currentArray.length);
-      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + currentArray.length) % currentArray.length);
+      if (e.key === 'Escape')     setLightboxIndex(null);
+      if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % lightboxPool.length);
+      if (e.key === 'ArrowLeft')  setLightboxIndex(i => (i - 1 + lightboxPool.length) % lightboxPool.length);
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [lightboxIndex, currentArray]);
+  }, [lightboxIndex, lightboxPool.length]);
 
+  // ── Navigate into a sublocation ───────────────────────────────────────────
+  const handleSelectLocation = (location) => {
+    setActiveCategory('Scenic Views');
+    setLightboxIndex(null);
+    setSelectedLocation(location);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    setSelectedLocation(null);
+    setLightboxIndex(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── Open lightbox for images only ─────────────────────────────────────────
+  const openLightbox = (item) => {
+    if (item.mediaType !== 'image') return;
+    const idx = lightboxPool.findIndex(p => p._id === item._id);
+    if (idx !== -1) setLightboxIndex(idx);
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="app-wrapper">
-      
-      {/* ─── NAVBAR ─── */}
+    <div className="app-wrapper min-h-screen bg-[#fbf9f5]">
+
+      {/* ── NAVBAR ── */}
       <Navbar />
 
-      {/* ─── HERO SECTION ─── */}
-      <div className="packages-hero" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80')` }}>
-        <div className="packages-hero-overlay"></div>
+      {/* ── HERO ── */}
+      <div
+        className="packages-hero"
+        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80')` }}
+      >
+        <div className="packages-hero-overlay" />
         <motion.div
           className="packages-hero-content"
           initial={{ opacity: 0, y: 32 }}
@@ -110,121 +145,222 @@ function Gallery() {
         </motion.div>
       </div>
 
-      <div className="content-container" style={{ padding: '60px 5%' }}>
-        
-        {/* ─── TABS ─── */}
-        <motion.div
-          style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '40px', flexWrap: 'wrap' }}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          {[
-            { id: 'scenic', label: `Scenic Views (${scenicImages.length})` },
-            { id: 'customer', label: `Customer Moments (${customerImages.length})` },
-            { id: 'video', label: `Videos (${videos.length})` },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setLightboxIndex(null); }}
-              className={`packages-filter-pill ${activeTab === tab.id ? 'active' : ''}`}
-              style={{ padding: '10px 24px', fontSize: '1rem', border: activeTab === tab.id ? '1px solid #1a5c9e' : '1px solid #e2e8f0' }}
+      {/* ── MAIN CONTENT ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+        {/* Loading / Error / Empty */}
+        {loading && <p className="text-center text-[#64748b] py-20 text-lg">Loading gallery media...</p>}
+        {error   && <p className="text-center text-red-500 py-20 text-lg">{error}</p>}
+        {!loading && !error && safeItems.length === 0 && (
+          <p className="text-center text-[#64748b] py-20 text-lg">No gallery items yet. Check back soon!</p>
+        )}
+
+        <AnimatePresence mode="wait">
+
+          {/* ════════════════════════════════════════════
+              MAIN VIEW — Country → Sublocation Folders
+          ════════════════════════════════════════════ */}
+          {!selectedLocation && !loading && !error && safeItems.length > 0 && (
+            <motion.div
+              key="main-view"
+              variants={fadeSlide}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="space-y-16"
             >
-              {tab.label}
-            </button>
-          ))}
-        </motion.div>
+              {countries.map(country => {
+                const locationMap   = grouped[country];
+                const locationNames = Object.keys(locationMap);
+                const meta          = COUNTRY_META[country] || { emoji: '🌏' };
+                const totalItems    = Object.values(locationMap).reduce((sum, arr) => sum + arr.length, 0);
 
-        {/* ─── STATUS MESSAGES ─── */}
-        {loading && <p className="status-msg" style={{ textAlign: 'center', color: '#64748b' }}>Loading gallery media...</p>}
-        {error && <p className="status-msg error" style={{ textAlign: 'center' }}>{error}</p>}
-        {!loading && !error && currentArray.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#64748b', marginTop: '40px', fontSize: '1.1rem' }}>
-            More memories coming soon.
-          </p>
-        )}
+                return (
+                  <section key={country}>
+                    {/* Country Header */}
+                    <div className="flex items-center gap-3 mb-8 pb-4 border-b border-[#e2d9cc]">
+                      <span className="text-4xl">{meta.emoji}</span>
+                      <div>
+                        <h2 className="font-serif text-3xl text-[#1a1a1a]">{country}</h2>
+                        <p className="text-sm text-[#9c826b] mt-0.5">
+                          {locationNames.length} {locationNames.length === 1 ? 'location' : 'locations'} · {totalItems} items
+                        </p>
+                      </div>
+                    </div>
 
-        {/* ─── STAGGERED MEDIA GRID ─── */}
-        {!loading && !error && currentArray.length > 0 && (
-          <motion.div
-            ref={gridRef}
-            key={activeTab}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '20px',
-              alignItems: 'start'
-            }}
-            initial="hidden"
-            animate="visible"
-            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
-          >
-            {currentArray.map((item, index) => (
-              <motion.div
-                key={item._id}
-                custom={index}
-                variants={cardVariant}
-                className="gallery-card"
-                onClick={() => item.mediaType === 'image' && setLightboxIndex(index)}
-                style={{
-                  position: 'relative',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                  cursor: item.mediaType === 'image' ? 'none' : 'default',
-                  aspectRatio: item.mediaType === 'video' ? 'auto' : '1 / 1',
-                  backgroundColor: '#f1f5f9'
-                }}
-                whileHover={item.mediaType === 'image' ? {
-                  boxShadow: '0 16px 48px rgba(5,11,22,0.16)',
-                  y: -4,
-                  transition: { duration: 0.3, ease: 'easeOut' }
-                } : {}}
+                    {/* Sublocation Folder Carousel */}
+                    <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                      {locationNames.map(locationName => {
+                        const items    = locationMap[locationName];
+                        const coverUrl = (items.find(i => i.mediaType === 'image') || items[0])?.mediaUrl;
+
+                        return (
+                          <div
+                            key={locationName}
+                            onClick={() => handleSelectLocation(locationName)}
+                            className="flex-none w-[80%] sm:w-[45%] md:w-[30%] lg:w-[22%] h-64 relative rounded-2xl overflow-hidden cursor-pointer group shadow-sm snap-start border border-[#e2d9cc] hover:shadow-xl transition-shadow duration-300"
+                          >
+                            {/* Cover image */}
+                            {coverUrl ? (
+                              <img
+                                src={coverUrl}
+                                alt={locationName}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 bg-[#e2d9cc]" />
+                            )}
+
+                            {/* Gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+
+                            {/* Folder text */}
+                            <div className="absolute bottom-4 left-4 z-20">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <MapPin size={11} className="text-[#eeddaa]" />
+                                <span className="text-[#eeddaa] text-xs uppercase tracking-widest font-semibold">{country}</span>
+                              </div>
+                              <h3 className="text-white font-serif text-xl leading-snug">{locationName}</h3>
+                              <p className="text-gray-300 text-sm mt-0.5">{items.length} {items.length === 1 ? 'Item' : 'Items'}</p>
+                            </div>
+
+                            {/* Hover arrow cue */}
+                            <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <line x1="5" y1="12" x2="19" y2="12" />
+                                  <polyline points="12 5 19 12 12 19" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </motion.div>
+          )}
+
+          {/* ════════════════════════════════════════════
+              SUBLOCATION SUBPAGE VIEW
+          ════════════════════════════════════════════ */}
+          {selectedLocation && (
+            <motion.div
+              key={`subpage-${selectedLocation}`}
+              variants={fadeSlide}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {/* Back button */}
+              <button
+                onClick={handleBack}
+                className="inline-flex items-center gap-2 text-[#9c826b] hover:text-[#6b5c4e] font-medium text-sm mb-10 transition-colors group"
               >
-                {item.mediaType === 'image' ? (
-                  <motion.img
-                    src={item.mediaUrl}
-                    alt={item.title}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                  />
-                ) : (
-                  <video
-                    src={item.mediaUrl}
-                    controls
-                    style={{ width: '100%', display: 'block', borderRadius: '12px' }}
-                  />
-                )}
-                
-                {/* Overlay text for images */}
-                {item.mediaType === 'image' && (
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '0',
-                    left: '0',
-                    right: '0',
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.82), transparent)',
-                    padding: '36px 20px 16px',
-                    color: 'white',
-                    pointerEvents: 'none'
-                  }}>
-                    <p style={{ margin: '0 0 4px', fontWeight: '600', fontSize: '1rem', fontFamily: "'Inter', sans-serif" }}>{item.title}</p>
-                    <p style={{ margin: '0', fontSize: '0.82rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={12} /> {item.location}
-                    </p>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+                <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
+                Back to All Destinations
+              </button>
 
+              {/* Subpage Header */}
+              <div className="text-center mb-10">
+                <span className="text-sm font-semibold tracking-widest text-[#9c826b] uppercase">Gallery</span>
+                <h2 className="font-serif text-4xl text-[#1a1a1a] mt-2">{selectedLocation}</h2>
+                <p className="text-[#64748b] mt-2 text-sm">
+                  {safeItems.filter(i => i.location === selectedLocation).length} items in this location
+                </p>
+              </div>
+
+              {/* Category Pill Filters — Scenic Views & Customer Moments only */}
+              <div className="flex justify-center gap-3 mb-10 flex-wrap">
+                {['Scenic Views', 'Customer Moments'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => { setActiveCategory(cat); setLightboxIndex(null); }}
+                    className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all border ${
+                      activeCategory === cat
+                        ? 'bg-[#1a1a1a] text-white border-[#1a1a1a]'
+                        : 'bg-white text-[#4a4238] border-[#e2d9cc] hover:border-[#9c826b]'
+                    }`}
+                  >
+                    {cat}
+                    <span className="ml-2 text-xs opacity-60">
+                      ({safeItems.filter(i => i.location === selectedLocation && i.category === cat).length})
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Empty state */}
+              {subpageItems.length === 0 && (
+                <p className="text-center text-[#64748b] py-16 text-lg">No media in this category yet.</p>
+              )}
+
+              {/* Media Grid — images + videos together */}
+              {subpageItems.length > 0 && (
+                <motion.div
+                  key={`${selectedLocation}-${activeCategory}`}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+                >
+                  {subpageItems.map((item, index) => (
+                    <motion.div
+                      key={item._id}
+                      custom={index}
+                      variants={cardVariant}
+                      onClick={() => openLightbox(item)}
+                      className={`relative rounded-2xl overflow-hidden bg-[#e2d9cc] shadow-sm border border-[#e2d9cc] group ${
+                        item.mediaType === 'image' ? 'cursor-pointer hover:shadow-xl transition-shadow duration-300' : ''
+                      }`}
+                      style={{ aspectRatio: item.mediaType === 'video' ? 'auto' : '1 / 1' }}
+                    >
+                      {/* Image */}
+                      {item.mediaType === 'image' && (
+                        <>
+                          <img
+                            src={item.mediaUrl}
+                            alt={item.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          {/* Hover "View" cue */}
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <span className="bg-white/90 text-[#1a1a1a] px-4 py-2 rounded-full text-xs font-semibold shadow-sm backdrop-blur-sm uppercase tracking-wide">View</span>
+                          </div>
+                          {/* Bottom caption */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent px-4 pt-10 pb-4 pointer-events-none">
+                            <p className="text-white font-semibold text-sm leading-snug">{item.title}</p>
+                            <p className="text-gray-300 text-xs mt-0.5 flex items-center gap-1">
+                              <MapPin size={10} /> {item.location}
+                            </p>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Video */}
+                      {item.mediaType === 'video' && (
+                        <video
+                          src={item.mediaUrl}
+                          controls
+                          className="w-full block rounded-2xl"
+                        />
+                      )}
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+        </AnimatePresence>
       </div>
 
-      {/* ─── GLASSMORPHISM LIGHTBOX ─── */}
+      {/* ── LIGHTBOX ─────────────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {lightboxIndex !== null && activeTab !== 'video' && (
+        {lightboxIndex !== null && lightboxPool[lightboxIndex] && (
           <motion.div
             className="lightbox-overlay"
             initial={{ opacity: 0 }}
@@ -242,20 +378,24 @@ function Gallery() {
               onClick={e => e.stopPropagation()}
             >
               <button className="lightbox-close" onClick={() => setLightboxIndex(null)}>✕</button>
-              <img src={currentArray[lightboxIndex].mediaUrl} alt={currentArray[lightboxIndex].title} className="lightbox-image" />
-              
+              <img
+                src={lightboxPool[lightboxIndex].mediaUrl}
+                alt={lightboxPool[lightboxIndex].title}
+                className="lightbox-image"
+              />
               <div style={{ position: 'absolute', bottom: '-48px', color: 'white', textAlign: 'center', width: '100%' }}>
-                <h3 style={{ margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>{currentArray[lightboxIndex].title}</h3>
-                <p style={{ margin: '0', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontSize: '0.88rem' }}>
-                  <MapPin size={13} /> {currentArray[lightboxIndex].location}
+                <h3 style={{ margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>
+                  {lightboxPool[lightboxIndex].title}
+                </h3>
+                <p style={{ margin: 0, color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontSize: '0.88rem' }}>
+                  <MapPin size={13} /> {lightboxPool[lightboxIndex].location}
                 </p>
               </div>
-
-              {currentArray.length > 1 && (
+              {lightboxPool.length > 1 && (
                 <>
-                  <button className="lightbox-nav lightbox-nav-prev" onClick={() => setLightboxIndex(i => (i - 1 + currentArray.length) % currentArray.length)}>‹</button>
-                  <button className="lightbox-nav lightbox-nav-next" onClick={() => setLightboxIndex(i => (i + 1) % currentArray.length)}>›</button>
-                  <span className="lightbox-counter">{lightboxIndex + 1} / {currentArray.length}</span>
+                  <button className="lightbox-nav lightbox-nav-prev" onClick={() => setLightboxIndex(i => (i - 1 + lightboxPool.length) % lightboxPool.length)}>‹</button>
+                  <button className="lightbox-nav lightbox-nav-next" onClick={() => setLightboxIndex(i => (i + 1) % lightboxPool.length)}>›</button>
+                  <span className="lightbox-counter">{lightboxIndex + 1} / {lightboxPool.length}</span>
                 </>
               )}
             </motion.div>

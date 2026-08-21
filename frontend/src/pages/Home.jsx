@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -14,7 +14,7 @@ import {
 import '../App.css';
 import Navbar from '../components/Navbar';
 
-// ── ANIMATION VARIANTS ──────────────────────────────────────
+// â”€â”€ ANIMATION VARIANTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const fadeUp = {
   hidden:  { opacity: 0, y: 28 },
   visible: (i = 0) => ({
@@ -36,21 +36,21 @@ const cardVariant = {
   }
 };
 
-// ── STATIC DATA ─────────────────────────────────────────────
+// â”€â”€ STATIC DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const STATS = [
   { number: '500+',  label: 'Expeditions Completed' },
   { number: '15+',   label: 'Years of Expertise' },
   { number: '98%',   label: 'Client Satisfaction' },
   { number: '3',     label: 'Operating Regions' },
   { number: '120+',  label: 'Expert Local Guides' },
-  { number: '4.9★',  label: 'Average Trip Rating' },
+  { number: '4.9â˜…',  label: 'Average Trip Rating' },
 ];
 
 const REVIEWS = [
   {
-    text: 'Samye Travels made our Annapurna Circuit trek absolutely seamless. Every permit, every lodge — handled flawlessly. Our guide Raj was outstanding.',
+    text: 'Samye Travels made our Annapurna Circuit trek absolutely seamless. Every permit, every lodge â€” handled flawlessly. Our guide Raj was outstanding.',
     author: 'Thomas & Claire M.',
-    trip: 'Annapurna Circuit — 14 Days',
+    trip: 'Annapurna Circuit â€” 14 Days',
     initial: 'T',
     stars: 5,
   },
@@ -62,7 +62,7 @@ const REVIEWS = [
     stars: 5,
   },
   {
-    text: 'We did the custom trip builder online and honestly expected it to be a gimmick — it wasn\'t. The discount calculator saved us nearly 18% on a group of 9.',
+    text: 'We did the custom trip builder online and honestly expected it to be a gimmick â€” it wasn\'t. The discount calculator saved us nearly 18% on a group of 9.',
     author: 'The Henderson Family',
     trip: 'Everest Base Camp + Chitwan',
     initial: 'H',
@@ -78,7 +78,7 @@ const REVIEWS = [
   {
     text: "From the moment we landed to the day we left, Samye's team was reachable 24/7. That level of support on remote treks is genuinely rare.",
     author: 'Priya & Arjun D.',
-    trip: 'Gokyo Lake Trek — 12 Days',
+    trip: 'Gokyo Lake Trek â€” 12 Days',
     initial: 'P',
     stars: 5,
   },
@@ -91,7 +91,7 @@ const REVIEWS = [
   },
 ];
 
-// ── HELPERS ──────────────────────────────────────────────────
+// â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AnimatedSection({ children, className, style }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -119,12 +119,12 @@ function StarRow({ count = 5 }) {
   );
 }
 
-// ── COMPONENT ────────────────────────────────────────────────
+// â”€â”€ COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Home() {
   const [scrolled, setScrolled]       = useState(false);
   const navigate                       = useNavigate();
 
-  // ── AI CONCIERGE STATE (unchanged logic) ──
+  // â”€â”€ AI CONCIERGE STATE (unchanged logic) â”€â”€
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [userPrompt, setUserPrompt]       = useState('');
   const [isThinking, setIsThinking]       = useState(false);
@@ -136,7 +136,7 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ── MOCK AI LOGIC (unchanged) ──
+  // â”€â”€ MOCK AI LOGIC (unchanged) â”€â”€
   const handleAICuration = (e) => {
     e.preventDefault();
     if (!userPrompt.trim()) return;
@@ -154,7 +154,7 @@ export default function Home() {
       if (p.includes('rafting') || p.includes('extreme') || p.includes('adrenaline')) {
         match = {
           title: 'Himalayan Adventure Sports',
-          rationale: "You're looking for high-octane thrills. I've matched you with our Adventure Sports catalog — white-water rafting and paragliding fit perfectly.",
+          rationale: "You're looking for high-octane thrills. I've matched you with our Adventure Sports catalog â€” white-water rafting and paragliding fit perfectly.",
           link: '/packages',
           cta: 'View Adventure Expeditions',
         };
@@ -186,10 +186,10 @@ export default function Home() {
   return (
     <div className="app-wrapper">
 
-      {/* ── NAVBAR ── */}
+      {/* â”€â”€ NAVBAR â”€â”€ */}
       <Navbar />
 
-      {/* ── HERO ── */}
+      {/* â”€â”€ HERO â”€â”€ */}
       <section className="hero-section" id="home">
         <div className="hero-overlay" />
         <motion.div
@@ -223,9 +223,9 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
            STATS CAROUSEL  (Swiper auto-play, 4 slides visible)
-         ══════════════════════════════════════════════════════ */}
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <section className="stats-carousel-section">
         <Swiper
           modules={[Autoplay, Pagination, A11y]}
@@ -252,7 +252,7 @@ export default function Home() {
         </Swiper>
       </section>
 
-      {/* ── AI CONCIERGE BANNER ── */}
+      {/* â”€â”€ AI CONCIERGE BANNER â”€â”€ */}
       <motion.div
         style={{
           backgroundColor: '#0f172a', padding: '36px 20px',
@@ -269,7 +269,7 @@ export default function Home() {
             Tell us your dream journey.
           </h2>
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '1.05rem', maxWidth: '500px', lineHeight: 1.6 }}>
-            Skip the browsing. Describe your ideal timeline, pace, and companions — our AI Concierge will curate the perfect package instantly.
+            Skip the browsing. Describe your ideal timeline, pace, and companions â€” our AI Concierge will curate the perfect package instantly.
           </p>
           <button
             onClick={() => setIsAIModalOpen(true)}
@@ -287,7 +287,7 @@ export default function Home() {
         </div>
       </motion.div>
 
-      {/* ── PACKAGE CARDS (staggered scroll-reveal) ── */}
+      {/* â”€â”€ PACKAGE CARDS (staggered scroll-reveal) â”€â”€ */}
       <div className="journey-selector-section" style={{ backgroundColor: '#f8fafc' }}>
         <motion.div
           className="section-header"
@@ -329,8 +329,8 @@ export default function Home() {
                   View Itineraries <ArrowRight size={15} className="journey-card-arrow" />
                 </div>
                 <div className="journey-card-meta">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MapPin size={13} /> Nepal · Tibet · India</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calendar size={13} /> 5–21 Days</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MapPin size={13} /> Nepal Â· Tibet Â· India</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calendar size={13} /> 5â€“21 Days</span>
                 </div>
               </div>
             </Link>
@@ -355,8 +355,8 @@ export default function Home() {
                   View Activities <ArrowRight size={15} className="journey-card-arrow" />
                 </div>
                 <div className="journey-card-meta">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Compass size={13} /> Nepal · India</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Clock size={13} /> Half-day – 3 Days</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Compass size={13} /> Nepal Â· India</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Clock size={13} /> Half-day â€“ 3 Days</span>
                 </div>
               </div>
             </Link>
@@ -390,7 +390,7 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* ── WHY US STRIP ── */}
+      {/* â”€â”€ WHY US STRIP â”€â”€ */}
       <AnimatedSection
         style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e2e8f0' }}
         className="why-us-strip"
@@ -399,7 +399,7 @@ export default function Home() {
           {[
             { icon: <Nav size={26} strokeWidth={1.5} />,    title: 'Expert Local Guides',       desc: 'Every guide is a mountain native with 10+ years on the trail.' },
             { icon: <Shield size={26} strokeWidth={1.5} />, title: 'Certified Safety',          desc: 'Strict evacuation protocols and certified safety equipment on all trips.' },
-            { icon: <Plane size={26} strokeWidth={1.5} />,  title: 'End-to-End Logistics',      desc: 'Permits, domestic transport, and premium accommodation — all handled.' },
+            { icon: <Plane size={26} strokeWidth={1.5} />,  title: 'End-to-End Logistics',      desc: 'Permits, domestic transport, and premium accommodation â€” all handled.' },
             { icon: <Leaf size={26} strokeWidth={1.5} />,   title: 'Sustainable Travel',        desc: 'Leave-no-trace ethics supporting local Himalayan economies.' },
           ].map((item, i) => (
             <motion.div key={i} className="why-us-item" variants={fadeUp} custom={i}>
@@ -413,9 +413,9 @@ export default function Home() {
         </div>
       </AnimatedSection>
 
-      {/* ══════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
            TESTIMONIALS CAROUSEL  (3 cards, auto-play, draggable)
-         ══════════════════════════════════════════════════════ */}
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <section className="reviews-section">
         <motion.div
           className="reviews-section-header"
@@ -463,36 +463,11 @@ export default function Home() {
         </Swiper>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="footer-logo">Samye Travels</span>
-            <p>Crafting sacred journeys across Nepal, Tibet &amp; India since 2010.</p>
-          </div>
-          <div className="footer-links">
-            <h4>Quick Links</h4>
-            <Link to="/">Home</Link>
-            <Link to="/packages">Packages</Link>
-            <Link to="/custom-tour">Build My Trip</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
-          </div>
-          <div className="footer-contact">
-            <h4>Get In Touch</h4>
-            <p>namaste@samyetravels.com</p>
-            <p>+977 1-4412345</p>
-            <p>Thamel, Kathmandu, Nepal</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>© 2026 Samye Travels. All rights reserved.</p>
-        </div>
-      </footer>
+      {/* â”€â”€ FOOTER â”€â”€ */}
 
-      {/* ══════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
            AI CONCIERGE MODAL  (logic unchanged)
-         ══════════════════════════════════════════════════════ */}
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {isAIModalOpen && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -545,7 +520,7 @@ export default function Home() {
                   <textarea
                     value={userPrompt}
                     onChange={e => setUserPrompt(e.target.value)}
-                    placeholder="e.g., I have 10 days in November. Traveling with my wife, want culture + light trekking, nothing extreme…"
+                    placeholder="e.g., I have 10 days in November. Traveling with my wife, want culture + light trekking, nothing extremeâ€¦"
                     style={{
                       flex: 1, minHeight: '150px', padding: '14px 16px',
                       borderRadius: '10px', border: '1.5px solid #e2e8f0',
@@ -582,7 +557,7 @@ export default function Home() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '48px 0' }}>
                   <Sparkles size={44} color="#1a5c9e" style={{ animation: 'pulseSpin 1.6s infinite ease-in-out' }} />
                   <h3 style={{ marginTop: '22px', color: '#0f172a', fontSize: '1.2rem', fontFamily: "'Playfair Display', serif" }}>
-                    Curating your perfect itinerary…
+                    Curating your perfect itineraryâ€¦
                   </h3>
                   <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Analysing database for best match</p>
                 </div>

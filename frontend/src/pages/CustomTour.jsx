@@ -1,4 +1,4 @@
-import Navbar from '../components/Navbar';
+﻿import Navbar from '../components/Navbar';
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -92,7 +92,7 @@ export default function CustomTour() {
 
   const totalTripDays = useMemo(() => {
     // Number() correctly handles both stored-as-number (11) and numeric-string ('11') durations.
-    // parseDurationToDays only matched strings containing the word "day" — bare integers failed.
+    // parseDurationToDays only matched strings containing the word "day" â€” bare integers failed.
     const baseDays = tripItems.reduce((acc, i) => acc + (Number(i.duration) || 0), 0);
     return Math.ceil(baseDays + transitDays);
   }, [tripItems, transitDays]);
@@ -150,7 +150,7 @@ export default function CustomTour() {
         </div>
       </div>
 
-      {/* ── THE CURRENCY TOGGLE has been removed (inquiry-only model) ── */}
+      {/* â”€â”€ THE CURRENCY TOGGLE has been removed (inquiry-only model) â”€â”€ */}
 
 
       <div className="builder-layout">
@@ -238,7 +238,7 @@ export default function CustomTour() {
             <div className="builder-input-group">
               <label className="builder-input-label">Group Size</label>
               <div className="builder-stepper">
-                <button onClick={() => setGroupSize(s => Math.max(1, s - 1))}>−</button>
+                <button onClick={() => setGroupSize(s => Math.max(1, s - 1))}>âˆ’</button>
                 <span>{groupSize}</span>
                 <button onClick={() => setGroupSize(s => s + 1)}>+</button>
               </div>
@@ -297,7 +297,7 @@ export default function CustomTour() {
                           <span>{item.duration} {item.type === 'tour' ? 'days' : ''}</span>
                         </div>
                       </div>
-                      <button className="builder-remove-btn" onClick={() => removeItem(item.uid)} title="Remove">✕</button>
+                      <button className="builder-remove-btn" onClick={() => removeItem(item.uid)} title="Remove">âœ•</button>
                     </div>
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export default function CustomTour() {
             </div>
           )}
 
-          {/* ── Duration chip ── */}
+          {/* â”€â”€ Duration chip â”€â”€ */}
           {totalTripDays > 0 && (
             <div className="builder-totals-bar">
               <div className="builder-total-chip">
@@ -321,7 +321,7 @@ export default function CustomTour() {
             </div>
           )}
 
-          {/* ── Expedition Overview — fills the empty bottom space ── */}
+          {/* â”€â”€ Expedition Overview â€” fills the empty bottom space â”€â”€ */}
           {tripItems.length > 0 && (
             <div style={{
               marginTop: '18px',
@@ -371,7 +371,7 @@ export default function CustomTour() {
                     borderRadius: '4px',
                     flex: '1 1 140px',
                   }}>
-                    <span style={{ fontSize: '1rem' }}>🎯</span>
+                    <span style={{ fontSize: '1rem' }}>ðŸŽ¯</span>
                     <div>
                       <div style={{
                         fontSize: '0.62rem', color: '#94a3b8', fontFamily: "'Inter', sans-serif",
@@ -397,7 +397,7 @@ export default function CustomTour() {
                   borderRadius: '4px',
                   flex: '1 1 120px',
                 }}>
-                  <span style={{ fontSize: '1rem' }}>👥</span>
+                  <span style={{ fontSize: '1rem' }}>ðŸ‘¥</span>
                   <div>
                     <div style={{
                       fontSize: '0.62rem', color: '#94a3b8', fontFamily: "'Inter', sans-serif",
@@ -423,9 +423,9 @@ export default function CustomTour() {
                 overflow: 'hidden',
               }}>
                 {[
-                  { icon: '🛡️', label: 'Trip Protection', sub: 'Expert-guided safety' },
-                  { icon: '✈️', label: 'Visa Support',    sub: 'End-to-end assistance' },
-                  { icon: '📞', label: '24/7 Support',    sub: 'On-trip helpline' },
+                  { icon: 'ðŸ›¡ï¸', label: 'Trip Protection', sub: 'Expert-guided safety' },
+                  { icon: 'âœˆï¸', label: 'Visa Support',    sub: 'End-to-end assistance' },
+                  { icon: 'ðŸ“ž', label: '24/7 Support',    sub: 'On-trip helpline' },
                 ].map((badge, i, arr) => (
                   <div key={badge.label} style={{
                     flex: 1, padding: '10px 12px',
@@ -453,7 +453,7 @@ export default function CustomTour() {
           )}
         </div>
 
-        {/* ── RIGHT: Visual Expedition Moodboard (replaces old cost breakdown) ── */}
+        {/* â”€â”€ RIGHT: Visual Expedition Moodboard (replaces old cost breakdown) â”€â”€ */}
         <VisualMoodboard
           selectedTours={tripItems}
           totalTripDays={totalTripDays}
@@ -463,7 +463,7 @@ export default function CustomTour() {
 
       </div>
 
-      {/* ── MULTI-STEP LEAD CAPTURE MODAL ── */}
+      {/* â”€â”€ MULTI-STEP LEAD CAPTURE MODAL â”€â”€ */}
       <MultiStepLeadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -471,31 +471,6 @@ export default function CustomTour() {
         tripName={tripName}
       />
 
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="footer-logo">Samye Travels</span>
-            <p>Crafting sacred journeys across Nepal, Tibet & India since 2010.</p>
-          </div>
-          <div className="footer-links">
-            <h4>Quick Links</h4>
-            <Link to="/">Home</Link>
-            <Link to="/tours">Tours</Link>
-            <Link to="/adventures">Adventures</Link>
-            <Link to="/custom-tour">Build My Trip</Link>
-            <Link to="/contact">Contact</Link>
-          </div>
-          <div className="footer-contact">
-            <h4>Get In Touch</h4>
-            <p>namaste@samyetravels.com</p>
-            <p>+977 1-4412345</p>
-            <p>Thamel, Kathmandu, Nepal</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>© 2026 Samye Travels. All rights reserved.</p>
-        </div>
-      </footer>
 
     </div>
   );
@@ -528,7 +503,7 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
           onClick={onAdd}
           disabled={added}
         >
-          {added ? '✓ Added' : '+ Add to Trip'}
+          {added ? 'âœ“ Added' : '+ Add to Trip'}
         </button>
         <Link
           to={detailsPath}
@@ -559,7 +534,7 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
             e.currentTarget.style.color = '#64748b';
           }}
         >
-          View Details ↗
+          View Details â†—
         </Link>
       </div>
     </div>
