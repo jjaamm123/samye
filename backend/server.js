@@ -12,6 +12,23 @@ const Lead       = require('./models/Lead');
 const upload     = require('./middleware/upload');
 const authRoutes = require('./routes/auth');
 const { protect } = require('./middleware/authMiddleware');
+const { cacheGet, cacheSet, cacheDelPattern } = require('./redisClient');
+
+// ── Cloudinary URL optimizer ────────────────────────────────────────────────
+// Injects c_scale,w_600,q_auto,f_auto after /upload/ in any Cloudinary URL.
+// Falls back silently on non-Cloudinary URLs or nulls.
+const cloudinaryOpt = (url, transforms = 'c_scale,w_600,q_auto,f_auto') => {
+  if (!url || !url.includes('/upload/')) return url;
+  return url.replace('/upload/', `/upload/${transforms}/`);
+};
+
+// Apply thumbnail optimisations to a tour/adventure document's cardImage
+const optimiseCardImage = (doc) => {
+  if (!doc) return doc;
+  const obj = doc.toObject ? doc.toObject() : { ...doc };
+  if (obj.cardImage) obj.cardImage = cloudinaryOpt(obj.cardImage);
+  return obj;
+};
 
 const app = express();
 
@@ -35,31 +52,43 @@ app.use('/api/auth', authRoutes);
 // TOUR CONTROLLERS
 app.get('/api/tours', async (req, res) => {
     try {
+        // ── 1. Build query ────────────────────────────────────────────────
         const { experienceTheme, subTheme, travelStyle, season, location, destination } = req.query;
         const query = {};
-        
+
         if (destination) query.destination = destination;
-        
-        if (experienceTheme) {
-            query.experienceTheme = { $in: experienceTheme.split(',').map(s => s.trim()) };
-        }
-        if (subTheme) {
-            query.subTheme = { $in: subTheme.split(',').map(s => s.trim()) };
-        }
+        if (experienceTheme) query.experienceTheme = { $in: experienceTheme.split(',').map(s => s.trim()) };
+        if (subTheme)        query.subTheme        = { $in: subTheme.split(',').map(s => s.trim()) };
+        if (location)        query.location        = location;
+        if (season)          query.season          = { $in: season.split(',').map(s => s.trim()) };
         if (travelStyle && travelStyle !== 'All') {
             const styles = travelStyle.split(',').map(s => s.trim());
             if (!styles.includes('All')) styles.push('All');
             query.travelStyle = { $in: styles };
         }
-        if (location) query.location = location;
-        
-        if (season) {
-            const seasonsArray = season.split(',').map(s => s.trim());
-            query.season = { $in: seasonsArray };
+
+        // ── 2. Redis cache check ──────────────────────────────────────────
+        const cacheKey = `tours:${JSON.stringify(req.query)}`;
+        const cached   = await cacheGet(cacheKey);
+        if (cached) {
+            return res.status(200).json(JSON.parse(cached));
         }
 
-        const allTours = await Tour.find(query);
-        res.status(200).json(allTours);
+        // ── 3. MongoDB query with projection (list-view fields only) ──────
+        const allTours = await Tour.find(query)
+            .select('title destination location duration difficulty price localPrice cardImage experienceTheme subTheme travelStyle season')
+            .lean(); // lean() returns plain objects — faster than full Mongoose docs
+
+        // ── 4. Optimise cardImage URLs via Cloudinary transforms ──────────
+        const optimised = allTours.map(t => ({
+            ...t,
+            cardImage: cloudinaryOpt(t.cardImage)
+        }));
+
+        // ── 5. Store in Redis for 1 hour ──────────────────────────────────
+        await cacheSet(cacheKey, 3600, JSON.stringify(optimised));
+
+        res.status(200).json(optimised);
     } catch (error) {
         console.error("Error fetching tours:", error);
         res.status(500).json({ message: "Server Error: Could not fetch tours." });
@@ -90,6 +119,7 @@ app.post('/api/tours', protect, upload.fields([
             if (req.files['galleryImages']) tourData.galleryImages = req.files['galleryImages'].map(f => f.path);
         }
         const newTour = await Tour.create(tourData);
+        await cacheDelPattern('tours:*'); // invalidate all tour list caches
         res.status(201).json(newTour);
     } catch (error) {
         console.error("Create Tour Error:", error);
@@ -115,6 +145,7 @@ app.put('/api/tours/:id', protect, upload.fields([
         }
         const updatedTour = await Tour.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
         if (!updatedTour) return res.status(404).json({ message: "Tour not found." });
+        await cacheDelPattern('tours:*'); // invalidate all tour list caches
         res.status(200).json(updatedTour);
     } catch (error) {
         console.error("Update Tour Error:", error);
@@ -130,6 +161,7 @@ app.delete('/api/tours/:id', protect, async (req, res) => {
     try {
         const deletedTour = await Tour.findByIdAndDelete(req.params.id);
         if (!deletedTour) return res.status(404).json({ message: "Tour not found." });
+        await cacheDelPattern('tours:*'); // invalidate all tour list caches
         res.status(200).json({ message: "Tour deleted successfully." });
     } catch (error) {
         console.error("Error deleting tour:", error);
