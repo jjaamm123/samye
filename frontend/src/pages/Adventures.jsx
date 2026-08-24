@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import AdventureCard from '../components/AdventureCard';
+import Loader from '../components/Loader';
 import '../App.css';
 
 function Adventures() {
@@ -99,7 +100,7 @@ function Adventures() {
           </div>
         </div>
 
-        {loading && <p className="status-msg">Loading adventures...</p>}
+        {loading && <Loader message="Loading adventures..." />}
         {error && <p className="status-msg error">⚠️ {error}</p>}
         {!loading && !error && filteredAdventures.length === 0 && (
           <p className="status-msg">No adventures match your search. Try resetting the filter!</p>
@@ -209,7 +210,7 @@ function Adventures() {
           </div>
         </div>
 
-        {loading && <p className="status-msg">Loading adventures...</p>}
+        {loading && <Loader message="Loading adventures..." />}
         {error && <p className="status-msg error">⚠️ {error}</p>}
         {!loading && !error && filteredAdventures.length === 0 && (
           <p className="status-msg">No adventures match your search. Try resetting the filter!</p>

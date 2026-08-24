@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import TourCard from '../components/TourCard';
 import AdventureCard from '../components/AdventureCard';
 import { CurrencyContext } from '../context/CurrencyContext'; 
 import Navbar from '../components/Navbar';
+import Loader from '../components/Loader';
 import '../App.css';
 
 function Packages() {
@@ -270,30 +271,73 @@ function Packages() {
 
         {/* PACKAGE GRID */}
         <div className="flex-grow min-w-0 w-full">
-          {loading && <p className="text-slate-500 p-10 text-center">Loading {isTours ? 'tours' : 'adventures'}â€¦</p>}
+          {loading && <Loader message={isTours ? 'Curating available journeys...' : 'Loading adventures...'} />}
           {error && (
             <div className="flex items-center justify-center gap-2 text-red-500 p-10">
               <AlertCircle size={20} /> {error}
             </div>
           )}
-          
+
           {!loading && !error && count === 0 && (
             <div className="packages-empty-state bg-slate-50 border border-dashed border-slate-300 rounded-xl p-16 text-center">
               <Search size={48} color="#cbd5e1" strokeWidth={1.5} className="mx-auto mb-4" />
               <p className="text-slate-600 text-lg mb-4">No {isTours ? 'tours' : 'adventures'} match your current filters.</p>
-              <button className="bg-blue-700 hover:bg-blue-800 text-white border-none py-2 px-5 rounded-md cursor-pointer transition-colors" onClick={clearFilters}>
+              <button className="bg-[#9c826b] hover:bg-[#856d57] text-white border-none py-2 px-5 rounded-md cursor-pointer transition-colors" onClick={clearFilters}>
                 Clear Filters
               </button>
             </div>
           )}
 
           {!loading && !error && count > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {isTours 
-                ? filteredTours.map(tour => <TourCard key={tour._id} tour={tour} />)
-                : filteredAdventures.map(adv => <AdventureCard key={adv._id} adventure={adv} />)
-              }
-            </div>
+            isTours ? (() => {
+              // ── Group tours by destination/country ──────────────────────
+              const grouped = filteredTours.reduce((acc, tour) => {
+                const country = tour.destination || tour.country || 'Other Destinations';
+                if (!acc[country]) acc[country] = [];
+                acc[country].push(tour);
+                return acc;
+              }, {});
+
+              // Preferred display order — known destinations first
+              const ORDER = ['Nepal', 'Tibet', 'India'];
+              const sortedEntries = Object.entries(grouped).sort(([a], [b]) => {
+                const ai = ORDER.indexOf(a), bi = ORDER.indexOf(b);
+                if (ai !== -1 && bi !== -1) return ai - bi;
+                if (ai !== -1) return -1;
+                if (bi !== -1) return 1;
+                return a.localeCompare(b);
+              });
+
+              return sortedEntries.map(([country, tours]) => (
+                <section key={country} className="mb-16">
+                  {/* ── Country Section Header ── */}
+                  <div className="flex items-center gap-4 mb-8 pb-3 border-b border-[#e2d9cc]/60">
+                    {/* Country code pill */}
+                    <span className="font-mono text-xs uppercase tracking-widest text-[#9c826b] bg-[#9c826b]/10 px-2.5 py-1 rounded-md font-semibold">
+                      {country.slice(0, 2).toUpperCase()}
+                    </span>
+                    {/* Title + count */}
+                    <div>
+                      <h2 className="text-3xl font-serif text-[#1a1a1a] leading-tight">{country}</h2>
+                      <p className="text-xs text-gray-500 tracking-wider uppercase mt-0.5">
+                        {tours.length} {tours.length === 1 ? 'Journey' : 'Journeys'} Available
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ── Cards Grid ── */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {tours.map(tour => <TourCard key={tour._id || tour.id} tour={tour} />)}
+                  </div>
+                </section>
+              ));
+            })()
+            : (
+              // ── Adventures stay as a flat grid (no destination grouping) ──
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                {filteredAdventures.map(adv => <AdventureCard key={adv._id} adventure={adv} />)}
+              </div>
+            )
           )}
         </div>
       </div>

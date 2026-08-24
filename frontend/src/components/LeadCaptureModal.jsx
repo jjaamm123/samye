@@ -315,7 +315,7 @@ function LeadCaptureModal({ tour, onClose }) {
                   disabled={status === 'loading'}
                   style={{ marginTop: '4px' }}
                 >
-                  {status === 'loading' ? 'Sending…' : '📄 Get My Free Itinerary'}
+                  {status === 'loading' ? 'Sending...' : '📄 Get My Free Itinerary'}
                 </button>
               </div>
             </form>

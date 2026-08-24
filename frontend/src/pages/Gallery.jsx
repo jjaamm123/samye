@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, ArrowLeft } from 'lucide-react';
 import '../App.css';
 import Navbar from '../components/Navbar';
+import Loader from '../components/Loader';
 
 // ─── Animation Variants ───────────────────────────────────────────────────────
 const cardVariant = {
@@ -149,7 +150,7 @@ function Gallery() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 
         {/* Loading / Error / Empty */}
-        {loading && <p className="text-center text-[#64748b] py-20 text-lg">Loading gallery media...</p>}
+        {loading && <Loader message="Loading visual collection..." />}
         {error   && <p className="text-center text-red-500 py-20 text-lg">{error}</p>}
         {!loading && !error && safeItems.length === 0 && (
           <p className="text-center text-[#64748b] py-20 text-lg">No gallery items yet. Check back soon!</p>

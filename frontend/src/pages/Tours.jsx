@@ -1,8 +1,9 @@
-﻿import Navbar from '../components/Navbar';
+import Navbar from '../components/Navbar';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import TourCard from '../components/TourCard';
+import Loader from '../components/Loader';
 import '../App.css';
 
 function Tours() {
@@ -95,7 +96,7 @@ function Tours() {
           </div>
         </div>
 
-        {loading && <p className="status-msg">Loading tours...</p>}
+        {loading && <Loader message="Curating available journeys..." />}
         {error && <p className="status-msg error">âš ï¸ {error}</p>}
         {!loading && !error && filteredTours.length === 0 && (
           <p className="status-msg">No tours match your search. Try resetting the filter!</p>

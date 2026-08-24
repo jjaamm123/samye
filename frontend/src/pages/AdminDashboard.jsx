@@ -791,7 +791,7 @@ function AdminDashboard() {
                 <span className="admin-card-count">{leads.length} total</span>
               </div>
               {loadingLeads ? (
-                <p className="admin-empty-state">Loading leads…</p>
+                <p className="admin-empty-state">Loading leads...</p>
               ) : leads.length === 0 ? (
                 <p className="admin-empty-state">No leads captured yet. They will appear here once visitors fill in the itinerary modal.</p>
               ) : (

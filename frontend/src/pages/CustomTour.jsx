@@ -1,8 +1,9 @@
-﻿import Navbar from '../components/Navbar';
+import Navbar from '../components/Navbar';
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
+import Loader from '../components/Loader';
 import VisualMoodboard    from '../components/VisualMoodboard';
 import MultiStepLeadModal from '../components/MultiStepLeadModal';
 
@@ -186,7 +187,7 @@ export default function CustomTour() {
 
           <div className="builder-package-list">
             {pickerTab === 'tours' && (
-              loadingTours ? <p className="builder-loading">Loading tours...</p> :
+              loadingTours ? <Loader message="Loading tours..." className="py-10 min-h-[200px]" /> :
               filteredTours.length === 0 ? <p className="builder-empty">No tours found.</p> :
               filteredTours.map(tour => (
                 <PickerItem
@@ -202,7 +203,7 @@ export default function CustomTour() {
               ))
             )}
             {pickerTab === 'adventures' && (
-              loadingAdv ? <p className="builder-loading">Loading adventures...</p> :
+              loadingAdv ? <Loader message="Loading adventures..." className="py-10 min-h-[200px]" /> :
               filteredAdventures.length === 0 ? <p className="builder-empty">No adventures found.</p> :
               filteredAdventures.map(adv => (
                 <PickerItem
