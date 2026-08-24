@@ -85,7 +85,7 @@ function MoodCard({ item, onRemove }) {
             fontSize: '0.7rem', color: 'rgba(255,255,255,0.65)',
             fontFamily: "'Inter', sans-serif",
           }}>
-            {item.duration ? `${item.duration} days` : ''}
+            {item.duration ? item.duration : ''}
             {(item.destination || item.location)
               ? ` · ${item.destination || item.location}`
               : ''}

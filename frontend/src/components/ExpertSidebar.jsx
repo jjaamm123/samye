@@ -151,7 +151,7 @@ function ExpertSidebar({ item, itemType = 'tour', onEnquireClick, formatPrice })
               {item.duration && (
                 <div className="ed-fact-row">
                   <span className="ed-fact-label">Duration</span>
-                  <span className="ed-fact-val">{item.duration} Days</span>
+                  <span className="ed-fact-val">{item.duration}</span>
                 </div>
               )}
               {item.difficulty && (

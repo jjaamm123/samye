@@ -59,9 +59,9 @@ function Tours() {
 
       <div className="adventure-sport-strip">
         {[
-          { label: 'Nepal', icon: 'ðŸ”ï¸' },
-          { label: 'Tibet', icon: 'ðŸ“¿' },
-          { label: 'India', icon: 'ðŸ›•' }
+          { label: 'Nepal', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> },
+          { label: 'Tibet', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> },
+          { label: 'India', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> }
         ].map(dest => (
           <button
             key={dest.label}
@@ -97,7 +97,7 @@ function Tours() {
         </div>
 
         {loading && <Loader message="Curating available journeys..." />}
-        {error && <p className="status-msg error">âš ï¸ {error}</p>}
+        {error && <p className="status-msg error"><svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>{error}</p>}
         {!loading && !error && filteredTours.length === 0 && (
           <p className="status-msg">No tours match your search. Try resetting the filter!</p>
         )}

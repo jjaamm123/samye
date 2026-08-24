@@ -165,7 +165,9 @@ function TourDetails() {
   if (error || !tour || Object.keys(tour).length === 0) return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center',
       justifyContent:'center', background:'#f7f2e8', fontFamily:"'Inter',sans-serif", textAlign:'center', padding:'40px 20px' }}>
-      <div style={{ fontSize:'3rem', marginBottom:'20px' }}>🏔️</div>
+      <div style={{ marginBottom:'20px', display: 'flex', justifyContent: 'center' }}>
+        <svg className="w-12 h-12 text-[#9c826b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 21h18M5 21l7-14 7 14M8 15l4-8 4 8"></path></svg>
+      </div>
       <h1 style={{ fontFamily:"'Playfair Display',serif", fontSize:'1.8rem', color:'#050b16', marginBottom:'12px' }}>
         {error ? 'Could Not Load Tour' : 'Tour Not Found'}
       </h1>
@@ -231,7 +233,7 @@ function TourDetails() {
                       {stop}
                     </span>
                     {i < routeStops.length - 1 && (
-                      <span className="ed-route-arrow">→</span>
+                      <span className="ed-route-arrow"><svg className="w-3 h-3 text-gray-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
                     )}
                   </span>
                 );
@@ -246,7 +248,7 @@ function TourDetails() {
                 <span className="ed-hero-meta-label">Duration</span>
                 <span className="ed-hero-meta-value">
                   <Clock size={13} style={{ marginRight:'5px', verticalAlign:'middle', opacity:0.6 }} />
-                  {tour.duration} Days
+                  {tour.duration}
                 </span>
               </div>
             )}
@@ -328,7 +330,7 @@ function TourDetails() {
                     if (!item) return null;
                     return (
                       <li key={item._id || i} className="flex items-start gap-4">
-                        <span className="text-[#d4af37] mt-1">✦</span>
+                        <span className="text-[#d4af37] mt-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg></span>
                         <span className="text-[#4a4238] leading-relaxed">{item}</span>
                       </li>
                     );
@@ -557,13 +559,15 @@ function TourDetails() {
           
           <div className="bg-[#f4efe6] p-6 sm:p-8 md:p-10 rounded-2xl shadow-md border border-[#e2d9cc]">
             {inquiryStatus === 'success' && (
-              <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6">
-                ✓ Enquiry sent! We'll get back to you within 24 hours.
+              <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6 flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                Enquiry sent! We'll get back to you within 24 hours.
               </div>
             )}
             {inquiryStatus === 'error' && (
-              <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 mb-6">
-                ✗ Something went wrong. Please try the Contact page.
+              <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 mb-6 flex items-center gap-2">
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                Something went wrong. Please try the Contact page.
               </div>
             )}
 
@@ -630,14 +634,20 @@ function TourDetails() {
       {lightboxIndex !== null && (
         <div className="lightbox-overlay" onClick={() => setLightboxIndex(null)}>
           <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-            <button className="lightbox-close" onClick={() => setLightboxIndex(null)}>✕</button>
+            <button className="lightbox-close p-2" onClick={() => setLightboxIndex(null)}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
             <img src={gallery[lightboxIndex]} alt="" className="lightbox-image" />
             {gallery.length > 1 && (
               <>
-                <button className="lightbox-nav lightbox-nav-prev"
-                  onClick={() => setLightboxIndex(i => (i - 1 + gallery.length) % gallery.length)}>‹</button>
-                <button className="lightbox-nav lightbox-nav-next"
-                  onClick={() => setLightboxIndex(i => (i + 1) % gallery.length)}>›</button>
+                <button className="lightbox-nav lightbox-nav-prev p-2"
+                  onClick={() => setLightboxIndex(i => (i - 1 + gallery.length) % gallery.length)}>
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button className="lightbox-nav lightbox-nav-next p-2"
+                  onClick={() => setLightboxIndex(i => (i + 1) % gallery.length)}>
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
                 <span className="lightbox-counter">{lightboxIndex + 1} / {gallery.length}</span>
               </>
             )}

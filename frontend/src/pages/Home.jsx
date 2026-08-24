@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -37,20 +37,21 @@ const cardVariant = {
 };
 
 // â”€â”€ STATIC DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ——— STATIC DATA ————————————————————————————————————————————————————————
 const STATS = [
   { number: '500+',  label: 'Expeditions Completed' },
   { number: '15+',   label: 'Years of Expertise' },
   { number: '98%',   label: 'Client Satisfaction' },
   { number: '3',     label: 'Operating Regions' },
   { number: '120+',  label: 'Expert Local Guides' },
-  { number: '4.9â˜…',  label: 'Average Trip Rating' },
+  { number: '4.9/5', label: 'Average Trip Rating' },
 ];
 
 const REVIEWS = [
   {
-    text: 'Samye Travels made our Annapurna Circuit trek absolutely seamless. Every permit, every lodge â€” handled flawlessly. Our guide Raj was outstanding.',
+    text: 'Samye Travels made our Annapurna Circuit trek absolutely seamless. Every permit, every lodge - handled flawlessly. Our guide Raj was outstanding.',
     author: 'Thomas & Claire M.',
-    trip: 'Annapurna Circuit â€” 14 Days',
+    trip: 'Annapurna Circuit - 14 Days',
     initial: 'T',
     stars: 5,
   },
@@ -62,7 +63,7 @@ const REVIEWS = [
     stars: 5,
   },
   {
-    text: 'We did the custom trip builder online and honestly expected it to be a gimmick â€” it wasn\'t. The discount calculator saved us nearly 18% on a group of 9.',
+    text: 'We did the custom trip builder online and honestly expected it to be a gimmick - it wasn\'t. The discount calculator saved us nearly 18% on a group of 9.',
     author: 'The Henderson Family',
     trip: 'Everest Base Camp + Chitwan',
     initial: 'H',
@@ -78,7 +79,7 @@ const REVIEWS = [
   {
     text: "From the moment we landed to the day we left, Samye's team was reachable 24/7. That level of support on remote treks is genuinely rare.",
     author: 'Priya & Arjun D.',
-    trip: 'Gokyo Lake Trek â€” 12 Days',
+    trip: 'Gokyo Lake Trek - 12 Days',
     initial: 'P',
     stars: 5,
   },
@@ -269,7 +270,7 @@ export default function Home() {
             Tell us your dream journey.
           </h2>
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '1.05rem', maxWidth: '500px', lineHeight: 1.6 }}>
-            Skip the browsing. Describe your ideal timeline, pace, and companions â€” our AI Concierge will curate the perfect package instantly.
+            Skip the browsing. Describe your ideal timeline, pace, and companions - our AI Concierge will curate the perfect package instantly.
           </p>
           <button
             onClick={() => setIsAIModalOpen(true)}
@@ -329,8 +330,8 @@ export default function Home() {
                   View Itineraries <ArrowRight size={15} className="journey-card-arrow" />
                 </div>
                 <div className="journey-card-meta">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MapPin size={13} /> Nepal Â· Tibet Â· India</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calendar size={13} /> 5â€“21 Days</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MapPin size={13} /> Nepal · Tibet · India</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calendar size={13} /> 5-21 Days</span>
                 </div>
               </div>
             </Link>
@@ -355,8 +356,8 @@ export default function Home() {
                   View Activities <ArrowRight size={15} className="journey-card-arrow" />
                 </div>
                 <div className="journey-card-meta">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Compass size={13} /> Nepal Â· India</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Clock size={13} /> Half-day â€“ 3 Days</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Compass size={13} /> Nepal · India</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Clock size={13} /> Half-day - 3 Days</span>
                 </div>
               </div>
             </Link>
@@ -557,7 +558,7 @@ export default function Home() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '48px 0' }}>
                   <Sparkles size={44} color="#1a5c9e" style={{ animation: 'pulseSpin 1.6s infinite ease-in-out' }} />
                   <h3 style={{ marginTop: '22px', color: '#0f172a', fontSize: '1.2rem', fontFamily: "'Playfair Display', serif" }}>
-                    Curating your perfect itineraryâ€¦
+                    Curating your perfect itinerary...
                   </h3>
                   <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Analysing database for best match</p>
                 </div>

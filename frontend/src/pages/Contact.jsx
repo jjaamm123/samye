@@ -1,4 +1,4 @@
-﻿import Navbar from '../components/Navbar';
+import Navbar from '../components/Navbar';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -116,7 +116,7 @@ function Contact() {
               </div>
 
               <input name="subject" value={formData.subject} onChange={handleChange}
-                placeholder="Subject â€” e.g. Enquiry about Nepal Trek" required className="contact-input" />
+                placeholder="Subject - e.g. Enquiry about Nepal Trek" required className="contact-input" />
 
               <div className="contact-form-row contact-form-row-3">
 
@@ -142,7 +142,7 @@ function Contact() {
                   >
                     <option value="1">Solo (1)</option>
                     <option value="2">Couple (2)</option>
-                    <option value="3-5">Small Group (3â€“5)</option>
+                    <option value="3-5">Small Group (3-5)</option>
                     <option value="6+">Large Group (6+)</option>
                   </select>
                 </div>
@@ -167,14 +167,15 @@ function Contact() {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Tell us about your dream journey â€” destinations, specific treks, anything you have in mindâ€¦"
+                placeholder="Tell us about your dream journey - destinations, specific treks, anything you have in mind..."
                 rows="5"
                 required
                 className="contact-input contact-textarea"
               ></textarea>
 
-              <button type="submit" className="contact-submit-btn">
-                Send Message â†’
+              <button type="submit" className="contact-submit-btn flex items-center justify-center gap-2">
+                Send Message
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
               </button>
 
             </form>

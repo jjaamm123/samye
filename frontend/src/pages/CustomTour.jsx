@@ -94,7 +94,11 @@ export default function CustomTour() {
   const totalTripDays = useMemo(() => {
     // Number() correctly handles both stored-as-number (11) and numeric-string ('11') durations.
     // parseDurationToDays only matched strings containing the word "day" â€” bare integers failed.
-    const baseDays = tripItems.reduce((acc, i) => acc + (Number(i.duration) || 0), 0);
+    const baseDays = tripItems.reduce((acc, i) => {
+      const match = String(i.duration || '').match(/(\d+)\s*Day/i) || String(i.duration || '').match(/^(\d+)$/);
+      const days = match ? parseInt(match[1], 10) : 0;
+      return acc + days;
+    }, 0);
     return Math.ceil(baseDays + transitDays);
   }, [tripItems, transitDays]);
 
@@ -197,7 +201,7 @@ export default function CustomTour() {
                   added={isAdded(tour, 'tour')}
                   onAdd={() => addItem(tour, 'tour')}
                   badge={tour.destination}
-                  meta={`${tour.duration} Days`}
+                  meta={tour.duration}
                   difficulty={tour.difficulty}
                 />
               ))
@@ -239,7 +243,7 @@ export default function CustomTour() {
             <div className="builder-input-group">
               <label className="builder-input-label">Group Size</label>
               <div className="builder-stepper">
-                <button onClick={() => setGroupSize(s => Math.max(1, s - 1))}>âˆ’</button>
+                <button onClick={() => setGroupSize(s => Math.max(1, s - 1))}>-</button>
                 <span>{groupSize}</span>
                 <button onClick={() => setGroupSize(s => s + 1)}>+</button>
               </div>
@@ -295,10 +299,10 @@ export default function CustomTour() {
                         <h4 className="builder-timeline-title">{item.title}</h4>
                         <div className="builder-timeline-meta">
                           <span>{item.destination || item.location}</span>
-                          <span>{item.duration} {item.type === 'tour' ? 'days' : ''}</span>
+                          <span>{item.duration}</span>
                         </div>
                       </div>
-                      <button className="builder-remove-btn" onClick={() => removeItem(item.uid)} title="Remove">âœ•</button>
+                      <button className="builder-remove-btn flex items-center justify-center p-1" onClick={() => removeItem(item.uid)} title="Remove"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                     </div>
                   </div>
                 </div>
@@ -424,9 +428,9 @@ export default function CustomTour() {
                 overflow: 'hidden',
               }}>
                 {[
-                  { icon: 'ðŸ›¡ï¸', label: 'Trip Protection', sub: 'Expert-guided safety' },
-                  { icon: 'âœˆï¸', label: 'Visa Support',    sub: 'End-to-end assistance' },
-                  { icon: 'ðŸ“ž', label: '24/7 Support',    sub: 'On-trip helpline' },
+                  { icon: <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>, label: 'Trip Protection', sub: 'Expert-guided safety' },
+                  { icon: <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>, label: 'Visa Support',    sub: 'End-to-end assistance' },
+                  { icon: <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>, label: '24/7 Support',    sub: 'On-trip helpline' },
                 ].map((badge, i, arr) => (
                   <div key={badge.label} style={{
                     flex: 1, padding: '10px 12px',
@@ -504,7 +508,12 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
           onClick={onAdd}
           disabled={added}
         >
-          {added ? 'âœ“ Added' : '+ Add to Trip'}
+          {added ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+              Added
+            </span>
+          ) : '+ Add to Trip'}
         </button>
         <Link
           to={detailsPath}
@@ -535,7 +544,10 @@ function PickerItem({ item, type, added, onAdd, badge, meta, difficulty }) {
             e.currentTarget.style.color = '#64748b';
           }}
         >
-          View Details â†—
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            View Details
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </span>
         </Link>
       </div>
     </div>
