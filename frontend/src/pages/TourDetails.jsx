@@ -1,5 +1,5 @@
 // src/pages/TourDetails.jsx
-// Luxury editorial redesign — Black Tomato / Scott Dunn inspired layout.
+// Luxury editorial redesign â€” Black Tomato / Scott Dunn inspired layout.
 // Sections: Split Hero | Sticky Tabs | Overview | Itinerary | Map | Gallery | Enquire
 import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useParams, Link }   from 'react-router-dom';
@@ -17,7 +17,7 @@ import StickyTabNav           from '../components/StickyTabNav';
 import TourMap                from '../components/TourMap';
 import Navbar from '../components/Navbar';
 
-// ── CONFIG ────────────────────────────────────────────────────────────────────
+// â”€â”€ CONFIG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const WHATSAPP_NUMBER = 'YOUR_WHATSAPP_NUMBER'; // Replace: '9779800000000'
 
 const MONTHS = [
@@ -33,7 +33,7 @@ const TOUR_TABS = [
   { id: 'section-enquire',    label: 'Enquire'     },
 ];
 
-// ── Skeleton loader ────────────────────────────────────────────────────────────
+// â”€â”€ Skeleton loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Skeleton() {
   return (
     <div style={{ background: '#050b16', minHeight: '100vh' }}>
@@ -56,7 +56,7 @@ function Skeleton() {
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────────────────────
+// â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TourDetails() {
   const { id }                                     = useParams();
   const galleryRef = useRef(null);
@@ -87,14 +87,14 @@ function TourDetails() {
   // Normalize tour data in case API returns an array for a single item fetch
   const tour = Array.isArray(tourData) ? tourData[0] : tourData;
 
-  // ── Nav scroll-hide ──────────────────────────────────────────────────────────
+  // â”€â”€ Nav scroll-hide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // ── Data fetch ───────────────────────────────────────────────────────────────
+  // â”€â”€ Data fetch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/tours/${id}`)
       .then(r => {
@@ -108,7 +108,7 @@ function TourDetails() {
       .catch(() => { setError('Could not load tour details.'); setLoading(false); });
   }, [id]);
 
-  // ── Lightbox keyboard nav ────────────────────────────────────────────────────
+  // â”€â”€ Lightbox keyboard nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const gallery = tour?.galleryImages || [];
   useEffect(() => {
     const handleKey = e => {
@@ -121,7 +121,7 @@ function TourDetails() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [lightboxIndex, gallery.length]);
 
-  // ── Inquiry form handlers ────────────────────────────────────────────────────
+  // â”€â”€ Inquiry form handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleInquiryChange = e =>
     setInquiryData(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -148,7 +148,7 @@ function TourDetails() {
     }
   }, []);
 
-  // ── Route chain from itinerary titles ──────────────────────────────────────
+  // â”€â”€ Route chain from itinerary titles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const routeStops = (() => {
     const stops = [];
     if (tour?.destination) stops.push(tour.destination);
@@ -159,7 +159,7 @@ function TourDetails() {
     return stops.concat(itinTitles).slice(0, 5);
   })();
 
-  // ── Loading / Error states ───────────────────────────────────────────────────
+  // â”€â”€ Loading / Error states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (loading) return <Skeleton />;
 
   if (error || !tour || Object.keys(tour).length === 0) return (
@@ -179,26 +179,26 @@ function TourDetails() {
     </div>
   );
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const difficultyColor = {
     Easy: '#2ecc71', Moderate: '#f39c12', Challenging: '#e67e22', Hard: '#e63946',
   }[tour.difficulty] || '#1a5c9e';
 
   const isPOR = tour.price && typeof tour.price === 'object' && tour.price.displayType === 'por';
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="app-wrapper">
 
-      {/* ── Minimal fixed nav (dark, always visible on details page) ── */}
+      {/* â”€â”€ Minimal fixed nav (dark, always visible on details page) â”€â”€ */}
       <Navbar />
 
-      {/* ═══════════════════════════════════════════
-          1 · SPLIT HERO
-      ═══════════════════════════════════════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          1 Â· SPLIT HERO
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <section className="ed-split-hero">
 
-        {/* ── LEFT: Editorial text panel ── */}
+        {/* â”€â”€ LEFT: Editorial text panel â”€â”€ */}
         <motion.div
           className="ed-hero-left"
           initial={{ opacity: 0, x: -24 }}
@@ -217,7 +217,7 @@ function TourDetails() {
           {tour.description && (
             <p className="ed-hero-narrative">
               {tour.description.slice(0, 220)}
-              {tour.description.length > 220 ? '…' : ''}
+              {tour.description.length > 220 ? 'â€¦' : ''}
             </p>
           )}
 
@@ -288,7 +288,7 @@ function TourDetails() {
           </div>
         </motion.div>
 
-        {/* ── RIGHT: Image carousel ── */}
+        {/* â”€â”€ RIGHT: Image carousel â”€â”€ */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -302,14 +302,14 @@ function TourDetails() {
         </motion.div>
       </section>
 
-      {/* ═══════════════════════════════════════════
-          2 · STICKY TAB NAV
-      ═══════════════════════════════════════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          2 Â· STICKY TAB NAV
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <StickyTabNav tabs={TOUR_TABS} />
 
-      {/* ═══════════════════════════════════════════
-          3 · TWO-COLUMN CONTENT & ENQUIRY
-      ═══════════════════════════════════════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          3 Â· TWO-COLUMN CONTENT & ENQUIRY
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         
         {/* ========================================== */}
@@ -508,6 +508,33 @@ function TourDetails() {
             </div>
           </div>
 
+          {/* Card 3: At A Glance */}
+          <div className="bg-white border border-[#e2d9cc] p-6 mt-6">
+            <h3 className="text-xs font-serif uppercase tracking-widest text-gray-500 mb-4 border-b border-[#e2d9cc]/60 pb-2">
+              At a Glance
+            </h3>
+            <div className="flex flex-col space-y-3 text-sm">
+              {tour.duration && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Duration</span>
+                  <span className="font-medium text-gray-900 text-right">{tour.duration}</span>
+                </div>
+              )}
+              {tour.difficulty && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Difficulty</span>
+                  <span className="font-medium text-gray-900 text-right">{tour.difficulty}</span>
+                </div>
+              )}
+              {tour.destination && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Destination</span>
+                  <span className="font-medium text-gray-900 text-right">{tour.destination}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -595,7 +622,7 @@ function TourDetails() {
                   <select name="groupSize" value={inquiryData.groupSize} onChange={handleInquiryChange} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a5c9e]">
                     <option value="1">Solo (1)</option>
                     <option value="2">Couple (2)</option>
-                    <option value="3-5">Small Group (3–5)</option>
+                    <option value="3-5">Small Group (3â€“5)</option>
                     <option value="6+">Large Group (6+)</option>
                   </select>
                 </div>
@@ -622,7 +649,7 @@ function TourDetails() {
               </div>
 
               <button type="submit" className="w-full bg-[#1a5c9e] hover:bg-[#246ab5] text-white font-medium py-4 rounded-xl transition shadow-sm text-lg mt-2 cursor-pointer">
-                Send Enquiry →
+                Send Enquiry â†’
               </button>
             </form>
           </div>
@@ -630,7 +657,7 @@ function TourDetails() {
 
       {/* -------------------------------------------
           LIGHTBOX PORTAL
-      ═══════════════════════════════════════════ */}
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {lightboxIndex !== null && (
         <div className="lightbox-overlay" onClick={() => setLightboxIndex(null)}>
           <div className="lightbox-content" onClick={e => e.stopPropagation()}>
@@ -655,9 +682,9 @@ function TourDetails() {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           LEAD CAPTURE MODAL (itinerary download)
-      ═══════════════════════════════════════════ */}
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {modalOpen && (
         <LeadCaptureModal
           tour={tour}
